@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EAT IT | F*CK IT — Hex Board</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{min-height:100vh;background:#0a0a10;color:#dde0ee;font-family:'Courier New',monospace;font-size:12px;overflow-x:hidden;}
+:root{
+  --eat:#c94020;--eat-l:#ff7050;--eat-d:#1e0800;
+  --fk:#5030b0;--fk-l:#9070ff;--fk-d:#100820;
+  --surf:#14141e;--surf2:#1c1c2a;--border:#282840;--muted:#606080;
+  --green:#40c080;--ter:#b08020;--ter-l:#ffe060;--drv:#208060;--drv-l:#50d0a0;
+}
+/* ── HEADER ── */
+.hdr{display:flex;align-items:center;gap:14px;padding:10px 18px;background:var(--surf);border-bottom:2px solid var(--border);flex-wrap:wrap;}
+.game-title{font-size:20px;font-weight:bold;letter-spacing:3px;}
+.eat-w{color:var(--eat-l);}.fk-w{color:var(--fk-l);}
+.hdr-sub{font-size:10px;color:var(--muted);letter-spacing:1px;}
+.nav-link{padding:5px 14px;border:1px solid var(--border);color:var(--muted);text-decoration:none;font-size:11px;letter-spacing:1px;transition:all .12s;}
+.nav-link:hover{color:#dde0ee;border-color:#4040a0;}
+.nav-link.active{background:var(--eat-d);border-color:var(--eat);color:var(--eat-l);}
+
+/* ── TOOLBAR ── */
+.toolbar{display:flex;align-items:center;gap:8px;padding:8px 18px;background:var(--surf);border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.tool-label{font-size:10px;color:var(--muted);letter-spacing:1px;white-space:nowrap;}
+.player-btn{width:28px;height:28px;border:2px solid transparent;border-radius:50%;cursor:pointer;transition:all .15s;position:relative;}
+.player-btn.selected{border-color:#fff;transform:scale(1.15);}
+.player-btn::after{content:attr(data-n);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;color:#fff;}
+.tbtn{padding:5px 12px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:inherit;font-size:10px;letter-spacing:1px;transition:all .12s;}
+.tbtn:hover{color:#dde0ee;border-color:#4040a0;}
+.tbtn.on{background:#0e0e20;border-color:#4040a0;color:#8080d0;}
+.terrain-filter-btn{padding:3px 10px;border:1px solid transparent;cursor:pointer;font-size:10px;border-radius:2px;transition:all .12s;opacity:.5;}
+.terrain-filter-btn.on{opacity:1;border-color:#fff6;}
+.sep{width:1px;height:24px;background:var(--border);margin:0 4px;}
+
+/* ── LAYOUT ── */
+.main-layout{display:flex;min-height:calc(100vh - 90px);}
+.board-wrap{flex:1;min-width:0;overflow:auto;padding:12px;display:flex;align-items:flex-start;justify-content:center;}
+.info-panel{width:320px;flex-shrink:0;background:var(--surf2);border-left:1px solid var(--border);padding:16px;overflow-y:auto;max-height:calc(100vh - 90px);position:sticky;top:0;}
+
+/* ── SVG HEX BOARD ── */
+#board-svg{display:block;overflow:visible;}
+.hex-group{cursor:pointer;}
+.hex-group polygon{stroke:#000;stroke-width:1.5;transition:filter .12s;}
+.hex-group:hover polygon{filter:brightness(1.3);}
+.hex-group.selected polygon{stroke:#fff;stroke-width:2.5;filter:brightness(1.4);}
+.hex-group.highlighted polygon{stroke:#fff;stroke-width:2;filter:brightness(1.2);}
+.hex-group.dimmed polygon{filter:brightness(0.35);}
+.hex-label{pointer-events:none;text-anchor:middle;dominant-baseline:middle;}
+.agent-ring{pointer-events:none;}
+
+/* ── INFO PANEL ── */
+.ip-empty{color:var(--muted);font-size:11px;padding:20px 0;text-align:center;line-height:1.8;}
+.ip-terrain-name{font-size:18px;font-weight:bold;letter-spacing:2px;margin-bottom:4px;}
+.ip-icon{font-size:36px;margin-bottom:8px;display:block;}
+.ip-blurb{font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:12px;padding-left:8px;border-left:2px solid var(--border);}
+.ip-section{margin-bottom:12px;}
+.ip-section h4{font-size:9px;letter-spacing:2px;color:var(--muted);border-bottom:1px solid var(--border);padding-bottom:4px;margin-bottom:7px;}
+.driver-tag{display:inline-block;padding:2px 7px;margin:2px;border:1px solid var(--drv);background:#081410;color:var(--drv-l);font-size:9px;}
+.muster-row{display:flex;align-items:center;gap:6px;padding:4px 6px;margin-bottom:3px;background:#0d0d18;border:1px solid var(--border);font-size:10px;}
+.muster-req{color:#9aacff;flex:1;}
+.muster-arrow{color:var(--muted);flex-shrink:0;}
+.muster-gives-eat{color:var(--eat-l);flex:1;font-weight:bold;}
+.muster-gives-fk{color:var(--fk-l);flex:1;font-weight:bold;}
+.muster-label{font-size:9px;letter-spacing:2px;margin-bottom:4px;}
+.ml-eat{color:var(--eat-l);}
+.ml-fk{color:var(--fk-l);}
+
+/* ── GM LAB SPECIAL ── */
+.gm-box{background:var(--cat-b, #001428);border:1px solid #40a0ff;padding:12px;margin-bottom:12px;}
+.gm-title{color:#80c8ff;font-size:13px;font-weight:bold;letter-spacing:1px;margin-bottom:8px;}
+.gm-rule{color:#a0c8e8;font-size:11px;line-height:1.5;margin-bottom:12px;}
+.dice-btn{width:100%;padding:10px;background:#102040;border:1px solid #40a0ff;color:#80c8ff;font-family:inherit;font-size:13px;letter-spacing:2px;cursor:pointer;transition:all .15s;}
+.dice-btn:hover{background:#1a3060;border-color:#80c8ff;}
+.dice-btn:active{transform:scale(.97);}
+.dice-result{text-align:center;margin-top:10px;font-size:28px;min-height:40px;display:flex;align-items:center;justify-content:center;gap:12px;}
+.dice-num{font-size:36px;font-weight:bold;transition:all .1s;}
+.dice-outcome{font-size:11px;line-height:1.4;padding:8px;border:1px solid;margin-top:8px;}
+.dice-win{border-color:#40c040;color:#80f080;background:#081408;}
+.dice-miss{border-color:#806040;color:#e0b060;background:#100c04;}
+
+/* ── LEGEND ── */
+.legend{display:flex;flex-wrap:wrap;gap:6px;padding:10px 18px;background:var(--surf);border-top:1px solid var(--border);}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted);cursor:pointer;padding:2px 6px;border:1px solid transparent;transition:all .12s;}
+.leg-item:hover{border-color:#4040a0;color:#dde0ee;}
+.leg-swatch{width:14px;height:14px;border:1px solid #fff3;flex-shrink:0;}
+
+/* coords display */
+.hex-coords{font-size:8px;fill:#ffffff44;pointer-events:none;text-anchor:middle;}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div>
+    <div class="game-title"><span class="eat-w">EAT</span> <span style="color:var(--muted)">|</span> <span class="fk-w">F*CK</span> <span style="color:var(--muted)">IT</span></div>
+    <div class="hdr-sub">HEX BOARD · TITAN-STYLE MOVEMENT · CLICK A HEX TO MUSTER</div>
+  </div>
+  <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">
+    <a class="nav-link" href="index.html">← CARD REFERENCE</a>
+    <a class="nav-link active" href="board.html">🗺 HEX BOARD</a>
+  </div>
+</div>
+
+<div class="toolbar">
+  <span class="tool-label">PLACE AGENT:</span>
+  <button class="player-btn selected" data-n="1" style="background:#c04020" onclick="selectPlayer(0)" title="Player 1"></button>
+  <button class="player-btn" data-n="2" style="background:#2060c0" onclick="selectPlayer(1)" title="Player 2"></button>
+  <button class="player-btn" data-n="3" style="background:#208040" onclick="selectPlayer(2)" title="Player 3"></button>
+  <button class="player-btn" data-n="4" style="background:#8020a0" onclick="selectPlayer(3)" title="Player 4"></button>
+  <div class="sep"></div>
+  <span class="tool-label">HIGHLIGHT:</span>
+  <div id="terrain-filters" style="display:flex;flex-wrap:wrap;gap:3px;"></div>
+  <div class="sep"></div>
+  <button class="tbtn" onclick="clearAgents()">CLEAR AGENTS</button>
+  <button class="tbtn" onclick="clearFilter()">CLEAR FILTER</button>
+</div>
+
+<div class="main-layout">
+  <div class="board-wrap">
+    <svg id="board-svg"></svg>
+  </div>
+  <div class="info-panel" id="info-panel">
+    <div class="ip-empty">
+      Click any hex to see terrain info,<br>evolutionary drivers, and<br>muster chains.<br><br>
+      Place agent tokens by selecting<br>a player color and clicking hexes.
+    </div>
+  </div>
+</div>
+
+<div class="legend" id="legend"></div>
+
+<script>
+// ════════════════════════════════════════════════════
+// BOARD LAYOUT
+// Codes: V=Volcanic Vent  P=Primordial Swamp  S=Shallow Sea
+//        O=Open Ocean     I=Ice Age           A=Savannah
+//        F=Canopy Forest  D=Desert            C=Deep Cave
+//        G=GM Lab         null=no hex
+// ════════════════════════════════════════════════════
+const BOARD = [
+  //  0     1     2     3     4     5     6     7     8     9    10    11
+  [null, null,  'V',  'P',  'S',  'A',  'I',  'F',  'D',  'S', null, null],  // row 0
+  [null,  'P',  'D',  'O',  'G',  'F',  'A',  'S',  'C',  'G',  'I', null],  // row 1
+  [ 'V',  'S',  'O',  'A',  'I',  'C',  'D',  'F',  'P',  'A',  'D',  'C'],  // row 2
+  [ 'D',  'F',  'G',  'S',  'P',  'A',  'O',  'I',  'F',  'G',  'C',  'S'],  // row 3
+  [ 'I',  'C',  'A',  'O',  'V',  'F',  'D',  'S',  'A',  'V',  'P',  'F'],  // row 4
+  [ 'S',  'A',  'D',  'F',  'I',  'O',  'P',  'C',  'D',  'S',  'A',  'I'],  // row 5
+  [ 'C',  'V',  'P',  'A',  'D',  'S',  'F',  'I',  'O',  'D',  'A',  'S'],  // row 6
+  [null,  'O',  'S',  'G',  'F',  'A',  'C',  'D',  'G',  'I',  'P', null],  // row 7
+  [null, null,  'A',  'I',  'F',  'D',  'S',  'O',  'C',  'A', null, null],  // row 8
+];
+
+// ════════════════════════════════════════════════════
+// TERRAIN DATA
+// ════════════════════════════════════════════════════
+const T = {
+  V:{ name:'Volcanic Vent',    short:'VENT',    icon:'🌋', fill:'#7a2010', stroke:'#c04030', textFill:'#ff8060',
+      drivers:['No sunlight','Chemical mineral gradient','Extreme heat (400°C+)','Anaerobic/sulfuric chemistry'],
+      blurb:'Life without the sun. Primary unlock node for the earliest metabolic strategies. Chemosynthesis and HGT thrive here.',
+      eat:[{r:'[Start]',g:'Chemosynthesis'},{r:'[Start]',g:'Anoxygenic Photosynthesis'},{r:'Chemosynthesis',g:'Osmotrophy'}],
+      fk: [{r:'[Start]',g:'Binary Fission'},{r:'Binary Fission',g:'Horizontal Gene Transfer'},{r:'HGT',g:'Spore / Cryptobiosis'}] },
+
+  P:{ name:'Primordial Swamp', short:'SWAMP',   icon:'🌿', fill:'#1a4a28', stroke:'#30a060', textFill:'#70e090',
+      drivers:['Organic matter accumulation','Seasonal drying/flooding','High biological density','Shallow warm water'],
+      blurb:'The crucible of multicellularity. Where passive feeding diversified and Broadcast Spawning first evolved.',
+      eat:[{r:'Chemosynthesis',g:'Osmotrophy'},{r:'Osmotrophy',g:'Detritivory'},{r:'Detritivory',g:'Sit-and-Wait Ambush'}],
+      fk: [{r:'Binary Fission',g:'Budding'},{r:'Budding',g:'Broadcast Spawning'},{r:'Broadcast Spawning',g:'Swarm Breeding'}] },
+
+  S:{ name:'Shallow Sea',      short:'SHALLOW', icon:'🐚', fill:'#1a3a6a', stroke:'#4080c0', textFill:'#80b8ff',
+      drivers:['Sunlight penetration','Planktonic prey abundance','Tidal energy cycles','Predation pressure'],
+      blurb:'Where photosynthesis scales up, filter feeding evolves, and the Cambrian arms race begins.',
+      eat:[{r:'Anoxygenic Photo',g:'Oxygenic Photosynthesis'},{r:'Oxygenic Photo',g:'Filter Feeding'},{r:'Sit-and-Wait',g:'Venom Injection'}],
+      fk: [{r:'Binary Fission',g:'Fragmentation'},{r:'Budding',g:'Broadcast Spawning'},{r:'Sperm Competition',g:'Sequential Hermaphroditism'}] },
+
+  O:{ name:'Open Ocean',       short:'OCEAN',   icon:'🌊', fill:'#102060', stroke:'#2060c0', textFill:'#6090f0',
+      drivers:['3D pursuit space','Low food density → high mobility','Darkness below thermocline','Prey dispersal'],
+      blurb:'Rewards mobility and sensory specialization. Eliminates ambush strategies. Drives echolocation and broadcast spawning.',
+      eat:[{r:'Filter Feeding',g:'Echolocation Hunt'},{r:'Filter Feeding',g:'Kleptoparasitism'},{r:'Solo Sprint',g:'Echolocation Hunt'}],
+      fk: [{r:'Budding',g:'Broadcast Spawning'},{r:'Broadcast Spawning',g:'Semelparous'},{r:'Sperm Competition',g:'Sexual Parasitism'}] },
+
+  I:{ name:'Ice Age',          short:'ICE AGE', icon:'❄️', fill:'#2a4a6a', stroke:'#70b0d0', textFill:'#a0d8f0',
+      drivers:['Resource crash (plant die-off)','Cold-blooded prey slowdown','Fat storage premium','Endothermy selection'],
+      blurb:'Eliminates ectotherms and r-strategists. Rewards endothermy, cooperative groups, and viviparity.',
+      eat:[{r:'Bulk Grazing',g:'Pack/Cooperative Hunt'},{r:'Solo Sprint',g:'Persistence Hunt'},{r:'Pack Hunt',g:'Apex Crushing Predator'}],
+      fk: [{r:'Parthenogenesis + Spore',g:'Delayed Development'},{r:'Delayed Development',g:'Viviparity'},{r:'Viviparity',g:'Extended Parental Care'}] },
+
+  A:{ name:'Savannah',         short:'SAVNAH',  icon:'🌾', fill:'#5a3a08', stroke:'#c09020', textFill:'#f0c040',
+      drivers:['Open terrain visibility','High prey density','Arms race: grazers vs hunters','Seasonal drought/flood'],
+      blurb:'The arena where predator-prey arms races peak. Drives pack hunting, persistence hunting, sexual display, and apex predators.',
+      eat:[{r:'Oxygenic Photo',g:'Bulk Grazing'},{r:'Bulk Grazing',g:'Solo Sprint Pursuit'},{r:'Solo Sprint',g:'Persistence Hunt'},{r:'Solo Sprint + Bulk',g:'Pack/Cooperative Hunt'}],
+      fk: [{r:'Broadcast Spawning',g:'Honest Signal Display'},{r:'Display',g:'Lek Mating'},{r:'Lek',g:'Infanticide/Takeover'},{r:'Infanticide',g:'Alloparental Care'}] },
+
+  F:{ name:'Canopy Forest',    short:'FOREST',  icon:'🌲', fill:'#0e3820', stroke:'#30a050', textFill:'#60d080',
+      drivers:['Vertical niche stratification','Fruit/seed density','Complex 3D navigation','Social group formation'],
+      blurb:'Drives cognitive complexity, tool use, and social bonding. The incubator for primate intelligence and Eusociality.',
+      eat:[{r:'Oxygenic Photo',g:'Browse/Selective'},{r:'Browse',g:'Seed Predation'},{r:'Browse + Seed',g:'Tool Use'},{r:'Detritivory',g:'Trap Building'}],
+      fk: [{r:'Budding',g:'Vegetative/Clonal Spread'},{r:'Viviparity',g:'Extended Parental Care'},{r:'Swarm+Allo+Veg',g:'Eusociality'}] },
+
+  D:{ name:'Desert',           short:'DESERT',  icon:'🏜️', fill:'#5a2c08', stroke:'#c07030', textFill:'#f09040',
+      drivers:['Water scarcity','Extreme temperature swing','Prey scarce and spaced','Venom value vs large prey'],
+      blurb:'Rewards ambush, venom, and parthenogenesis. Eliminates broadcast spawners. Forces maximum energy conservation.',
+      eat:[{r:'Detritivory',g:'Sit-and-Wait Ambush'},{r:'Sit-and-Wait',g:'Venom Injection'},{r:'Browse',g:'Seed Predation'}],
+      fk: [{r:'Fragmentation',g:'Parthenogenesis'},{r:'Parthen + Spore',g:'Delayed Development'},{r:'Delayed Dev',g:'Viviparity'}] },
+
+  C:{ name:'Deep Cave',        short:'CAVE',    icon:'🕳️', fill:'#2a1840', stroke:'#7050a0', textFill:'#b080e0',
+      drivers:['Total darkness','No photosynthesis base','Sparse food input','Extreme K-selection','Isolation from gene flow'],
+      blurb:'Most K-selected environment on Earth. Animals live for centuries, reproduce slowly, develop exotic sensory systems.',
+      eat:[{r:'Chemosynthesis',g:'Electrosensory Hunt'},{r:'Sit-and-Wait',g:'Trap Building'},{r:'Osmotrophy+Trap+Tool',g:'Fungal Farming'}],
+      fk: [{r:'Fragmentation',g:'Parthenogenesis'},{r:'Alloparental',g:'Eusociality'},{r:'Sperm Competition',g:'Traumatic Insemination'}] },
+
+  G:{ name:'GM Lab',           short:'GM LAB',  icon:'⚗️', fill:'#101830', stroke:'#4080ff', textFill:'#80c0ff',
+      drivers:['Directed evolution','Artificial selection','Mutagenesis chambers','Horizontal gene transfer technology'],
+      blurb:'A laboratory for accelerated evolution. Your agent has stumbled into a genetic modification facility.',
+      special:true,
+      eat:[], fk:[] },
+};
+
+// ════════════════════════════════════════════════════
+// HEX GEOMETRY  (pointy-top)
+// ════════════════════════════════════════════════════
+const R   = 38;                       // hex circumradius
+const W   = Math.sqrt(3) * R;         // hex width  ≈ 65.8
+const H   = 2 * R;                    // hex height = 76
+const DX  = W;                        // column spacing
+const DY  = 1.5 * R;                  // row spacing = 57
+const ODD = W / 2;                    // odd-row x offset
+const PAD = R + 4;                    // board padding
+
+function hexCenter(row, col) {
+  const x = col * DX + (row % 2 === 1 ? ODD : 0) + PAD;
+  const y = row * DY + PAD;
+  return [x, y];
+}
+
+function hexPoints(cx, cy) {
+  const pts = [];
+  for (let i = 0; i < 6; i++) {
+    const a = Math.PI / 180 * (60 * i - 30);
+    pts.push(`${(cx + R * Math.cos(a)).toFixed(1)},${(cy + R * Math.sin(a)).toFixed(1)}`);
+  }
+  return pts.join(' ');
+}
+
+// ════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════
+const PLAYER_COLORS = ['#c04020','#2060c0','#208040','#8020a0'];
+const PLAYER_NAMES  = ['Player 1','Player 2','Player 3','Player 4'];
+let selectedPlayer = 0;
+let selectedHex = null;
+let filterCode = null;
+const agents = {}; // key: "r,c" → array of playerIndex
+
+// ════════════════════════════════════════════════════
+// BUILD SVG BOARD
+// ════════════════════════════════════════════════════
+function buildBoard() {
+  const svg = document.getElementById('board-svg');
+  const rows = BOARD.length;
+  const cols = BOARD[0].length;
+
+  // Calculate board dimensions
+  let maxX = 0, maxY = 0;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (BOARD[r][c] === null) continue;
+      const [x, y] = hexCenter(r, c);
+      maxX = Math.max(maxX, x + R);
+      maxY = Math.max(maxY, y + R);
+    }
+  }
+  svg.setAttribute('viewBox', `0 0 ${maxX + PAD} ${maxY + PAD}`);
+  svg.setAttribute('width',  maxX + PAD);
+  svg.setAttribute('height', maxY + PAD);
+  svg.style.maxWidth = '100%';
+
+  // Hex groups layer
+  const hexLayer = document.createElementNS('http://www.w3.org/2000/svg','g');
+  hexLayer.id = 'hex-layer';
+  svg.appendChild(hexLayer);
+
+  // Agent layer (rendered on top)
+  const agentLayer = document.createElementNS('http://www.w3.org/2000/svg','g');
+  agentLayer.id = 'agent-layer';
+  svg.appendChild(agentLayer);
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const code = BOARD[r][c];
+      if (code === null) continue;
+      const td = T[code];
+      const [cx, cy] = hexCenter(r, c);
+
+      const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+      g.classList.add('hex-group');
+      g.dataset.row = r;
+      g.dataset.col = c;
+      g.dataset.code = code;
+      g.id = `h${r}_${c}`;
+
+      // Shadow / glow for GM Lab
+      if (code === 'G') {
+        const glow = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+        glow.setAttribute('points', hexPoints(cx, cy));
+        glow.setAttribute('fill', 'none');
+        glow.setAttribute('stroke', '#60a0ff');
+        glow.setAttribute('stroke-width', '4');
+        glow.setAttribute('opacity', '0.4');
+        g.appendChild(glow);
+      }
+
+      // Hex polygon
+      const poly = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+      poly.setAttribute('points', hexPoints(cx, cy));
+      poly.setAttribute('fill', td.fill);
+      poly.setAttribute('stroke', td.stroke);
+      poly.setAttribute('stroke-width', '1.5');
+      g.appendChild(poly);
+
+      // Terrain icon
+      const icon = document.createElementNS('http://www.w3.org/2000/svg','text');
+      icon.setAttribute('x', cx);
+      icon.setAttribute('y', cy - 8);
+      icon.setAttribute('font-size', code === 'G' ? '20' : '17');
+      icon.setAttribute('class','hex-label');
+      icon.setAttribute('fill', td.textFill);
+      icon.textContent = td.icon;
+      g.appendChild(icon);
+
+      // Terrain short name
+      const label = document.createElementNS('http://www.w3.org/2000/svg','text');
+      label.setAttribute('x', cx);
+      label.setAttribute('y', cy + 14);
+      label.setAttribute('font-size', '7');
+      label.setAttribute('class','hex-label');
+      label.setAttribute('fill', td.textFill);
+      label.setAttribute('font-family','Courier New, monospace');
+      label.setAttribute('letter-spacing', '0.5');
+      label.textContent = td.short;
+      g.appendChild(label);
+
+      // GM Lab pulse ring
+      if (code === 'G') {
+        const ring = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        ring.setAttribute('cx', cx); ring.setAttribute('cy', cy);
+        ring.setAttribute('r', R - 6);
+        ring.setAttribute('fill', 'none');
+        ring.setAttribute('stroke', '#40a0ff');
+        ring.setAttribute('stroke-width', '1');
+        ring.setAttribute('stroke-dasharray', '4 3');
+        ring.setAttribute('opacity', '0.6');
+        g.appendChild(ring);
+      }
+
+      g.addEventListener('click', () => onHexClick(r, c, code, cx, cy));
+      hexLayer.appendChild(g);
+    }
+  }
+}
+
+// ════════════════════════════════════════════════════
+// INTERACTION
+// ════════════════════════════════════════════════════
+function onHexClick(r, c, code, cx, cy) {
+  // Deselect previous
+  if (selectedHex) {
+    document.getElementById(`h${selectedHex[0]}_${selectedHex[1]}`)?.classList.remove('selected');
+  }
+  selectedHex = [r, c];
+  document.getElementById(`h${r}_${c}`).classList.add('selected');
+
+  // Place agent
+  const key = `${r},${c}`;
+  if (!agents[key]) agents[key] = [];
+  const idx = agents[key].indexOf(selectedPlayer);
+  if (idx >= 0) {
+    agents[key].splice(idx, 1); // toggle off
+    if (agents[key].length === 0) delete agents[key];
+  } else {
+    agents[key].push(selectedPlayer);
+  }
+  renderAgents();
+
+  // Update info panel
+  showInfo(r, c, code);
+}
+
+function renderAgents() {
+  const layer = document.getElementById('agent-layer');
+  layer.innerHTML = '';
+  Object.entries(agents).forEach(([key, playerList]) => {
+    const [r, c] = key.split(',').map(Number);
+    const [cx, cy] = hexCenter(r, c);
+    const n = playerList.length;
+    playerList.forEach((pIdx, i) => {
+      const offset = n > 1 ? (i - (n-1)/2) * 12 : 0;
+      const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      circle.setAttribute('cx', cx + offset);
+      circle.setAttribute('cy', cy - 2);
+      circle.setAttribute('r', 9);
+      circle.setAttribute('fill', PLAYER_COLORS[pIdx]);
+      circle.setAttribute('stroke', '#fff');
+      circle.setAttribute('stroke-width', '1.5');
+      circle.setAttribute('opacity', '0.92');
+      layer.appendChild(circle);
+
+      const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
+      txt.setAttribute('x', cx + offset);
+      txt.setAttribute('y', cy + 2);
+      txt.setAttribute('text-anchor','middle');
+      txt.setAttribute('dominant-baseline','middle');
+      txt.setAttribute('font-size','9');
+      txt.setAttribute('font-weight','bold');
+      txt.setAttribute('font-family','Courier New');
+      txt.setAttribute('fill','#fff');
+      txt.textContent = pIdx + 1;
+      layer.appendChild(txt);
+    });
+  });
+}
+
+function showInfo(r, c, code) {
+  const td = T[code];
+  const panel = document.getElementById('info-panel');
+  let html = '';
+
+  html += `<div class="ip-section">
+    <span class="ip-icon">${td.icon}</span>
+    <div class="ip-terrain-name" style="color:${td.textFill}">${td.name}</div>
+    <div style="font-size:9px;color:var(--muted);margin-bottom:8px">HEX R${r}·C${c}</div>
+    <div class="ip-blurb">${td.blurb}</div>
+  </div>`;
+
+  if (td.special) {
+    // GM LAB
+    html += `<div class="gm-box">
+      <div class="gm-title">⚗️ GM LAB MECHANICS</div>
+      <div class="gm-rule">
+        Your agent has entered a genetic modification laboratory.<br><br>
+        <strong style="color:#80c8ff">Roll 1d6:</strong><br>
+        🎲 <strong style="color:#40f080">Roll 6</strong> — Muster ANY strategy from either deck. No prerequisites. No terrain requirement.<br>
+        🎲 <strong style="color:#f0c060">Roll 1–5</strong> — Draw 1 card normally. Still need prerequisites.
+      </div>
+      <button class="dice-btn" onclick="rollDice()">🎲 ROLL THE DICE</button>
+      <div class="dice-result" id="dice-result"></div>
+      <div id="dice-outcome"></div>
+    </div>`;
+  } else {
+    // Evolutionary drivers
+    html += `<div class="ip-section"><h4>EVOLUTIONARY DRIVERS</h4>
+      ${td.drivers.map(d=>`<span class="driver-tag">${d}</span>`).join('')}
+    </div>`;
+  }
+
+  // EAT muster chain
+  if (td.eat.length) {
+    html += `<div class="ip-section">
+      <div class="muster-label ml-eat">🍖 EAT IT — MUSTER CHAIN</div>`;
+    td.eat.forEach(m => {
+      html += `<div class="muster-row">
+        <span class="muster-req">${m.r}</span>
+        <span class="muster-arrow">▶</span>
+        <span class="muster-gives-eat">${m.g}</span>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  // F*CK muster chain
+  if (td.fk.length) {
+    html += `<div class="ip-section">
+      <div class="muster-label ml-fk">🧬 F*CK IT — MUSTER CHAIN</div>`;
+    td.fk.forEach(m => {
+      html += `<div class="muster-row">
+        <span class="muster-req">${m.r}</span>
+        <span class="muster-arrow">▶</span>
+        <span class="muster-gives-fk">${m.g}</span>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  // Agent info
+  const key = `${r},${c}`;
+  if (agents[key]?.length) {
+    html += `<div class="ip-section"><h4>AGENTS IN THIS HEX</h4>`;
+    agents[key].forEach(p => {
+      html += `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;">
+        <div style="width:14px;height:14px;border-radius:50%;background:${PLAYER_COLORS[p]};border:1px solid #fff6;flex-shrink:0"></div>
+        <span style="font-size:11px">${PLAYER_NAMES[p]}</span>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  // Click to remove note
+  html += `<div style="color:var(--muted);font-size:10px;margin-top:12px;border-top:1px solid var(--border);padding-top:8px">
+    Click hex again to toggle your agent token. Select a player color in the toolbar to place that player's token.
+  </div>`;
+
+  panel.innerHTML = html;
+}
+
+// ════════════════════════════════════════════════════
+// DICE ROLLER (GM LAB)
+// ════════════════════════════════════════════════════
+function rollDice() {
+  const resultEl = document.getElementById('dice-result');
+  const outcomeEl = document.getElementById('dice-outcome');
+  if (!resultEl) return;
+  outcomeEl.innerHTML = '';
+
+  const FACES = ['⚀','⚁','⚂','⚃','⚄','⚅'];
+  let spins = 0;
+  const totalSpins = 18 + Math.floor(Math.random() * 10);
+  const finalRoll = Math.floor(Math.random() * 6) + 1;
+
+  const interval = setInterval(() => {
+    const face = Math.floor(Math.random() * 6);
+    resultEl.innerHTML = `<span class="dice-num">${FACES[face]}</span>`;
+    spins++;
+    if (spins >= totalSpins) {
+      clearInterval(interval);
+      resultEl.innerHTML = `<span class="dice-num" style="font-size:48px">${FACES[finalRoll-1]}</span>
+        <span style="font-size:20px;font-weight:bold;color:${finalRoll===6?'#40f080':'#f0c060'}">${finalRoll}</span>`;
+
+      if (finalRoll === 6) {
+        outcomeEl.innerHTML = `<div class="dice-outcome dice-win">
+          <strong>🧬 GENETIC BREAKTHROUGH!</strong><br>
+          You may muster ANY strategy from either deck. No prerequisites or terrain requirements. Draw immediately.
+        </div>`;
+      } else {
+        outcomeEl.innerHTML = `<div class="dice-outcome dice-miss">
+          <strong>⚗️ PARTIAL MODIFICATION</strong><br>
+          Draw 1 card from either deck normally. Prerequisite strategies and terrain requirements still apply.
+        </div>`;
+      }
+    }
+  }, 60);
+}
+
+// ════════════════════════════════════════════════════
+// TERRAIN FILTER / HIGHLIGHT
+// ════════════════════════════════════════════════════
+function setFilter(code) {
+  filterCode = (filterCode === code) ? null : code;
+  applyFilter();
+  // Update filter buttons
+  document.querySelectorAll('.terrain-filter-btn').forEach(b => {
+    b.classList.toggle('on', b.dataset.code === filterCode);
+  });
+}
+
+function clearFilter() {
+  filterCode = null;
+  applyFilter();
+  document.querySelectorAll('.terrain-filter-btn').forEach(b => b.classList.remove('on'));
+}
+
+function applyFilter() {
+  document.querySelectorAll('.hex-group').forEach(g => {
+    g.classList.remove('highlighted','dimmed');
+    if (filterCode !== null) {
+      if (g.dataset.code === filterCode) g.classList.add('highlighted');
+      else g.classList.add('dimmed');
+    }
+  });
+}
+
+// ════════════════════════════════════════════════════
+// PLAYER SELECTION
+// ════════════════════════════════════════════════════
+function selectPlayer(idx) {
+  selectedPlayer = idx;
+  document.querySelectorAll('.player-btn').forEach((b,i) => b.classList.toggle('selected', i === idx));
+}
+
+function clearAgents() {
+  Object.keys(agents).forEach(k => delete agents[k]);
+  renderAgents();
+}
+
+// ════════════════════════════════════════════════════
+// BUILD TOOLBAR FILTERS & LEGEND
+// ════════════════════════════════════════════════════
+function buildFiltersAndLegend() {
+  const filterBar = document.getElementById('terrain-filters');
+  const legend = document.getElementById('legend');
+
+  Object.entries(T).forEach(([code, td]) => {
+    // Filter button
+    const btn = document.createElement('button');
+    btn.className = 'terrain-filter-btn';
+    btn.dataset.code = code;
+    btn.style.background = td.fill;
+    btn.style.borderColor = td.stroke;
+    btn.style.color = td.textFill;
+    btn.textContent = td.icon + ' ' + td.short;
+    btn.title = td.name;
+    btn.onclick = () => setFilter(code);
+    filterBar.appendChild(btn);
+
+    // Legend item
+    const leg = document.createElement('div');
+    leg.className = 'leg-item';
+    leg.onclick = () => setFilter(code);
+    leg.innerHTML = `<div class="leg-swatch" style="background:${td.fill};border-color:${td.stroke}"></div>${td.icon} ${td.name}`;
+    leg.title = td.blurb;
+    legend.appendChild(leg);
+  });
+}
+
+// ════════════════════════════════════════════════════
+// COUNT TERRAIN HEXES (for info)
+// ════════════════════════════════════════════════════
+function countTerrains() {
+  const counts = {};
+  BOARD.forEach(row => row.forEach(code => {
+    if (code !== null) counts[code] = (counts[code]||0) + 1;
+  }));
+  return counts;
+}
+
+// ════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════
+buildBoard();
+buildFiltersAndLegend();
+
+// Show terrain counts on load
+const counts = countTerrains();
+const total = Object.values(counts).reduce((a,b)=>a+b,0);
+document.getElementById('info-panel').innerHTML = `
+  <div style="margin-bottom:12px">
+    <div style="font-size:14px;font-weight:bold;color:var(--ter-l);letter-spacing:2px;margin-bottom:6px">BOARD OVERVIEW</div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:12px">${total} hexes · 6 GM Labs · 9 terrain types</div>
+    ${Object.entries(counts).map(([code,n])=>`
+      <div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid var(--border);">
+        <div style="width:12px;height:12px;background:${T[code].fill};border:1px solid ${T[code].stroke};flex-shrink:0"></div>
+        <span style="color:${T[code].textFill};flex:1;font-size:11px">${T[code].icon} ${T[code].name}</span>
+        <span style="color:var(--muted);font-size:10px">${n}</span>
+      </div>`).join('')}
+  </div>
+  <div style="color:var(--muted);font-size:10px;margin-top:10px;line-height:1.6">
+    <strong style="color:var(--ter-l)">HOW TO USE:</strong><br>
+    • Click any hex to see its muster chains<br>
+    • Select a player color and click to place agents<br>
+    • Click an occupied hex to remove your agent<br>
+    • Use terrain filter buttons to highlight a biome<br>
+    • GM Lab hexes roll a d6 — roll 6 for a wildcard muster
+  </div>
+`;
+</script>
+</body>
+</html>
