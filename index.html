@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EAT IT | F*CK IT — Biological Strategy Board Game</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{min-height:100vh;background:#0a0a10;color:#dde0ee;font-family:'Courier New',monospace;font-size:13px;}
+
+:root{
+  --eat:#c94020;--eat-l:#ff7050;--eat-d:#1e0800;
+  --fk:#5030b0;--fk-l:#9070ff;--fk-d:#100820;
+  --cat:#102030;--cat-l:#40c0ff;--cat-b:#001428;
+  --ter:#b08020;--ter-l:#ffe060;--ter-d:#1a1000;
+  --drv:#208060;--drv-l:#50d0a0;
+  --surf:#14141e;--surf2:#1c1c2a;--border:#282840;--muted:#606080;
+  --green:#40c080;
+}
+
+/* ── MASTHEAD ── */
+.masthead{
+  background:var(--surf);border-bottom:2px solid var(--border);
+  padding:18px 24px 14px;display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;
+}
+.game-title{font-size:32px;font-weight:bold;letter-spacing:4px;line-height:1;}
+.eat-w{color:var(--eat-l);} .fk-w{color:var(--fk-l);} .sep{color:var(--muted);}
+.tagline{font-size:11px;color:var(--muted);letter-spacing:2px;margin-top:4px;}
+.deck-counts{margin-left:auto;font-size:11px;line-height:1.8;color:var(--muted);}
+.deck-counts span{margin-right:12px;}
+
+/* ── NAV ── */
+.nav{
+  display:flex;gap:3px;padding:10px 24px;
+  background:var(--surf);border-bottom:1px solid var(--border);flex-wrap:wrap;
+}
+.nav-btn{
+  padding:6px 18px;border:1px solid var(--border);background:transparent;
+  cursor:pointer;color:var(--muted);font-family:inherit;font-size:12px;
+  letter-spacing:1px;transition:all .12s;
+}
+.nav-btn:hover{color:#dde0ee;border-color:#4040a0;}
+.nav-btn.ae{background:var(--eat-d);border-color:var(--eat);color:var(--eat-l);}
+.nav-btn.af{background:var(--fk-d);border-color:var(--fk);color:var(--fk-l);}
+.nav-btn.ac{background:var(--cat-b);border-color:var(--cat-l);color:var(--cat-l);}
+.nav-btn.ag{background:#0a1a0a;border-color:var(--green);color:var(--green);}
+.nav-btn.am{background:#1a1000;border-color:var(--ter);color:var(--ter-l);}
+
+.main{padding:20px 24px;max-width:1400px;margin:0 auto;}
+.panel{display:none;}
+.panel.active{display:block;}
+
+/* ── FILTER BAR ── */
+.fbar{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:16px;}
+.fp{padding:4px 12px;border:1px solid var(--border);cursor:pointer;font-size:10px;color:var(--muted);letter-spacing:1px;transition:all .12s;}
+.fp:hover{color:#dde0ee;border-color:#4040a0;}
+.fp.on-eat{background:var(--eat-d);border-color:var(--eat);color:var(--eat-l);}
+.fp.on-fk{background:var(--fk-d);border-color:var(--fk);color:var(--fk-l);}
+.fp.on-cat{background:var(--cat-b);border-color:var(--cat-l);color:var(--cat-l);}
+.fp.on-all{background:#0e0e20;border-color:#4040a0;color:#8080d0;}
+
+/* ── CARD GRID ── */
+.grid{display:flex;flex-wrap:wrap;gap:14px;}
+
+/* ── CARD ── */
+.card{
+  width:210px;flex-shrink:0;display:flex;flex-direction:column;
+  border:2px solid var(--border);cursor:pointer;
+  transition:transform .12s,box-shadow .12s;position:relative;
+  overflow:hidden;background:var(--surf2);
+}
+.card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,.7);}
+.card.eat{border-color:var(--eat);}
+.card.eat .card-header{background:var(--eat-d);border-bottom:1px solid var(--eat);}
+.card.eat .card-footer{background:var(--eat-d);border-top:1px solid var(--eat);}
+.card.eat .tier-pip{background:var(--eat);}
+.card.eat .card-name{color:var(--eat-l);}
+.card.eat .unlock-row{color:var(--eat-l);}
+.card.fk{border-color:var(--fk);}
+.card.fk .card-header{background:var(--fk-d);border-bottom:1px solid var(--fk);}
+.card.fk .card-footer{background:var(--fk-d);border-top:1px solid var(--fk);}
+.card.fk .tier-pip{background:var(--fk);}
+.card.fk .card-name{color:var(--fk-l);}
+.card.fk .unlock-row{color:var(--fk-l);}
+.card.cat{border-color:var(--cat-l);}
+.card.cat .card-header{background:var(--cat-b);border-bottom:1px solid var(--cat-l)40;}
+.card.cat .card-footer{background:var(--cat-b);border-top:1px solid var(--cat-l)40;}
+.card.cat .tier-pip{background:var(--cat-l);color:#000;font-size:8px;}
+.card.cat .card-name{color:var(--cat-l);}
+
+.card-header{padding:8px 9px 6px;display:flex;align-items:flex-start;gap:6px;}
+.card-name{font-weight:bold;font-size:11px;flex:1;line-height:1.3;}
+.tier-pip{width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;flex-shrink:0;color:#fff;}
+
+.art-zone{height:76px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;background:var(--surf);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.art-bg{position:absolute;inset:0;opacity:.12;font-size:80px;display:flex;align-items:center;justify-content:center;line-height:1;}
+.art-label{position:relative;font-size:9px;letter-spacing:1px;color:var(--muted);text-align:center;padding:4px 8px;}
+.art-examples{font-size:9px;color:var(--muted);text-align:center;font-style:italic;padding:0 8px 4px;line-height:1.3;}
+
+.card-body{padding:7px 9px;flex:1;display:flex;flex-direction:column;gap:5px;}
+.row-hdr{font-size:8px;letter-spacing:1.5px;color:var(--muted);margin-bottom:2px;}
+.tag-row{display:flex;flex-wrap:wrap;gap:2px;}
+.tag{font-size:8px;padding:1px 5px;border:1px solid;}
+.tag-drv{border-color:var(--drv);color:var(--drv-l);background:#081410;}
+.tag-ter{border-color:var(--ter);color:var(--ter-l);background:var(--ter-d);}
+.tag-req{border-color:#3050b0;color:#8090d0;background:#08101e;}
+.tag-cat-good{border-color:#40c040;color:#80f080;background:#081408;}
+.tag-cat-bad{border-color:#c04040;color:#f08080;background:#140808;}
+
+.unlock-zone{padding:0 9px 6px;}
+.unlock-hdr{font-size:8px;letter-spacing:1.5px;color:var(--muted);margin-bottom:3px;}
+.unlock-row{font-size:9px;padding:2px 5px;border:1px solid;margin-bottom:2px;border-color:currentColor;opacity:.7;}
+.unlock-where{color:var(--muted);}
+
+.stats-strip{display:flex;gap:2px;flex-wrap:wrap;padding:4px 9px;}
+.st{font-size:9px;padding:1px 5px;border:1px solid;}
+.st-off{border-color:var(--eat);color:var(--eat-l);background:var(--eat-d);}
+.st-def{border-color:#3060c0;color:#8aacff;background:#080e28;}
+.st-rep{border-color:var(--fk-l);color:var(--fk-l);background:var(--fk-d);}
+.st-ada{border-color:var(--drv);color:var(--drv-l);background:#060e0c;}
+.st-mov{border-color:var(--ter);color:var(--ter-l);background:var(--ter-d);}
+.st-neg{border-color:#803030;color:#e08080;background:#120606;}
+
+.card-footer{padding:5px 9px;}
+.flavor{font-size:8px;color:var(--muted);line-height:1.35;font-style:italic;}
+
+/* ── CAT CARD ── */
+.sev-bar{display:flex;gap:2px;align-items:center;}
+.sev-pip{width:10px;height:10px;border:1px solid var(--muted);}
+.sev-pip.on{background:var(--cat-l);border-color:var(--cat-l);}
+
+/* ── MODAL ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;}
+.overlay.open{display:flex;}
+.modal{background:var(--surf2);border:2px solid var(--border);width:100%;max-width:560px;max-height:90vh;overflow-y:auto;position:relative;}
+.modal-close{position:absolute;top:8px;right:12px;background:transparent;border:none;color:var(--muted);font-size:20px;cursor:pointer;font-family:inherit;line-height:1;z-index:10;}
+.modal-close:hover{color:#fff;}
+.modal-body{padding:18px;}
+.modal-name{font-size:22px;font-weight:bold;margin-bottom:4px;letter-spacing:2px;}
+.modal-sub{font-size:11px;color:var(--muted);margin-bottom:16px;font-style:italic;}
+.msec{margin-bottom:14px;}
+.msec h4{font-size:9px;letter-spacing:2px;color:var(--muted);border-bottom:1px solid var(--border);padding-bottom:4px;margin-bottom:7px;}
+.msec p{font-size:12px;color:#c0c8d8;line-height:1.55;}
+.driver-full{display:inline-block;padding:3px 9px;margin:2px;border:1px solid var(--drv);background:#081410;color:var(--drv-l);font-size:10px;}
+.muster-chain{background:var(--surf);border:1px solid var(--border);padding:10px;}
+.mc-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px;}
+.mc-row:last-child{border:none;}
+.mc-terrain{color:var(--ter-l);width:120px;font-size:10px;flex-shrink:0;}
+.mc-req{color:#8090d0;flex:1;}
+.mc-arrow{color:var(--muted);}
+.mc-gives{font-weight:bold;}
+.big-tag{display:inline-block;padding:3px 9px;margin:2px;font-size:10px;border:1px solid;}
+
+/* ── GAME RULES PANEL ── */
+.rules-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-bottom:24px;}
+.rules-card{background:var(--surf2);border:1px solid var(--border);padding:16px;}
+.rules-card h3{font-size:10px;letter-spacing:2px;color:var(--green);border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:12px;}
+.mechanic{border-left:2px solid var(--border);padding:6px 10px;margin-bottom:9px;}
+.mechanic-name{color:var(--ter-l);font-size:10px;font-weight:bold;margin-bottom:3px;letter-spacing:1px;}
+.mechanic-desc{color:var(--muted);font-size:11px;line-height:1.5;}
+.win-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:8px;}
+.win-card{background:var(--surf);border:1px solid var(--border);padding:12px;}
+.win-name{color:var(--eat-l);font-size:10px;font-weight:bold;margin-bottom:6px;letter-spacing:1px;}
+.agent-card{display:flex;gap:12px;background:var(--surf);border:1px solid var(--border);padding:12px;margin-bottom:10px;}
+.agent-icon{font-size:30px;line-height:1;}
+.agent-name{font-weight:bold;margin-bottom:5px;font-size:12px;}
+.stat-bar{display:flex;align-items:center;gap:6px;margin:2px 0;}
+.stat-label{width:65px;font-size:10px;color:var(--muted);}
+.bar-track{flex:1;height:6px;background:var(--surf2);border:1px solid var(--border);}
+.bar-fill{height:100%;}
+
+/* ── MUSTER TABLE PANEL ── */
+.terrain-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;}
+.tcard{background:var(--surf2);border:1px solid var(--border);padding:14px;}
+.tcard-name{font-size:14px;font-weight:bold;margin-bottom:6px;}
+.tcard-blurb{font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5;}
+.muster-label{font-size:9px;letter-spacing:2px;margin-bottom:5px;}
+.muster-label.eat{color:var(--eat-l);}
+.muster-label.fk{color:var(--fk-l);}
+.muster-row{display:flex;align-items:flex-start;gap:6px;padding:5px 7px;margin-bottom:3px;background:#0d0d18;border:1px solid var(--border);font-size:11px;}
+.muster-req{color:#9aacff;flex:1;}
+.muster-gives{color:#70d0a0;flex:1;}
+.muster-arrow{color:var(--muted);flex-shrink:0;}
+
+/* ── EVO TREE ── */
+.era{margin-bottom:22px;}
+.era-title{font-size:11px;letter-spacing:2px;color:var(--ter-l);border-bottom:1px solid var(--border);padding-bottom:4px;margin-bottom:10px;display:flex;justify-content:space-between;}
+.era-time{color:var(--muted);font-size:10px;}
+.branches{display:flex;flex-wrap:wrap;gap:8px;}
+.branch{background:var(--surf2);border:1px solid var(--border);padding:10px 14px;min-width:180px;flex:1;}
+.branch-name{font-size:12px;font-weight:bold;color:var(--text);margin-bottom:5px;}
+.branch-eat{color:var(--eat-l);font-size:10px;margin-bottom:3px;}
+.branch-fk{color:var(--fk-l);font-size:10px;}
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div>
+    <div class="game-title"><span class="eat-w">EAT IT</span> <span class="sep">|</span> <span class="fk-w">F*CK IT</span></div>
+    <div class="tagline">A BIOLOGICAL STRATEGY BOARD GAME · 3.8 BILLION YEARS OF EVOLUTION · TITAN-STYLE MECHANICS</div>
+  </div>
+  <div class="deck-counts">
+    <span style="color:var(--eat-l)">■ 21 EAT IT cards</span>
+    <span style="color:var(--fk-l)">■ 20 F*CK IT cards</span>
+    <span style="color:var(--cat-l)">■ 20 CATASTROPHE cards</span><br>
+    <span style="color:var(--muted)">Click any card for full rules, muster chain &amp; flavor text</span>
+  </div>
+</div>
+
+<div class="nav">
+  <button class="nav-btn ae" onclick="showTab('eat')">🍖 EAT IT DECK</button>
+  <button class="nav-btn" onclick="showTab('fk')">🧬 F*CK IT DECK</button>
+  <button class="nav-btn" onclick="showTab('cat')">☄️ CATASTROPHE DECK</button>
+  <button class="nav-btn" onclick="showTab('muster')">🗺 TERRAIN MUSTER TABLE</button>
+  <button class="nav-btn" onclick="showTab('rules')">📋 GAME RULES</button>
+  <button class="nav-btn" onclick="showTab('evo')">🌍 EVOLUTIONARY TREE</button>
+</div>
+
+<div class="main">
+
+<!-- EAT PANEL -->
+<div id="panel-eat" class="panel active">
+  <div class="fbar" id="eat-fbar"></div>
+  <div class="grid" id="eat-grid"></div>
+</div>
+
+<!-- FK PANEL -->
+<div id="panel-fk" class="panel">
+  <div class="fbar" id="fk-fbar"></div>
+  <div class="grid" id="fk-grid"></div>
+</div>
+
+<!-- CAT PANEL -->
+<div id="panel-cat" class="panel">
+  <div style="color:var(--muted);font-size:11px;margin-bottom:14px;padding:10px 12px;border-left:2px solid var(--cat-l);background:var(--cat-b)">
+    Catastrophe cards are drawn from a separate 20-card deck shuffled at game start. One is revealed each time a player completes a full lap of the board.
+    Effects are global — all agents must respond. <strong style="color:var(--cat-l)">ADAPT stat determines survival rolls.</strong>
+    Two cards are positive events (green border). Five are Severity 4–5 and can end the game.
+  </div>
+  <div class="grid" id="cat-grid"></div>
+</div>
+
+<!-- MUSTER PANEL -->
+<div id="panel-muster" class="panel">
+  <div style="color:var(--muted);font-size:11px;margin-bottom:14px;padding:10px 12px;border-left:2px solid var(--ter-l)">
+    Muster logic: <strong style="color:var(--ter-l)">TERRAIN + PREREQUISITE STRATEGY → UNLOCKS new strategy.</strong>
+    Like Titan's creature recruiting, you can only acquire a strategy if you're in the right terrain and already hold the prerequisite.
+    Some strategies require cross-deck co-requisites (Pack Hunt needs a social F*CK strategy).
+  </div>
+  <div class="terrain-grid" id="terrain-cards"></div>
+</div>
+
+<!-- RULES PANEL -->
+<div id="panel-rules" class="panel">
+  <div class="rules-grid">
+    <div class="rules-card">
+      <h3>STARTING SETUP</h3>
+      <div class="mechanic">
+        <div class="mechanic-name">AGENTS</div>
+        <div class="mechanic-desc">Each player begins with 2 identical Ancestral Prokaryote agents on the Primordial Swamp hex. All agents start with the same two strategies: Binary Fission (F*CK) and Chemosynthesis (EAT).</div>
+      </div>
+      <div class="agent-card">
+        <div class="agent-icon">🦠</div>
+        <div>
+          <div class="agent-name">ANCESTRAL PROKARYOTE</div>
+          <div style="margin-bottom:6px;font-size:10px;color:var(--muted)">Starting agent · all players identical</div>
+          <div class="stat-bar"><span class="stat-label">OFF</span><div class="bar-track"><div class="bar-fill" style="width:10%;background:var(--eat)"></div></div><span style="font-size:10px;color:var(--muted);margin-left:4px">1</span></div>
+          <div class="stat-bar"><span class="stat-label">DEF</span><div class="bar-track"><div class="bar-fill" style="width:30%;background:#4a8aff"></div></div><span style="font-size:10px;color:var(--muted);margin-left:4px">3</span></div>
+          <div class="stat-bar"><span class="stat-label">REP</span><div class="bar-track"><div class="bar-fill" style="width:80%;background:var(--fk)"></div></div><span style="font-size:10px;color:var(--muted);margin-left:4px">8</span></div>
+          <div class="stat-bar"><span class="stat-label">ADAPT</span><div class="bar-track"><div class="bar-fill" style="width:40%;background:var(--drv)"></div></div><span style="font-size:10px;color:var(--muted);margin-left:4px">4</span></div>
+          <div class="stat-bar"><span class="stat-label">MOV</span><div class="bar-track"><div class="bar-fill" style="width:10%;background:var(--ter)"></div></div><span style="font-size:10px;color:var(--muted);margin-left:4px">1</span></div>
+        </div>
+      </div>
+      <div class="mechanic">
+        <div class="mechanic-name">DECKS</div>
+        <div class="mechanic-desc">Three decks: EAT IT (21 cards), F*CK IT (20 cards), CATASTROPHE (20 cards). Shuffle each separately. Catastrophe deck is face-down in center of board.</div>
+      </div>
+    </div>
+
+    <div class="rules-card">
+      <h3>TURN STRUCTURE</h3>
+      <div class="mechanic">
+        <div class="mechanic-name">1 · MOVE</div>
+        <div class="mechanic-desc">Move each agent up to MOV hexes. Entering a new terrain hex triggers a terrain event.</div>
+      </div>
+      <div class="mechanic">
+        <div class="mechanic-name">2 · TERRAIN EVENT</div>
+        <div class="mechanic-desc">Draw from EAT IT or F*CK IT deck based on the hex's icon. If you meet the terrain + prerequisite requirements, you may keep the card. Otherwise discard.</div>
+      </div>
+      <div class="mechanic">
+        <div class="mechanic-name">3 · OPTIONAL: CHALLENGE</div>
+        <div class="mechanic-desc">May attack an opponent's agent in the same hex. Compare OFF vs DEF. Loser loses 1 strategy card (attacker's choice).</div>
+      </div>
+      <div class="mechanic">
+        <div class="mechanic-name">4 · REPRODUCE</div>
+        <div class="mechanic-desc">Spend REP points to split agent into two. New agent inherits 1 strategy card from parent. Requires holding at least 1 F*CK IT strategy.</div>
+      </div>
+      <div class="mechanic">
+        <div class="mechanic-name">5 · CATASTROPHE CHECK</div>
+        <div class="mechanic-desc">If any player completed a full lap this turn, flip the top Catastrophe card. All agents respond simultaneously.</div>
+      </div>
+    </div>
+
+    <div class="rules-card">
+      <h3>STRATEGY RULES</h3>
+      <div class="mechanic">
+        <div class="mechanic-name">HOLDING LIMIT</div>
+        <div class="mechanic-desc">Each agent may hold max 4 strategy cards total (EAT + F*CK combined). Must discard down if over limit.</div>
+      </div>
+      <div class="mechanic">
+        <div class="mechanic-name">SPECIATION</div>
+        <div class="mechanic-desc">After surviving 3 terrain events, an agent "speciates" — draw 2 upgrade options from the relevant tier deck. Choose 1. The replaced card goes to discard.</div>
+      </div>
+      <div class="mechanic">
+        <div class="mechanic-name">MUSTER RULE</div>
+        <div class="mechanic-desc">You can only acquire a strategy card if: (a) your agent is in the required terrain hex, AND (b) you already hold all listed prerequisite strategies.</div>
+      </div>
+      <div class="mechanic">
+        <div class="mechanic-name">CROSS-DECK CO-REQUISITES</div>
+        <div class="mechanic-desc">Some strategies require cards from the other deck. Pack/Cooperative Hunt (EAT) requires a social F*CK strategy. Eusociality (F*CK) requires Pack Hunt (EAT). These dependencies model real evolutionary constraints.</div>
+      </div>
+      <div class="mechanic">
+        <div class="mechanic-name">CATASTROPHE SURVIVAL ROLLS</div>
+        <div class="mechanic-desc">Roll 1d6 + ADAPT modifier. Result determines survival. Certain strategy cards grant immunity or bonuses. Spore/Cryptobiosis grants one-time full immunity per game.</div>
+      </div>
+    </div>
+
+    <div class="rules-card">
+      <h3>WIN CONDITIONS</h3>
+      <div class="win-grid">
+        <div class="win-card">
+          <div class="win-name">DOMINATION</div>
+          <div style="font-size:11px;color:var(--muted)">Control 6+ hexes with agents simultaneously. Requires strong MOV and REP.</div>
+        </div>
+        <div class="win-card">
+          <div class="win-name" style="color:var(--eat-l)">APEX EXTINCTION</div>
+          <div style="font-size:11px;color:var(--muted)">Eliminate all other players' agents in direct combat. Requires high OFF and strategic terrain control.</div>
+        </div>
+        <div class="win-card">
+          <div class="win-name" style="color:var(--fk-l)">SINGULARITY</div>
+          <div style="font-size:11px;color:var(--muted)">Collect one Tier 4+ card from each deck simultaneously. Represents full adaptive complexity.</div>
+        </div>
+      </div>
+      <div style="margin-top:14px">
+        <div class="mechanic">
+          <div class="mechanic-name">ELIMINATION</div>
+          <div class="mechanic-desc">A player is eliminated when their last agent is destroyed in combat OR fails a Catastrophe survival roll with no agents remaining. Eliminated players may spectate and assist others as a "Ghost Lineage" (advisory only).</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rules-card">
+      <h3>STAT REFERENCE</h3>
+      <div class="mechanic">
+        <div class="mechanic-name"><span class="st st-off">OFF</span> &nbsp;OFFENSE</div>
+        <div class="mechanic-desc">Attack power in direct combat. Also used for some terrain challenge rolls.</div>
+      </div>
+      <div class="mechanic">
+        <div class="mechanic-name"><span class="st st-def">DEF</span> &nbsp;DEFENSE</div>
+        <div class="mechanic-desc">Resistance to attack and environmental hazards. High DEF slows but protects.</div>
+      </div>
+      <div class="mechanic">
+        <div class="mechanic-name"><span class="st st-rep">REP</span> &nbsp;REPRODUCTION</div>
+        <div class="mechanic-desc">Speed and volume of reproduction. Spend REP to produce offspring agents.</div>
+      </div>
+      <div class="mechanic">
+        <div class="mechanic-name"><span class="st st-ada">ADA</span> &nbsp;ADAPT</div>
+        <div class="mechanic-desc">Survival modifier for Catastrophe rolls. High ADAPT = survive extinction events. The most important stat for long games.</div>
+      </div>
+      <div class="mechanic">
+        <div class="mechanic-name"><span class="st st-mov">MOV</span> &nbsp;MOVEMENT</div>
+        <div class="mechanic-desc">Hexes traversable per turn. Determines how fast agents can muster new strategies or escape threats.</div>
+      </div>
+    </div>
+
+    <div class="rules-card">
+      <h3>SPECIAL TOKENS</h3>
+      <div class="mechanic">
+        <div class="mechanic-name">APEX TOKEN</div>
+        <div class="mechanic-desc">Awarded to any agent holding the Apex Crushing Predator card. All other agents must spend +1 MOV to enter or exit that hex. Cannot be eliminated except by Severity 4+ Catastrophe cards.</div>
+      </div>
+      <div class="mechanic">
+        <div class="mechanic-name">VENOM TOKEN</div>
+        <div class="mechanic-desc">Placed on a target agent by a Venom Injection holder. Each round the token remains, target loses 1 OFF. Target must spend 1 action in a safe hex to remove it.</div>
+      </div>
+      <div class="mechanic">
+        <div class="mechanic-name">TRAP TOKEN</div>
+        <div class="mechanic-desc">Placed on an adjacent hex by a Trap Building holder. Any agent entering that hex without MOV+4 or higher takes OFF-2 this round.</div>
+      </div>
+      <div class="mechanic">
+        <div class="mechanic-name">INVASIVE APEX TOKEN</div>
+        <div class="mechanic-desc">Spawned by the Apex Invader Catastrophe card. Appears in all hexes. Requires combined OFF 12+ from multiple players in same hex to remove.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EVO TREE PANEL -->
+<div id="panel-evo" class="panel">
+  <div id="evo-content"></div>
+</div>
+
+</div><!-- /main -->
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <button class="modal-close" onclick="document.getElementById('overlay').classList.remove('open')">✕</button>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════
+// EAT DATA
+// ════════════════════════════════════════════════════
+const EAT_CARDS=[
+ {id:'chemosynthesis',tier:0,name:'Chemosynthesis',art:'⚗️',
+  organisms:'Hydrothermal bacteria, nitrifying bacteria, sulfur oxidizers',
+  drivers:['No sunlight','Chemical mineral gradient','Anaerobic environment','Volcanic mineral flux'],
+  terrain:['VOLCANIC VENT','DEEP CAVE'],requires:[],
+  unlocks:[{what:'Osmotrophy',where:'ANY'},{what:'Extremophile Absorption',where:'VOLCANIC VENT'},{what:'Electrosensory Hunt',where:'DEEP CAVE'}],
+  stats:['ADA+5','DEF+4'],
+  mechanic:'Starting strategy. Available to all players in turn 1 if they enter a VOLCANIC VENT or DEEP CAVE hex.',
+  flavor:'First metabolic strategy on Earth — entire food webs run on sulfur and mineral gradients, no sunlight required.',
+  muster_note:'MUSTER: In VOLCANIC VENT or DEEP CAVE, any agent may draw this card free on their first terrain event.'},
+
+ {id:'anoxygenic_photo',tier:0,name:'Anoxygenic Photosynthesis',art:'☀️',
+  organisms:'Purple sulfur bacteria, green sulfur bacteria, heliobacteria',
+  drivers:['Sunlight at surface','Pre-oxygen atmosphere','H₂S chemical gradient','Competition for mineral energy'],
+  terrain:['VOLCANIC VENT','SHALLOW SEA'],requires:[],
+  unlocks:[{what:'Oxygenic Photosynthesis',where:'SHALLOW SEA'}],
+  stats:['ADA+2','DEF+2'],
+  mechanic:'Gateway to Oxygenic Photosynthesis. Only available in sunlit terrain adjacent to chemical gradient zones.',
+  flavor:'Ancient light-harvesting without splitting water. No oxygen produced — the atmosphere was still a poison-free zone.',
+  muster_note:'MUSTER: In SHALLOW SEA + holds no EAT strategy → draw this card free.'},
+
+ {id:'oxygenic_photo',tier:0,name:'Oxygenic Photosynthesis',art:'🌿',
+  organisms:'Cyanobacteria, all algae, all land plants',
+  drivers:['Sunlight abundance','CO₂ buildup','H₂O everywhere','H₂S supplies depleted'],
+  terrain:['SHALLOW SEA','PRIMORDIAL SWAMP','CANOPY FOREST'],requires:['Anoxygenic Photosynthesis'],
+  unlocks:[{what:'Filter Feeding',where:'OPEN OCEAN'},{what:'Bulk Grazing',where:'SAVANNAH'},{what:'Browse/Selective',where:'CANOPY FOREST'}],
+  stats:['ADA+4','DEF+3','REP+3'],
+  mechanic:'Terraform bonus: when this card is played, all SHALLOW SEA hexes gain +1 REP this round (oxygen pulse).',
+  flavor:'Oxygen waste was the first mass extinction — anaerobes had nowhere to go. Life invented poison as a byproduct.',
+  muster_note:'MUSTER: SHALLOW SEA + Anoxygenic Photo → draw this card.'},
+
+ {id:'osmotrophy',tier:0,name:'Osmotrophy / Absorption',art:'🍄',
+  organisms:'Fungi, marine bacteria, decomposers, mycelial networks',
+  drivers:['Organic matter accumulation','Sessile body plan','Exoenzyme chemistry','Competition avoidance'],
+  terrain:['PRIMORDIAL SWAMP','CANOPY FOREST','ANY'],requires:['Chemosynthesis'],
+  unlocks:[{what:'Parasitism',where:'ANY'},{what:'Fungal Farming',where:'DEEP CAVE'},{what:'Detritivory',where:'PRIMORDIAL SWAMP'}],
+  stats:['ADA+3','REP+2'],
+  mechanic:'Passive income: gain +1 REP at start of each turn while in a SWAMP or FOREST hex without spending an action.',
+  flavor:'Mycelial networks are the internet of the forest — nutrient highways connecting trees that have no other way to communicate.',
+  muster_note:'MUSTER: ANY terrain + Chemosynthesis → draw this card.'},
+
+ {id:'filter_feed',tier:1,name:'Filter Feeding',art:'🐋',
+  organisms:'Baleen whales, flamingos, clams, sponges, whale sharks',
+  drivers:['Planktonic prey abundance','Energy cost minimization','Arms race evasion','Water-flow exploitation'],
+  terrain:['OPEN OCEAN','SHALLOW SEA','PRIMORDIAL SWAMP'],requires:['Oxygenic Photosynthesis'],
+  unlocks:[{what:'Echolocation Hunt',where:'OPEN OCEAN'},{what:'Kleptoparasitism',where:'OPEN OCEAN'}],
+  stats:['DEF+2','REP+3','ADA+2'],
+  mechanic:'Cannot be targeted by Ambush or Venom strategies unless the attacker is also in an OCEAN hex.',
+  flavor:'The largest animals on Earth — blue whales — eat the tiniest organisms. Size and strategy are completely decoupled.',
+  muster_note:'MUSTER: OPEN OCEAN or SHALLOW SEA + Oxygenic Photo → draw this card.'},
+
+ {id:'detritivory',tier:1,name:'Detritivory / Scavenging',art:'🦅',
+  organisms:'Vultures, earthworms, dung beetles, hagfish, isopods',
+  drivers:['Dead biomass surplus','Predator competition avoidance','Acid-resistance evolution','Chemoreception refinement'],
+  terrain:['PRIMORDIAL SWAMP','SAVANNAH','CANOPY FOREST'],requires:['Osmotrophy'],
+  unlocks:[{what:'Fungal Farming',where:'DEEP CAVE'},{what:'Kleptoparasitism',where:'SAVANNAH'}],
+  stats:['DEF+3','ADA+3'],
+  mechanic:'When any other agent is eliminated in this hex, this agent gains +2 REP (scavenges the kill).',
+  flavor:'Vulture stomach acid destroys anthrax and botulinum toxin. Scavengers are disease-control infrastructure.',
+  muster_note:'MUSTER: SAVANNAH or SWAMP + Osmotrophy → draw this card.'},
+
+ {id:'parasitism_eat',tier:1,name:'Parasitism (Feeding)',art:'🪱',
+  organisms:'Tapeworms, Plasmodium, leeches, dodder vine, Rafflesia',
+  drivers:['Host abundance','Immune evasion evolution','Arms race cost avoidance','Host metabolic exploitation'],
+  terrain:['ANY'],requires:['Osmotrophy'],
+  unlocks:[{what:'Kleptoparasitism',where:'SAVANNAH'},{what:'Reproductive Manipulation',where:'ANY'}],
+  stats:['OFF+2','ADA+4','DEF+3'],
+  mechanic:'Once per turn, may attach to one opponent\'s agent: steal 1 REP per turn from that agent. Detach any time.',
+  flavor:'Parasites outnumber free-living species 4:1. They run the world. Everything else is just their delivery vehicle.',
+  muster_note:'MUSTER: ANY terrain + Osmotrophy → draw this card.'},
+
+ {id:'bulk_graze',tier:2,name:'Bulk Grazing',art:'🦕',
+  organisms:'Sauropods, cattle, wildebeest, horses, hadrosaurs',
+  drivers:['Grass/plant energy abundance','Low caloric density requires volume','Gut fermentation evolution','Body size increase arms race'],
+  terrain:['SAVANNAH','CANOPY FOREST'],requires:['Oxygenic Photosynthesis'],
+  unlocks:[{what:'Persistence Hunt',where:'SAVANNAH'},{what:'Pack/Cooperative Hunt',where:'SAVANNAH'},{what:'Apex Crushing Predator',where:'SAVANNAH'}],
+  stats:['DEF+4','REP+2','MOV+2'],
+  mechanic:'Herd bonus: if 2+ allied agents share a hex with this strategy, each gains DEF+1.',
+  flavor:'Sauropods needed 100,000 calories per day. Their fermentation chambers were geological features.',
+  muster_note:'MUSTER: SAVANNAH + Oxygenic Photo → draw this card.'},
+
+ {id:'browse',tier:2,name:'Browse / Selective Feeding',art:'🦒',
+  organisms:'Giraffes, elephants, brachiosaurus, koalas',
+  drivers:['Bulk grazer competition pressure','Nutrient density selection','Vertical niche partitioning','Morphological specialization'],
+  terrain:['CANOPY FOREST','SAVANNAH'],requires:['Bulk Grazing'],
+  unlocks:[{what:'Tool Use/Extraction',where:'CANOPY FOREST'},{what:'Seed Predation',where:'CANOPY FOREST'}],
+  stats:['ADA+3','MOV+3'],
+  mechanic:'In CANOPY FOREST: +2 ADA when drawing any upgrade card (selective forager finds rare opportunities).',
+  flavor:'Giraffe neck evolution took 30 million years. Koalas became so specialized for eucalyptus they can barely digest anything else.',
+  muster_note:'MUSTER: CANOPY FOREST or SAVANNAH + Bulk Grazing → draw this card.'},
+
+ {id:'sit_wait',tier:2,name:'Sit-and-Wait Ambush',art:'🐊',
+  organisms:'Crocodilians, praying mantis, chameleon, anglerfish',
+  drivers:['Prey vigilance requires stealth','Energy conservation pressure','Camouflage evolution','Explosive fast-twitch muscle'],
+  terrain:['PRIMORDIAL SWAMP','CANOPY FOREST','DESERT'],requires:['Detritivory'],
+  unlocks:[{what:'Venom Injection',where:'DESERT'},{what:'Venom Injection',where:'CANOPY FOREST'},{what:'Trap Building',where:'CANOPY FOREST'},{what:'Trap Building',where:'DEEP CAVE'}],
+  stats:['OFF+5','DEF+3','MOV-1'],
+  mechanic:'AMBUSH: if opponent enters your hex, you attack first this round regardless of initiative order.',
+  flavor:'The crocodile body plan has not changed in 200 million years. Zero evolutionary pressure means zero flaws to fix.',
+  muster_note:'MUSTER: SWAMP, FOREST, or DESERT + Detritivory → draw this card.'},
+
+ {id:'seed_pred',tier:2,name:'Seed Predation / Granivory',art:'🐦',
+  organisms:'Finches, rodents, hadrosaurs(?), parrots',
+  drivers:['Seed/fruit abundance','Competition for leaf food','Hard-food cracking selection','Caching behavior and memory'],
+  terrain:['CANOPY FOREST','SAVANNAH','DESERT'],requires:['Browse / Selective Feeding'],
+  unlocks:[{what:'Tool Use/Extraction',where:'CANOPY FOREST'}],
+  stats:['ADA+3','REP+3'],
+  mechanic:'In DESERT: may cache food — bank 1 REP token per turn in desert hex, usable anywhere later.',
+  flavor:'Beak and tooth morphology diversification driver. Galápagos finches are the textbook case of adaptive radiation.',
+  muster_note:'MUSTER: CANOPY FOREST or DESERT + Browse/Selective → draw this card.'},
+
+ {id:'venom',tier:3,name:'Venom Injection',art:'🐍',
+  organisms:'Vipers, cone snails, spiders, platypus, blue-ringed octopus',
+  drivers:['Prey larger than predator','Defense-offense dual use','Fast incapacitation imperative','Reduced mechanical injury risk'],
+  terrain:['DESERT','CANOPY FOREST','SHALLOW SEA'],requires:['Sit-and-Wait Ambush'],
+  unlocks:[{what:'Electrosensory Hunt',where:'SHALLOW SEA'}],
+  stats:['OFF+6','ADA+3','DEF+4'],
+  mechanic:'VENOM TOKEN: place on target agent. Each round it remains, target loses 1 OFF. Cure: opponent spends 1 action in safe hex.',
+  flavor:'Venom evolved independently 100+ times. Cone snail toxin can kill 700 people. One shell.',
+  muster_note:'MUSTER: DESERT or CANOPY FOREST + Sit-and-Wait Ambush → draw this card.'},
+
+ {id:'trap_build',tier:3,name:'Trap Building',art:'🕷️',
+  organisms:'Web spiders, antlion larvae, venus flytrap, sundew, trapdoor spider',
+  drivers:['Energy conservation','Small body / sessile lifestyle','High prey density','Silk / adhesive secretion evolution'],
+  terrain:['CANOPY FOREST','DEEP CAVE','PRIMORDIAL SWAMP'],requires:['Sit-and-Wait Ambush'],
+  unlocks:[{what:'Fungal Farming',where:'DEEP CAVE'}],
+  stats:['OFF+4','DEF+2','ADA+4'],
+  mechanic:'Place a TRAP token on any adjacent hex. Agents entering without MOV+4 take OFF-2 this round.',
+  flavor:'Spider silk weight-for-weight stronger than steel and more elastic than nylon. Nature engineered the best structural material.',
+  muster_note:'MUSTER: CANOPY FOREST or DEEP CAVE + Sit-and-Wait Ambush → draw this card.'},
+
+ {id:'solo_sprint',tier:3,name:'Solo Sprint Pursuit',art:'🐆',
+  organisms:'Cheetah, peregrine falcon, dragonfly, Velociraptor, sailfish',
+  drivers:['Open terrain exposure','Prey speed arms race','Fast-twitch muscle selection','Binocular depth-perception vision'],
+  terrain:['SAVANNAH','OPEN OCEAN'],requires:['Bulk Grazing'],
+  unlocks:[{what:'Persistence Hunt',where:'SAVANNAH'},{what:'Pack/Cooperative Hunt',where:'SAVANNAH'},{what:'Echolocation Hunt',where:'OPEN OCEAN'}],
+  stats:['OFF+5','MOV+6','DEF+2'],
+  mechanic:'PURSUIT: may move 2 hexes before attacking instead of 1. Gains OFF+2 when attacking a grazing-strategy agent.',
+  flavor:'Dragonfly catches prey 95% of the time mid-air. Most accurate predator on Earth.',
+  muster_note:'MUSTER: SAVANNAH + Bulk Grazing → draw this card.'},
+
+ {id:'electro',tier:3,name:'Electrosensory Hunt',art:'🦈',
+  organisms:'Sharks, electric eels, platypus, mormyrid fish, sawfish',
+  drivers:['Low-visibility turbid water','Prey hiding in substrate','Bioelectric field universality','Lateral line preadaptation'],
+  terrain:['OPEN OCEAN','SHALLOW SEA','DEEP CAVE'],requires:['Solo Sprint Pursuit','Venom Injection'],
+  unlocks:[],
+  stats:['OFF+5','ADA+4'],
+  mechanic:'Ignores all camouflage and hiding bonuses. Agents with Trap Building or Sit-and-Wait cannot use first-strike bonus against this agent.',
+  flavor:'Sharks detect 1 nanovolt per centimeter. A buried flatfish cannot hide. Prey has no evolutionary counter to this sense.',
+  muster_note:'MUSTER: OPEN OCEAN or DEEP CAVE + Solo Sprint + Venom → draw this card.'},
+
+ {id:'persistence',tier:4,name:'Persistence Hunt',art:'🐺',
+  organisms:'Wolves, African wild dogs, Homo sapiens, Harris hawks',
+  drivers:['Prey endothermy sprint-limited','Open terrain tracking possible','Sweat gland evolution','Social cognitive communication'],
+  terrain:['SAVANNAH','ICE AGE'],requires:['Solo Sprint Pursuit'],
+  unlocks:[{what:'Tool Use/Extraction',where:'SAVANNAH'}],
+  stats:['OFF+4','MOV+5','ADA+4'],
+  mechanic:'Long game: each consecutive round this agent chases same target, target loses MOV-1 (cumulative, max -3).',
+  flavor:'San Bushmen ran antelope for 8 hours in 40°C heat until the animal collapsed from heat stroke.',
+  muster_note:'MUSTER: SAVANNAH + Solo Sprint → draw this card.'},
+
+ {id:'pack_hunt',tier:4,name:'Pack / Cooperative Hunting',art:'🦁',
+  organisms:'Lions, orcas, army ants, Deinonychus, wolves, dolphins',
+  drivers:['Prey larger than any individual','Social group selection','Role specialization evolution','Vocal and chemical communication'],
+  terrain:['SAVANNAH','OPEN OCEAN','ICE AGE'],requires:['Solo Sprint Pursuit','Bulk Grazing'],
+  unlocks:[{what:'Apex Crushing Predator',where:'SAVANNAH'}],
+  stats:['OFF+7','MOV+4','ADA+5'],
+  mechanic:'CO-REQ: must also hold Alloparental Care or Eusocial (F*CK deck). Each allied agent in same hex adds +1 to this agent\'s OFF.',
+  flavor:'Deinonychus hunted in packs. Orcas have cultural hunting techniques passed between generations.',
+  muster_note:'MUSTER: SAVANNAH + Solo Sprint + Bulk Grazing → draw this card. Requires F*CK social strategy.'},
+
+ {id:'echolocation',tier:4,name:'Echolocation Hunt',art:'🦇',
+  organisms:'Bats, dolphins, sperm whales, oilbirds, cave swiftlets',
+  drivers:['Darkness or turbid water','Aerial or aquatic fast prey','Laryngeal hypertrophy mutation','Visual niche competition'],
+  terrain:['DEEP CAVE','OPEN OCEAN'],requires:['Filter Feeding','Solo Sprint Pursuit'],
+  unlocks:[],
+  stats:['OFF+5','MOV+5','ADA+4'],
+  mechanic:'Can enter DEEP CAVE hexes without terrain penalty. Ignores all darkness-based movement restrictions.',
+  flavor:'Bats evolved echolocation twice independently. Dolphins can echolocate through 12 inches of solid material.',
+  muster_note:'MUSTER: DEEP CAVE or OPEN OCEAN + Filter Feeding + Solo Sprint → draw this card.'},
+
+ {id:'kleptoparasitism',tier:4,name:'Kleptoparasitism',art:'🦴',
+  organisms:'Frigatebirds, hyenas (vs lions), skuas, bald eagles (vs osprey)',
+  drivers:['Surplus kills by other predators','Own-hunt energetic inferiority','Speed / mob intimidation','Social dominance exploitation'],
+  terrain:['SAVANNAH','OPEN OCEAN'],requires:['Parasitism (Feeding)','Detritivory'],
+  unlocks:[],
+  stats:['OFF+5','MOV+5','DEF+2'],
+  mechanic:'After any combat in adjacent hex, may move in and take the winner\'s REP gain for that round instead.',
+  flavor:'Hyenas kill 70% of their own food. Their theft reputation comes from lions stealing from them, not the reverse.',
+  muster_note:'MUSTER: SAVANNAH + Parasitism + Detritivory → draw this card.'},
+
+ {id:'tool_use',tier:4,name:'Tool Use / Extraction',art:'🐒',
+  organisms:'New Caledonian crows, chimpanzees, sea otters, Homo sapiens',
+  drivers:['Hidden or hard-shelled food','Manual dexterity selection','Prefrontal cortex expansion','Cultural transmission of technique'],
+  terrain:['CANOPY FOREST','SAVANNAH'],requires:['Browse / Selective Feeding','Seed Predation / Granivory','Persistence Hunt'],
+  unlocks:[{what:'Fungal Farming',where:'DEEP CAVE'}],
+  stats:['OFF+4','ADA+7','MOV+3'],
+  mechanic:'Once per game, may convert any EAT card into its Tier+1 equivalent by spending 2 ADA points.',
+  flavor:'New Caledonian crows make multi-step composite tools from memory. Chimps teach tool techniques to offspring for generations.',
+  muster_note:'MUSTER: CANOPY FOREST + Browse + Seed Predation OR SAVANNAH + Persistence Hunt → draw this card.'},
+
+ {id:'apex_crush',tier:5,name:'Apex Crushing Predator',art:'🦖',
+  organisms:'T. rex, mosasaur, megalodon, sperm whale, Titanoboa',
+  drivers:['Prey size scaling','No predators → no size selection','Bone-crushing dietary access','Continent / ocean isolation'],
+  terrain:['SAVANNAH','OPEN OCEAN','ICE AGE'],requires:['Pack / Cooperative Hunting'],
+  unlocks:[],
+  stats:['OFF+8','DEF+5','MOV+2'],
+  mechanic:'APEX TOKEN: all other agents must spend +1 MOV to enter or exit this hex. Cannot be drawn until agent has survived 5+ terrain events. Cannot be eliminated except by Catastrophe cards rated Severity 4+.',
+  flavor:'T. rex bite force: 57,000 newtons — enough to crush an SUV. Evolution went all-in.',
+  muster_note:'MUSTER: ANY + Pack Hunt, 5+ terrain survivals required. TERMINAL — no further unlocks.'},
+
+ {id:'fungal_farm',tier:5,name:'Fungal Farming / Agriculture',art:'🌾',
+  organisms:'Leafcutter ants, termites, ambrosia beetles, Homo sapiens',
+  drivers:['Colony scale requiring stable food','Resource predictability selection','Antibiotic secretion coevolution','Monoculture cultivation capacity'],
+  terrain:['DEEP CAVE','CANOPY FOREST'],requires:['Osmotrophy','Trap Building','Tool Use/Extraction'],
+  unlocks:[],
+  stats:['ADA+6','REP+3','DEF+3'],
+  mechanic:'FOOD SURPLUS: each turn in CAVE or FOREST, bank 1 REP token. Spend banked tokens to reproduce without a F*CK strategy draw.',
+  flavor:'Leafcutter ants have been farming for 60 million years. They invented agriculture before humans by 59.99 million years.',
+  muster_note:'MUSTER: DEEP CAVE or CANOPY FOREST + Osmotrophy + Trap Building + Tool Use → draw this card. TERMINAL.'},
+];
+
+// ════════════════════════════════════════════════════
+// FK DATA
+// ════════════════════════════════════════════════════
+const FK_CARDS=[
+ {id:'binary_fission',tier:0,name:'Binary Fission',art:'🔬',
+  organisms:'Bacteria, archaea, amoeba, many protists',
+  drivers:['Speed of replication as survival','No mate-finding cost','Unlimited resource environment','Simple cell organization'],
+  terrain:['ANY'],requires:[],
+  unlocks:[{what:'Horizontal Gene Transfer',where:'ANY'},{what:'Budding',where:'PRIMORDIAL SWAMP'},{what:'Budding',where:'SHALLOW SEA'}],
+  stats:['REP+8','ADA-2'],
+  mechanic:'STARTING STRATEGY for all players. REP+8 = fast reproduction, ADA-2 = Catastrophe cards hit harder. Cannot be discarded.',
+  flavor:'E. coli doubles every 20 minutes. In 12 hours, one cell becomes 70 billion. In 48 hours, the mass exceeds the Earth.',
+  muster_note:'STARTING CARD — held by all agents at game start.'},
+
+ {id:'hgt',tier:0,name:'Horizontal Gene Transfer',art:'🔄',
+  organisms:'Bacteria (conjugation, transduction, transformation), some eukaryotes',
+  drivers:['Antibiotic / toxin stress','Resource crash pressure','Viral vector abundance','Proximity to diverse species'],
+  terrain:['VOLCANIC VENT','PRIMORDIAL SWAMP','ANY'],requires:['Binary Fission'],
+  unlocks:[{what:'Spore / Cryptobiosis',where:'DESERT'},{what:'Spore / Cryptobiosis',where:'ICE AGE'}],
+  stats:['ADA+9','REP+3'],
+  mechanic:'STRESS RESPONSE: any time a Catastrophe card is drawn, this agent draws 2 extra ADA upgrade options and keeps 1.',
+  flavor:'Antibiotic resistance can jump between completely different bacterial species in hours. Evolution without reproduction.',
+  muster_note:'MUSTER: ANY terrain + Binary Fission + any Catastrophe event → draw this card.'},
+
+ {id:'budding',tier:0,name:'Budding / Colonial Expansion',art:'🪸',
+  organisms:'Hydra, yeast, sponges, corals, hydrozoa',
+  drivers:['Sessile lifestyle','Territorial expansion pressure','Low-competition resource patch','Continuous food source'],
+  terrain:['PRIMORDIAL SWAMP','SHALLOW SEA'],requires:['Binary Fission'],
+  unlocks:[{what:'Vegetative/Clonal Spread',where:'CANOPY FOREST'},{what:'Eusociality',where:'CANOPY FOREST'},{what:'Broadcast Spawning',where:'OPEN OCEAN'}],
+  stats:['REP+6','DEF+2'],
+  mechanic:'COLONIAL SPREAD: when reproducing, may split into 2 agents instead of 1 by spending REP+2 extra.',
+  flavor:'A coral reef is millions of genetically identical polyps budded from a single ancestor.',
+  muster_note:'MUSTER: PRIMORDIAL SWAMP or SHALLOW SEA + Binary Fission → draw this card.'},
+
+ {id:'fragmentation',tier:0,name:'Fragmentation / Regeneration',art:'⭐',
+  organisms:'Planarians, sea stars, annelids, bryozoans, some sea cucumbers',
+  drivers:['Predation pressure on whole body','Distributed nervous system','Totipotent stem cell retention','Sessile / slow lifestyle'],
+  terrain:['SHALLOW SEA','PRIMORDIAL SWAMP'],requires:['Binary Fission'],
+  unlocks:[{what:'Parthenogenesis',where:'DESERT'},{what:'Parthenogenesis',where:'DEEP CAVE'}],
+  stats:['REP+4','DEF+6'],
+  mechanic:'REGENERATION: if this agent is eliminated in combat, roll 1d6. On 4+, agent regenerates in same hex at half stats next turn.',
+  flavor:'Cut a planarian in half — both pieces regrow. Some sea stars regrow an entire body from a single arm.',
+  muster_note:'MUSTER: SHALLOW SEA + Binary Fission → draw this card.'},
+
+ {id:'broadcast',tier:1,name:'Broadcast Spawning',art:'🐟',
+  organisms:'Coral, sea urchins, oysters, most fish, most frogs, horseshoe crabs',
+  drivers:['Water as fertilization medium','Low mate encounter odds','Mass predator satiation','Lunar / seasonal synchrony'],
+  terrain:['OPEN OCEAN','SHALLOW SEA','PRIMORDIAL SWAMP'],requires:['Budding'],
+  unlocks:[{what:'Semelparous',where:'OPEN OCEAN'},{what:'Swarm Breeding',where:'PRIMORDIAL SWAMP'},{what:'Honest Signal Display',where:'SAVANNAH'},{what:'Sperm Competition',where:'ANY'}],
+  stats:['REP+9','ADA+2','DEF-2'],
+  mechanic:'SPAWN EVENT: once per game, trigger mass spawning — double REP output this turn but all agents in same hex gain +1 DEF against you.',
+  flavor:'Coral spawning: every polyp releases gametes simultaneously on the same night, timed to the full moon after summer solstice.',
+  muster_note:'MUSTER: OPEN OCEAN or SHALLOW SEA + Budding → draw this card.'},
+
+ {id:'parthenogenesis',tier:1,name:'Parthenogenesis',art:'🦎',
+  organisms:'Komodo dragon, whiptail lizards, aphids, some sharks, honeybee drones',
+  drivers:['Mate scarcity','Isolated population','Environmental stability','r-selection without the cost of males'],
+  terrain:['DESERT','DEEP CAVE','ICE AGE'],requires:['Fragmentation / Regeneration'],
+  unlocks:[{what:'Delayed Development / Diapause',where:'DESERT'},{what:'Delayed Development / Diapause',where:'ICE AGE'}],
+  stats:['REP+7','ADA+1'],
+  mechanic:'MATE-FREE: reproduce without needing an allied agent in same hex. Offspring inherit identical strategies.',
+  flavor:'Komodo dragons can reproduce parthenogenetically. In a zoo with no males, a female will just make sons.',
+  muster_note:'MUSTER: DESERT or DEEP CAVE + Fragmentation → draw this card.'},
+
+ {id:'veg_propagation',tier:1,name:'Vegetative / Clonal Spread',art:'🌱',
+  organisms:'Aspen groves (Pando), strawberries, sea grass, kudzu, mangroves',
+  drivers:['Stable resource patch','Spatial competition','Low-cost expansion','Fire / disturbance resistance'],
+  terrain:['CANOPY FOREST','PRIMORDIAL SWAMP','SAVANNAH'],requires:['Budding'],
+  unlocks:[{what:'Eusociality',where:'CANOPY FOREST'},{what:'Eusociality',where:'DEEP CAVE'}],
+  stats:['REP+5','MOV+3','DEF+3'],
+  mechanic:'RHIZOME SPREAD: when moving into adjacent hex, leave a clone token with REP+2 only. Spend 2 REP to activate as full agent.',
+  flavor:'Pando: a single aspen clone in Utah, 106 acres, 80,000 years old, 6 million kilograms. The largest living organism on Earth.',
+  muster_note:'MUSTER: CANOPY FOREST + Budding → draw this card.'},
+
+ {id:'spore',tier:1,name:'Spore / Cryptobiosis',art:'💠',
+  organisms:'Tardigrades, bacterial endospores, fern spores, moss, brine shrimp eggs',
+  drivers:['Environmental unpredictability','Extreme desiccation / heat / cold','Long-range dispersal selection','Metabolism shutdown feasibility'],
+  terrain:['DESERT','ICE AGE','VOLCANIC VENT'],requires:['Horizontal Gene Transfer'],
+  unlocks:[{what:'Delayed Development / Diapause',where:'ICE AGE'}],
+  stats:['REP+4','DEF+8','ADA+5'],
+  mechanic:'CRYPTOBIOSIS: once per game, instead of dying to a Catastrophe card, this agent enters stasis — skip 1 turn, then return at full stats.',
+  flavor:'Tardigrades survive vacuum, 150°C heat, -270°C cold, and 1,000× lethal radiation dose. Revived from 30,000-year-old moss.',
+  muster_note:'MUSTER: DESERT or ICE AGE + HGT → draw this card.'},
+
+ {id:'semelparous',tier:2,name:'Semelparous Reproduction',art:'🐠',
+  organisms:'Pacific salmon, mayflies, annual plants, Agave, octopus',
+  drivers:['Short predictable breeding season','High adult post-breeding mortality','Resource one-time windfall','Parental body as offspring nutrient'],
+  terrain:['OPEN OCEAN','SAVANNAH','ICE AGE'],requires:['Broadcast Spawning'],
+  unlocks:[{what:'Swarm Breeding',where:'SAVANNAH'}],
+  stats:['REP+8','OFF+3','ADA-1'],
+  mechanic:'BIG BANG: once per game, sacrifice this agent to produce 3 offspring agents simultaneously, each with 1 inherited strategy.',
+  flavor:'Salmon carcasses deliver marine nitrogen into mountain streams 100 miles inland. The Pacific forest is fertilized by the ocean via dead fish.',
+  muster_note:'MUSTER: OPEN OCEAN or SAVANNAH + Broadcast Spawning → draw this card.'},
+
+ {id:'swarm_breed',tier:2,name:'Swarm Breeding',art:'🦗',
+  organisms:'Locusts, mayflies, horseshoe crabs, palolo worms, periodical cicadas',
+  drivers:['Predator satiation by synchrony','High search cost for lone males','Lunar / tidal timing cue','Safety in reproductive numbers'],
+  terrain:['PRIMORDIAL SWAMP','SAVANNAH','SHALLOW SEA'],requires:['Broadcast Spawning'],
+  unlocks:[{what:'Eusociality',where:'CANOPY FOREST'}],
+  stats:['REP+7','DEF+3'],
+  mechanic:'SWARM SYNC: if 3+ agents with this strategy occupy same hex on same turn, each gains REP+3 this round.',
+  flavor:'Periodical cicadas emerge every 13 or 17 years — prime numbers prevent predator populations from synchronizing to their emergence.',
+  muster_note:'MUSTER: SAVANNAH or SHALLOW SEA + Broadcast Spawning → draw this card.'},
+
+ {id:'display',tier:2,name:'Honest Signal / Sexual Display',art:'🦚',
+  organisms:'Peacock, elk (antlers), bird of paradise, fiddler crab, bowerbird',
+  drivers:['Mate competition intensity','Parasite load as fitness signal','Runaway selection (Fisher process)','Open terrain visibility'],
+  terrain:['SAVANNAH','CANOPY FOREST','SHALLOW SEA'],requires:['Broadcast Spawning'],
+  unlocks:[{what:'Lek Mating',where:'SAVANNAH'},{what:'Sperm Competition',where:'ANY'},{what:'Infanticide/Takeover',where:'SAVANNAH'}],
+  stats:['REP+6','ADA+4','DEF-2'],
+  mechanic:'DISPLAY PHASE: once per round, challenge any agent in same hex to a display contest (REP + ADA). Loser skips their F*CK draw this turn.',
+  flavor:'The peacock\'s tail reduces survival by 10% while increasing mating by 200%. The handicap principle: waste proves quality.',
+  muster_note:'MUSTER: SAVANNAH or CANOPY FOREST + Broadcast Spawning → draw this card.'},
+
+ {id:'sperm_comp',tier:2,name:'Sperm Competition',art:'🔬',
+  organisms:'Insects, many primates, 70% of bird species, some fish',
+  drivers:['Female promiscuity evolution','Uncertain paternity pressure','Multiple mating as female strategy','Hidden ovulation timing'],
+  terrain:['ANY'],requires:['Broadcast Spawning','Honest Signal / Sexual Display'],
+  unlocks:[{what:'Traumatic Insemination',where:'DEEP CAVE'},{what:'Sequential Hermaphroditism',where:'SHALLOW SEA'},{what:'Sexual Parasitism',where:'OPEN OCEAN'}],
+  stats:['REP+6','ADA+5'],
+  mechanic:'CRYPTIC CHOICE: when reproducing, may re-roll offspring strategy draw once (female selects the better genetic option).',
+  flavor:'Humans have relatively large testes for body size — a signature of sperm competition. The anatomy tells the story.',
+  muster_note:'MUSTER: ANY terrain + Broadcast Spawning + Display → draw this card.'},
+
+ {id:'delayed_dev',tier:2,name:'Delayed Development / Diapause',art:'🐻',
+  organisms:'Bears (delayed implantation), kangaroos (embryonic diapause), brine shrimp',
+  drivers:['Seasonal resource unpredictability','Harsh birth conditions','Maternal resource timing','Birth window narrowness'],
+  terrain:['ICE AGE','DESERT'],requires:['Parthenogenesis','Spore / Cryptobiosis'],
+  unlocks:[{what:'Viviparity',where:'ICE AGE'},{what:'Viviparity',where:'DESERT'}],
+  stats:['DEF+5','ADA+5'],
+  mechanic:'HOLD PREGNANCY: may delay reproductive action by 1 turn without losing the REP investment — wait for better terrain.',
+  flavor:'A bear embryo can pause development for 6 months, waiting until winter conditions are right for birth.',
+  muster_note:'MUSTER: ICE AGE or DESERT + Parthenogenesis + Spore → draw this card.'},
+
+ {id:'viviparity',tier:3,name:'Viviparity (Live Birth)',art:'🐬',
+  organisms:'Placental mammals, some sharks, some lizards, seahorses (male!)',
+  drivers:['Offspring predation pressure','Cold or dry environment','Maternal protection advantage','Placental nutrient transfer efficiency'],
+  terrain:['ICE AGE','DESERT','CANOPY FOREST'],requires:['Delayed Development / Diapause'],
+  unlocks:[{what:'Extended Parental Care',where:'CANOPY FOREST'},{what:'Extended Parental Care',where:'ICE AGE'}],
+  stats:['REP+3','DEF+5','ADA+4'],
+  mechanic:'PROTECTED BIRTH: offspring agents enter play with +2 DEF. Evolved independently 150+ times.',
+  flavor:'In some shark species, embryos eat their siblings in utero before birth. First fight: before birth.',
+  muster_note:'MUSTER: ICE AGE or DESERT + Delayed Development → draw this card.'},
+
+ {id:'lek',tier:3,name:'Lek Mating System',art:'🦃',
+  organisms:'Sage grouse, manakins, bowerbirds, pronghorn',
+  drivers:['Female mate choice freedom','Male-male direct competition','Concentrated display resource','Extreme variance in male quality'],
+  terrain:['SAVANNAH','CANOPY FOREST'],requires:['Honest Signal / Sexual Display'],
+  unlocks:[{what:'Infanticide / Takeover',where:'SAVANNAH'}],
+  stats:['REP+7','OFF+3'],
+  mechanic:'TOP MALE: if this agent wins more display contests than any other agent this round, gains REP×2 for reproduction.',
+  flavor:'Top 5% of male sage grouse father 75%+ of offspring. Most males reproduce zero.',
+  muster_note:'MUSTER: SAVANNAH or CANOPY FOREST + Honest Signal Display → draw this card.'},
+
+ {id:'infanticide',tier:3,name:'Infanticide / Takeover',art:'🦁',
+  organisms:'Lions, langurs, bears, mice, some dolphins',
+  drivers:['New male reproductive advantage','Female return to estrus after infant loss','Intruder male competition','Short female reproductive window'],
+  terrain:['SAVANNAH','ICE AGE'],requires:['Honest Signal / Sexual Display','Lek Mating System'],
+  unlocks:[{what:'Alloparental Care',where:'SAVANNAH'}],
+  stats:['REP+5','OFF+5','DEF-1'],
+  mechanic:'TAKEOVER: when eliminating an opponent\'s agent, may immediately produce 1 offspring using your strategies.',
+  flavor:'Counter-adaptations evolved: allomothers, male coalitions, female hidden ovulation, infanticide-resistant group structures.',
+  muster_note:'MUSTER: SAVANNAH + Display + Lek → draw this card.'},
+
+ {id:'allo_parent',tier:3,name:'Alloparental Care',art:'🦮',
+  organisms:'African wild dogs, meerkats, Florida scrub jays, naked mole rats',
+  drivers:['Kin selection (helpers share genes)','High juvenile mortality','Large territory defense burden','Helper experience before own breeding'],
+  terrain:['SAVANNAH','CANOPY FOREST','DEEP CAVE'],requires:['Infanticide / Takeover Strategy'],
+  unlocks:[{what:'Eusociality',where:'DEEP CAVE'},{what:'Eusociality',where:'CANOPY FOREST'}],
+  stats:['REP+3','DEF+6','ADA+5'],
+  mechanic:'HELPER BONUS: each allied agent in same or adjacent hex adds +1 to offspring survival roll.',
+  flavor:'Meerkat helpers babysit, teach, and guard — and never reproduce themselves that season.',
+  muster_note:'MUSTER: SAVANNAH or DEEP CAVE + Infanticide/Takeover → draw this card.'},
+
+ {id:'ext_care',tier:4,name:'Extended Parental Care',art:'🐘',
+  organisms:'Elephants (10yr), great apes, wolves, corvids, orcas (lifetime)',
+  drivers:['Complex environment learning curve','Offspring brain development time','Cultural transmission selection','Predation on naive juveniles'],
+  terrain:['CANOPY FOREST','ICE AGE'],requires:['Viviparity'],
+  unlocks:[{what:'Alloparental / Cooperative Breeding',where:'SAVANNAH'}],
+  stats:['REP+2','ADA+6','DEF+4'],
+  mechanic:'CULTURAL INHERITANCE: offspring agents inherit 2 strategies instead of 1 from this agent when produced.',
+  flavor:'Orca daughters stay with their mothers for life. The strategy IS the learning — not the offspring count.',
+  muster_note:'MUSTER: CANOPY FOREST or ICE AGE + Viviparity → draw this card.'},
+
+ {id:'eusocial',tier:4,name:'Eusociality',art:'🐝',
+  organisms:'Honeybees, leafcutter ants, termites, naked mole rats, paper wasps',
+  drivers:['Kin selection (haplodiploid genetics)','Defensible monopolizable resource','Queen longevity advantage','Sterile worker fitness via shared genes'],
+  terrain:['CANOPY FOREST','DEEP CAVE'],requires:['Vegetative / Clonal Spread','Alloparental Care','Swarm Breeding'],
+  unlocks:[],
+  stats:['REP+5','DEF+7','OFF+5'],
+  mechanic:'SUPERORGANISM: this agent counts as 2 agents for hex control. CO-REQ: must also hold Pack/Cooperative Hunt (EAT deck). TERMINAL.',
+  flavor:'The colony IS the organism. Death of individuals is equivalent to cell apoptosis. Evolution figured out distributed intelligence.',
+  muster_note:'MUSTER: CANOPY FOREST or DEEP CAVE + Veg. Spread + Alloparental + Swarm Breeding → draw this card. TERMINAL.'},
+
+ {id:'seq_herm',tier:4,name:'Sequential Hermaphroditism',art:'🐡',
+  organisms:'Clownfish (male→female), wrasses (female→male), banana slugs',
+  drivers:['Size-advantage shifts with reproductive role','Social sex ratio imbalance','Dominant-sex advantage changes with growth','Mate competition vs egg production tradeoff'],
+  terrain:['SHALLOW SEA','OPEN OCEAN'],requires:['Sperm Competition'],
+  unlocks:[],
+  stats:['REP+6','ADA+6'],
+  mechanic:'ROLE SWITCH: once per game, redistribute this agent\'s stat points between OFF and REP (total unchanged).',
+  flavor:'Clownfish: all born male, largest becomes female. Nemo\'s father should biologically have become his mother.',
+  muster_note:'MUSTER: SHALLOW SEA or OPEN OCEAN + Sperm Competition → draw this card. TERMINAL.'},
+
+ {id:'repro_manip',tier:4,name:'Reproductive Manipulation',art:'🍄',
+  organisms:'Toxoplasma (cat-rat behavior), Ophiocordyceps (zombie ant fungus), Wolbachia',
+  drivers:['Parasite transmission through host reproduction','Host behavior as parasite vector','Horizontal transmission selection','Castrator strategy diverts host energy'],
+  terrain:['CANOPY FOREST','PRIMORDIAL SWAMP'],requires:['Parasitism (Feeding)'],
+  unlocks:[],
+  stats:['REP+6','OFF+6','ADA+5'],
+  mechanic:'MIND CONTROL: once per game, target one opponent\'s agent — force them to skip their next F*CK draw and use yours instead.',
+  flavor:'Ophiocordyceps makes carpenter ants climb to exactly 25cm, clamp to a leaf vein at solar noon, and die — optimizing spore dispersal.',
+  muster_note:'MUSTER: CANOPY FOREST + Parasitism (EAT) → draw this card. TERMINAL.'},
+];
+
+// ════════════════════════════════════════════════════
+// CATASTROPHE DATA
+// ════════════════════════════════════════════════════
+const CAT_CARDS=[
+ {id:'asteroid',name:'Chicxulub Impact',era:'66 MYA',severity:5,art:'☄️',
+  event:'A 10km asteroid strikes the Yucatan. Ejecta blocks sunlight for 18 months. 75% of species go extinct within 10,000 years.',
+  effect:'ALL agents: Survival Roll (1d6 + ADAPT). On 3 or below, agent is eliminated. Agents holding Oxygenic Photosynthesis automatically fail (no sunlight). Apex Crushing Predator agents roll at -2.',
+  survives:['Spore / Cryptobiosis — immune, skip roll','Chemosynthesis — immune, underground','HGT — +3 to roll','Small body size strategies — +2 to roll'],
+  eliminated:['All Tier 5 EAT strategies eliminated automatically','Bulk Grazing agents lose 2 ADA permanently','Oxygenic Photosynthesis: automatic fail'],
+  flavor:'The meek inherited the Earth. Small nocturnal insectivores with HGT-derived rapid adaptation outlasted every apex predator.'},
+
+ {id:'great_oxygenation',name:'Great Oxygenation Event',era:'2.4 BYA',severity:4,art:'💨',
+  event:'Cyanobacteria flood the atmosphere with O₂. For anaerobes, oxygen is a poison. The first mass extinction.',
+  effect:'All agents holding Anoxygenic Photosynthesis or Chemosynthesis as their ONLY strategy must relocate to VOLCANIC VENT or DEEP CAVE or be eliminated. Oxygenic Photosynthesis holders gain REP+4.',
+  survives:['Oxygenic Photosynthesis — gains REP+4','Spore / Cryptobiosis — immune','HGT — draw 2 ADA adaptations'],
+  eliminated:['Anoxygenic Photosynthesis only agents: eliminated unless in VOLCANIC VENT'],
+  flavor:'Life poisoned the planet and then adapted to the poison. Earth\'s atmosphere is a byproduct of the first industrialists.'},
+
+ {id:'snowball_earth',name:'Snowball Earth',era:'700 MYA',severity:4,art:'🌍',
+  event:'Global glaciation covers the entire Earth including equatorial oceans. Lasts 10–50 million years.',
+  effect:'All OPEN OCEAN, SHALLOW SEA, SAVANNAH, and CANOPY FOREST hexes become ICE AGE hexes for 3 rounds. Broadcast Spawning rolls halved.',
+  survives:['Chemosynthesis — vents remain unfrozen, immune','Spore / Cryptobiosis — immune','Delayed Development / Diapause — +2 survival'],
+  eliminated:['Filter Feeding — water frozen, DEF-4','Broadcast Spawning — halved REP'],
+  flavor:'The entire ocean froze over. Life survived only at volcanic vents. When ice melted, released nutrients triggered the Cambrian Explosion.'},
+
+ {id:'permian_extinction',name:'Permian–Triassic Extinction',era:'252 MYA',severity:5,art:'🌋',
+  event:'96% of marine species and 70% of terrestrial species eliminated. Siberian Traps volcanism, ocean anoxia, methane spike. Everything at once.',
+  effect:'WORST CATASTROPHE. ALL agents: Survival Roll at -2. All OCEAN hexes anoxic this round (DEF-3). All ICE AGE hexes become SAVANNAH. All Tier 4+ cards unusable for 1 round.',
+  survives:['Spore / Cryptobiosis — immune','HGT — +4 to roll','Detritivory — +2 (dead things everywhere)','Osmotrophy — +2'],
+  eliminated:['All OPEN OCEAN strategies: roll at additional -2','Filter Feeding: automatic fail unless holding Spore'],
+  flavor:'So bad that even cockroaches nearly went extinct. The Earth needed 10 million years to recover.'},
+
+ {id:'devonian_ext',name:'Late Devonian Extinction',era:'375 MYA',severity:3,art:'🌿',
+  event:'Land plants spread rapidly, roots strip nutrients into oceans causing algal blooms, ocean anoxia. Reef ecosystems collapse.',
+  effect:'All SHALLOW SEA hexes become Anoxic. Filter Feeding agents must relocate or lose DEF-3. Oxygenic Photosynthesis gains REP+3. CANOPY FOREST agents gain ADA+2.',
+  survives:['Oxygenic Photosynthesis — gains REP+3','Land-based strategies — +2 to roll','SWAMP agents — immune'],
+  eliminated:['Filter Feeding in SHALLOW SEA — automatic DEF-3'],
+  flavor:'Trees destroyed the reefs. Root systems stripped phosphorus into oceans, triggering hypoxia. The most consequential thing a plant ever did was grow roots into rock.'},
+
+ {id:'cambrian_explosion',name:'Cambrian Explosion',era:'541 MYA',severity:0,art:'💥',
+  event:'POSITIVE EVENT. Oxygen reaches critical threshold. Predator-prey arms race begins. Eyes, shells, and guts appear simultaneously.',
+  effect:'BONUS ROUND: ALL players draw 2 EAT IT cards and keep 1. Any agent in SHALLOW SEA or PRIMORDIAL SWAMP draws 1 additional F*CK IT card free. No eliminations.',
+  survives:['Everyone benefits'],
+  eliminated:['None'],
+  flavor:'Life discovered violence and never looked back. The first eyes made everything that wasn\'t already hiding start hiding.'},
+
+ {id:'ocean_anoxia',name:'Oceanic Anoxic Event',era:'various',severity:3,art:'💀',
+  event:'Ocean circulation collapses. Deep water stagnates. Hydrogen sulfide accumulates and vents to surface.',
+  effect:'All OPEN OCEAN and SHALLOW SEA agents: Survival Roll (1d6). On 3-, relocate to adjacent land hex. Chemosynthesis agents immune and gain ADA+2.',
+  survives:['Chemosynthesis — immune and ADA+1','Detritivory — REP+2 (dead zone bonanza)','Land-based strategies — immune'],
+  eliminated:['Filter Feeding — DEF-2','Echolocation Hunt (OCEAN) — Survival Roll'],
+  flavor:'The ocean went euxinic — full of hydrogen sulfide. Land animals within 100 miles of coast died of toxic gas.'},
+
+ {id:'ice_age_onset',name:'Pleistocene Ice Age Onset',era:'2.6 MYA',severity:2,art:'❄️',
+  event:'Global temperature drops 6°C. Ice sheets advance. Sea levels drop 120 meters. Forests fragment into refugia.',
+  effect:'All SAVANNAH hexes: REP draws reduced by 1. CANOPY FOREST hexes shrink — if 3+ agents in same FOREST hex, 1 must relocate.',
+  survives:['Endothermy strategies — +3 to all ICE AGE rolls','Delayed Development — no penalty','Pack/Cooperative Hunt — +2 (shared warmth)'],
+  eliminated:['Ectotherm strategies in ICE AGE hexes — DEF-2'],
+  flavor:'Ice Ages didn\'t kill megafauna. Humans did. Woolly mammoths survived 22 ice ages. They went extinct 4,000 years after we arrived on their last refuge island.'},
+
+ {id:'lip_eruption',name:'Large Igneous Province Eruption',era:'various',severity:3,art:'🌋',
+  event:'A continent-scale volcanic eruption runs for 1–2 million years. SO₂ causes acid rain. CO₂ causes warming. Ash blocks sunlight.',
+  effect:'All Photosynthesis-based EAT strategies fail for 2 rounds. VOLCANIC VENT agents gain ADA+3. Chemosynthesis agents immune. All surface terrain agents: Survival Roll.',
+  survives:['Chemosynthesis — thrives, volcanic output is food','Spore / Cryptobiosis — immune','Detritivory — +2 (mass death = feast)'],
+  eliminated:['Oxygenic Photosynthesis — no REP bonus for 2 rounds','Browse/Selective Feeding — ADA-2'],
+  flavor:'The Deccan Traps began erupting 400,000 years before the asteroid. The asteroid may have been a coup de grâce on a world already dying.'},
+
+ {id:'drought_megacycle',name:'Megadrought Cycle',era:'various',severity:2,art:'🏜️',
+  event:'Multi-decade drought collapses grassland ecosystems. Rivers dry up. Savannah becomes desert. Grazers starve.',
+  effect:'All SAVANNAH hexes become DESERT for 2 rounds. Bulk Grazing agents lose REP-3. MOV costs double in former SAVANNAH. DESERT strategies available without prerequisite this round only.',
+  survives:['Desert strategies — free draws this round','Parthenogenesis — +2 (no mate required)','Venom Injection — +2 (prey at waterholes)'],
+  eliminated:['Bulk Grazing in SAVANNAH — REP-3 for 2 rounds'],
+  flavor:'The Sahara was green grassland with hippos 10,000 years ago. It will return.'},
+
+ {id:'pandemic',name:'Pathogen Surge',era:'various',severity:2,art:'🦠',
+  event:'High-density populations enable a novel pathogen to spread catastrophically. Immunologically naive species collapse.',
+  effect:'Any agent with Binary Fission but no HGT: Survival Roll. Any agent with REP+7 or higher: DEF-2. Any agent with ADA+5 or higher: immune.',
+  survives:['HGT — immune (acquire resistance)','K-strategy agents (REP<5) — immune','Extended Parental Care — +2 (learned immune behavior)'],
+  eliminated:['Binary Fission without HGT — roll at -2','Swarm Breeding / Broadcast Spawning — DEF-3 (dense population)'],
+  flavor:'Irish potato famine: genetic monoculture of clonally propagated potatoes. One pathogen wiped out the crop with zero genetic resistance.'},
+
+ {id:'magnetic_reversal',name:'Magnetic Pole Reversal',era:'various',severity:1,art:'🧭',
+  event:'Earth\'s magnetic field weakens to near-zero during pole reversal. Cosmic ray flux increases 5–10×. Mutations surge.',
+  effect:'Navigation-based strategies (Echolocation Hunt, Pack Hunt) roll for confusion: on 1–2, lose MOV-2. All agents draw 1 free random strategy card from ANY tier.',
+  survives:['HGT — +2 (mutation is opportunity)','Non-navigating strategies — immune'],
+  eliminated:['None automatically — but disorientation can be exploited'],
+  flavor:'Reversals happen every 200,000–300,000 years. We are statistically overdue — last one was 780,000 years ago.'},
+
+ {id:'sea_level_drop',name:'Sea Level Crash',era:'various',severity:2,art:'🌊',
+  event:'Glaciation locks water in ice sheets. Sea levels fall 100–130 meters. Continental shelves exposed. Land bridges form.',
+  effect:'OPEN OCEAN and SHALLOW SEA agents relocate to adjacent SAVANNAH (land bridge). Newly exposed SAVANNAH allows OCEAN strategy agents to draw 1 EAT card for land terrain immediately.',
+  survives:['Land-based strategies — gain new territory','Viviparity — +2 (protected birth on land)','Pack Hunt — +2 (land bridges reconnect predators to prey)'],
+  eliminated:['Filter Feeding — DEF-2 (compressed habitat)'],
+  flavor:'During peak glaciation, you could walk from Britain to France, Siberia to Alaska, and Taiwan to the Philippines. Every land bridge is a species blender.'},
+
+ {id:'methane_spike',name:'Methane Clathrate Release',era:'various',severity:3,art:'🌡️',
+  event:'Deep-sea methane hydrates destabilize. Rapid 5–8°C warming. Ocean thermal stratification collapses.',
+  effect:'All ICE AGE hexes become SAVANNAH. DEEP CAVE agents gain ADA+2. Cold-adapted agents (ICE AGE unlocks) roll Survival on 1–3 fail. Tropical strategies immediately available: draw 1 free Tier 2 EAT card.',
+  survives:['Tropical strategy agents — free Tier 2 card','Deep ocean chemosynthesis — immune','HGT — draw 2 ADA cards, keep 1'],
+  eliminated:['ICE AGE-specialized strategies — ADA check or lose 1 strategy'],
+  flavor:'PETM warming happened so fast ocean chemistry changed within a human lifetime. Animals moved ranges poleward at the rate of geological epochs.'},
+
+ {id:'invasive_apex',name:'Apex Invader',era:'various',severity:2,art:'🦊',
+  event:'A dominant predator from another region colonizes all hexes simultaneously. Native strategies have no evolved response.',
+  effect:'Place 1 Invasive Apex token in every terrain hex. Any agent without OFF+3 or higher loses DEF-2. Players may cooperate to eliminate token by combining OFF scores in same hex (requires total OFF 12+). Invasive remains 2 rounds if not eliminated.',
+  survives:['Pack/Cooperative Hunt — contributes to elimination','Venom Injection — can fight back','Spore / Cryptobiosis — immune (dormant)'],
+  eliminated:['Filter Feeding, Bulk Grazing, Broadcast Spawning — DEF-2 while Invasive active'],
+  flavor:'Humans introduced rats to Pacific Islands. Cats to Australia. Cane toads to Queensland. Each time: ecological collapse.'},
+
+ {id:'food_web_collapse',name:'Food Web Cascade Collapse',era:'various',severity:3,art:'🔗',
+  event:'A keystone species is removed. The cascade propagates up and down the food web. Entire ecosystems reorganize or collapse.',
+  effect:'Remove all agents holding most common EAT strategy from 1 random hex. All predators targeting that hex\'s prey type: OFF-2 this round. Detritivory and Osmotrophy holders gain REP+2.',
+  survives:['Generalist strategies (ADA+4 or higher) — immune','Detritivory and Osmotrophy — gain REP+2','Kleptoparasitism — gain REP+2 (chaos = opportunity)'],
+  eliminated:['Hyper-specialized strategies in affected hex — Survival Roll'],
+  flavor:'Remove wolves from Yellowstone: elk surge, overgraze riverbanks, rivers destabilize, fish crash, songbirds crash. Wolves rebuilt the rivers by existing.'},
+
+ {id:'oxygen_crash',name:'Ocean Oxygen Crash',era:'various',severity:2,art:'🫧',
+  event:'Algal blooms from nutrient runoff consume all oxygen. Hypoxic dead zone expands. Marine life suffocates.',
+  effect:'All SHALLOW SEA agents: DEF-2. All OPEN OCEAN agents: Survival Roll on 1–2, relocate to adjacent land. Chemosynthesis immune and gain ADA+1. SWAMP or SAVANNAH agents may draw 1 F*CK card free.',
+  survives:['Chemosynthesis — immune and ADA+1','Land-based strategies — immune','Detritivory — REP+2'],
+  eliminated:['Filter Feeding — DEF-2','Echolocation Hunt (OCEAN) — Survival Roll'],
+  flavor:'The Gulf of Mexico dead zone is the size of New Jersey, every summer. Iowa corn is killing the Gulf shrimp.'},
+
+ {id:'continental_isolation',name:'Continental Fragmentation',era:'various',severity:1,art:'🗺️',
+  event:'Tectonic drift separates connected landmasses. Populations split. Isolated lineages evolve independently.',
+  effect:'Divide all terrain hexes into 2 isolated groups for 2 rounds — agents cannot move between groups. Each isolated group draws 1 free unique strategy card. When isolation ends, strategy gap may be exploitable.',
+  survives:['All agents — draw 1 free evolution card during isolation','Ocean-capable strategies — can bridge isolation'],
+  eliminated:['None — isolation accelerates divergence, making reunification a competitive event'],
+  flavor:'Australia isolated from Antarctica 34 million years ago. 34 million years of independent evolution produced kangaroos, platypus, and Rupert Murdoch.'},
+
+ {id:'sex_ratio_crisis',name:'Sex Ratio Collapse',era:'various',severity:1,art:'🌡️',
+  event:'Environmental temperature disruption skews sex determination in reptiles and fish. Populations become overwhelmingly one sex.',
+  effect:'All agents holding External Fertilization or temperature-dependent sex strategies: REP-3. Parthenogenesis or HGT holders: immune and gain REP+2. Eusociality: immune.',
+  survives:['Parthenogenesis — immune and REP+2','HGT — immune','Eusociality — immune'],
+  eliminated:['External fertilization strategies without ADA+3 — REP-3'],
+  flavor:'Climate change is skewing sea turtle sex ratios toward 99% female at some beaches. When you evolved millions of years ago, 2°C didn\'t matter.'},
+
+ {id:'arms_race_peak',name:'Evolutionary Arms Race Peak',era:'various',severity:0,art:'⚔️',
+  event:'POSITIVE EVENT. Intense predator-prey coevolution accelerates adaptation across all lineages. Every strategy becomes sharper.',
+  effect:'ALL agents: draw 1 EAT card AND 1 F*CK card. Keep both. This round, any strategy upgrade costs 1 fewer terrain event to unlock.',
+  survives:['All agents benefit'],
+  eliminated:['None — pure acceleration round'],
+  flavor:'The Red Queen: you must run as fast as you can just to stay in the same place. The race is the point.'},
+];
+
+// ════════════════════════════════════════════════════
+// TERRAIN MUSTER TABLE DATA
+// ════════════════════════════════════════════════════
+const TERRAIN_DATA=[
+ {icon:'🌋',name:'VOLCANIC VENT',color:'#d95530',
+  drivers:['Chemical mineral gradients','No sunlight','Extreme heat (400°C+)','Anaerobic / sulfuric chemistry'],
+  blurb:'Life without the sun. Entire food webs built on sulfur. Primary unlock node for the earliest metabolic strategies.',
+  eat:[{req:'[START]',gives:'Chemosynthesis'},{req:'[START]',gives:'Anoxygenic Photosynthesis'},{req:'Chemosynthesis',gives:'Osmotrophy'}],
+  fk:[{req:'[START]',gives:'Binary Fission'},{req:'Binary Fission',gives:'Horizontal Gene Transfer'},{req:'HGT',gives:'Spore / Cryptobiosis'}]},
+
+ {icon:'🌿',name:'PRIMORDIAL SWAMP',color:'#40b080',
+  drivers:['Organic matter accumulation','Seasonal drying / flooding','High biological density','Shallow warm water'],
+  blurb:'The crucible of multicellularity. Where passive feeding strategies first diversified.',
+  eat:[{req:'Chemosynthesis',gives:'Osmotrophy'},{req:'Osmotrophy',gives:'Detritivory'},{req:'Detritivory',gives:'Sit-and-Wait Ambush'}],
+  fk:[{req:'Binary Fission',gives:'Budding'},{req:'Budding',gives:'Broadcast Spawning'},{req:'Broadcast Spawning',gives:'Swarm Breeding'}]},
+
+ {icon:'🐚',name:'SHALLOW SEA',color:'#4080d0',
+  drivers:['Sunlight penetration','Planktonic prey abundance','Tidal energy cycles','Predation pressure'],
+  blurb:'Where photosynthesis scales up, filter feeding evolves, and the Cambrian arms race begins.',
+  eat:[{req:'Anoxygenic Photo',gives:'Oxygenic Photosynthesis'},{req:'Oxygenic Photo',gives:'Filter Feeding'},{req:'Sit-and-Wait Ambush',gives:'Venom Injection'}],
+  fk:[{req:'Binary Fission',gives:'Fragmentation'},{req:'Budding',gives:'Broadcast Spawning'},{req:'Sperm Competition',gives:'Sequential Hermaphroditism'}]},
+
+ {icon:'🌊',name:'OPEN OCEAN',color:'#2060c0',
+  drivers:['Three-dimensional pursuit space','Prey dispersal','Low food density = high mobility','Darkness below thermocline'],
+  blurb:'Rewards mobility and sensory specialization. Filters out ambush strategies. Drives echolocation and broadcast spawning.',
+  eat:[{req:'Filter Feeding',gives:'Echolocation Hunt'},{req:'Filter Feeding',gives:'Kleptoparasitism'},{req:'Solo Sprint',gives:'Echolocation Hunt'}],
+  fk:[{req:'Budding',gives:'Broadcast Spawning'},{req:'Broadcast Spawning',gives:'Semelparous'},{req:'Sperm Competition',gives:'Sexual Parasitism'}]},
+
+ {icon:'❄️',name:'ICE AGE',color:'#80c0ff',
+  drivers:['Resource crash (plant die-off)','Cold-blooded prey slowdown','Fat storage premium','Endothermy selection'],
+  blurb:'Eliminates ectotherms and r-strategists. Rewards endothermy, fat storage, cooperative groups, and viviparity.',
+  eat:[{req:'Bulk Grazing',gives:'Pack/Cooperative Hunt'},{req:'Solo Sprint',gives:'Persistence Hunt'},{req:'Pack Hunt',gives:'Apex Crushing Predator'}],
+  fk:[{req:'Delayed Dev',gives:'Viviparity'},{req:'Parthenogenesis',gives:'Delayed Development'},{req:'Spore',gives:'Delayed Development'}]},
+
+ {icon:'🌾',name:'SAVANNAH',color:'#d0a030',
+  drivers:['Open terrain visibility','High prey density','Seasonal drought / flood','Group predator pressure','Arms race between grazers and hunters'],
+  blurb:'The arena where prey and predator arms races peak. Drives pack hunting, persistence hunting, sexual display, and apex predators.',
+  eat:[{req:'Oxygenic Photo',gives:'Bulk Grazing'},{req:'Bulk Grazing',gives:'Solo Sprint Pursuit'},{req:'Solo Sprint',gives:'Persistence Hunt'},{req:'Solo Sprint + Bulk',gives:'Pack/Cooperative Hunt'}],
+  fk:[{req:'Broadcast Spawning',gives:'Honest Signal Display'},{req:'Display',gives:'Lek Mating'},{req:'Lek',gives:'Infanticide/Takeover'},{req:'Infanticide',gives:'Alloparental Care'}]},
+
+ {icon:'🌲',name:'CANOPY FOREST',color:'#40a060',
+  drivers:['Vertical niche stratification','Fruit / seed density','Hidden food sources','Complex 3D navigation','Social group formation'],
+  blurb:'Drives cognitive complexity, tool use, social bonding. The incubator for primate intelligence.',
+  eat:[{req:'Oxygenic Photo',gives:'Browse/Selective'},{req:'Browse',gives:'Seed Predation'},{req:'Seed Pred + Browse',gives:'Tool Use'},{req:'Detritivory',gives:'Trap Building'}],
+  fk:[{req:'Budding',gives:'Vegetative/Clonal Spread'},{req:'Viviparity',gives:'Extended Parental Care'},{req:'Alloparental',gives:'Eusociality'},{req:'Swarm + Allo + Veg',gives:'Eusociality'}]},
+
+ {icon:'🏜️',name:'DESERT',color:'#d07030',
+  drivers:['Water scarcity','Extreme temperature swing','Prey scarce / spaced','Venom value vs large prey'],
+  blurb:'Rewards ambush, venom, and parthenogenesis. Eliminates broadcast spawners and filter feeders. Forces energy conservation.',
+  eat:[{req:'Detritivory',gives:'Sit-and-Wait Ambush'},{req:'Sit-and-Wait',gives:'Venom Injection'},{req:'Browse',gives:'Seed Predation'}],
+  fk:[{req:'Fragmentation',gives:'Parthenogenesis'},{req:'Parthen + Spore',gives:'Delayed Development'},{req:'Delayed Dev',gives:'Viviparity'}]},
+
+ {icon:'🕳️',name:'DEEP CAVE',color:'#9060d0',
+  drivers:['Total darkness','No photosynthesis base','Sparse food input','Isolation from gene flow','K-selection extreme'],
+  blurb:'Most K-selected environment on Earth. Animals here live for centuries, reproduce slowly, develop exotic sensory systems.',
+  eat:[{req:'Chemosynthesis',gives:'Electrosensory Hunt'},{req:'Sit-and-Wait',gives:'Trap Building'},{req:'Osmotrophy + Trap + Tool',gives:'Fungal Farming'}],
+  fk:[{req:'Fragmentation',gives:'Parthenogenesis'},{req:'Alloparental',gives:'Eusociality'},{req:'Sperm Competition',gives:'Traumatic Insemination'}]},
+];
+
+// ════════════════════════════════════════════════════
+// EVOLUTIONARY TREE DATA
+// ════════════════════════════════════════════════════
+const EVO_ERAS=[
+ {title:'HADEAN / ARCHEAN',time:'4.0–2.5 BYA',branches:[
+  {name:'LUCA (Last Universal Common Ancestor)',eat:'Chemosynthesis, Osmotrophy',fk:'Binary Fission, HGT'},
+  {name:'Archaea',eat:'Methanogenesis, Extreme Chemosynthesis',fk:'Binary Fission, Archaeal Conjugation'},
+  {name:'Proto-Bacteria',eat:'Anoxygenic Photosynthesis',fk:'Binary Fission, Transduction, Transformation'},
+ ]},
+ {title:'PROTEROZOIC',time:'2.5 BYA–540 MYA',branches:[
+  {name:'Cyanobacteria',eat:'Oxygenic Photosynthesis ← GREAT OXYGENATION EVENT',fk:'Binary Fission, Akinetes (stress spores)'},
+  {name:'First Eukaryotes',eat:'Phagocytosis (eating other cells), Mixotrophy',fk:'Mitosis → Meiosis (sex invented ~1.2 BYA)'},
+  {name:'Multicellular Algae',eat:'Photosynthesis at scale',fk:'Alternation of generations, Spore release'},
+  {name:'Ediacaran Fauna',eat:'Osmotrophy, Filter Feeding (passive)',fk:'Early sexual reproduction, Broadcast spawning'},
+ ]},
+ {title:'CAMBRIAN EXPLOSION',time:'540–485 MYA',branches:[
+  {name:'Arthropod Ancestors',eat:'Mandibulate predation, Ambush, Filter',fk:'Broadcast, External fertilization'},
+  {name:'Early Chordates',eat:'Filter feeding (lancelet-style), pursuit',fk:'External fertilization, mass spawning'},
+  {name:'Anomalocaris (Apex)',eat:'Apex ambush predator, grasping appendages',fk:'Presumed broadcast spawning'},
+ ]},
+ {title:'PALEOZOIC',time:'485–252 MYA',branches:[
+  {name:'Jawed Fish (Gnathostomes)',eat:'Active jaw predation, electroreception',fk:'External → Internal fertilization evolves'},
+  {name:'Land Plants',eat:'Photosynthesis + nutrient uptake via roots',fk:'Spores → seeds → pollen (wind/insect vectors)'},
+  {name:'Insects (Devonian)',eat:'Herbivory, detritivory, early predation',fk:'Metamorphosis, rapid r-selection breeding'},
+  {name:'Early Tetrapods',eat:'Ambush, aquatic → terrestrial pursuit',fk:'Amniotic egg (waterproof) — terrestrial reproduction'},
+  {name:'Permian Synapsids',eat:'Herbivory (Dimetrodon) → mammal-like predation',fk:'Viviparous evolution begins'},
+ ]},
+ {title:'MESOZOIC — AGE OF DINOSAURS',time:'252–66 MYA',branches:[
+  {name:'Sauropods',eat:'Bulk grazing, fermentation, extreme size',fk:'Oviparity, mass nesting, rapid growth'},
+  {name:'Theropods (T. rex, Velociraptor)',eat:'Apex crushing predator, pack hunting',fk:'Parental nest guarding (bird-like)'},
+  {name:'Early Mammals',eat:'Insectivory, nocturnal foraging',fk:'Lactation, extended parental care origin'},
+  {name:'Marine Reptiles',eat:'Pursuit predation, echolocation precursors',fk:'Viviparity evolved independently (ichthyosaurs)'},
+  {name:'Flowering Plants + Insects',eat:'Co-evolving pollination mutualism',fk:'Insect-mediated sexual reproduction (angiosperms)'},
+ ]},
+ {title:'CENOZOIC — AGE OF MAMMALS',time:'66 MYA–present',branches:[
+  {name:'Megafauna (Ice Age)',eat:'Bulk grazing, endothermic pursuit, blubber apex',fk:'Delayed implantation, long gestation, alloparental'},
+  {name:'Eusocial Insects (peak)',eat:'Fungal farming, liquid food sharing, mass predation',fk:'Queen monopoly, worker sterility, swarm reproduction'},
+  {name:'Hominins',eat:'Persistence hunt, tool use, fire cooking, agriculture',fk:'Concealed ovulation, pair bonding, cultural transmission'},
+ ]},
+];
+
+// ════════════════════════════════════════════════════
+// RENDER
+// ════════════════════════════════════════════════════
+function statsHtml(stats){
+  return stats.map(s=>{
+    const neg=s.includes('-');
+    const cl=neg?'st-neg':s.startsWith('OFF')?'st-off':s.startsWith('DEF')?'st-def':s.startsWith('REP')?'st-rep':s.startsWith('ADA')?'st-ada':'st-mov';
+    return `<span class="st ${cl}">${s}</span>`;
+  }).join('');
+}
+
+function makeEatCard(c){
+  const el=document.createElement('div');
+  el.className='card eat';
+  el.innerHTML=`
+    <div class="card-header"><div class="card-name">${c.name}</div><div class="tier-pip">T${c.tier}</div></div>
+    <div class="art-zone"><div class="art-bg">${c.art}</div><div style="position:relative;text-align:center"><div class="art-label">🍖 EAT IT · TIER ${c.tier}</div><div class="art-examples">${c.organisms.split(',').slice(0,3).join(' · ')}</div></div></div>
+    <div class="card-body">
+      <div><div class="row-hdr">DRIVERS</div><div class="tag-row">${c.drivers.slice(0,3).map(d=>`<span class="tag tag-drv">${d}</span>`).join('')}</div></div>
+      <div><div class="row-hdr">TERRAIN</div><div class="tag-row">${c.terrain.map(t=>`<span class="tag tag-ter">${t}</span>`).join('')}</div></div>
+      ${c.requires.length?`<div><div class="row-hdr">REQUIRES</div><div class="tag-row">${c.requires.slice(0,2).map(r=>`<span class="tag tag-req">${r}</span>`).join('')}</div></div>`:''}
+    </div>
+    ${c.unlocks.length?`<div class="unlock-zone"><div class="unlock-hdr">UNLOCKS ▶</div>${c.unlocks.slice(0,2).map(u=>`<div class="unlock-row">${u.what} <span class="unlock-where">[${u.where}]</span></div>`).join('')}</div>`:''}
+    <div class="stats-strip">${statsHtml(c.stats)}</div>
+    <div class="card-footer"><div class="flavor">${c.flavor.substring(0,110)}…</div></div>`;
+  el.onclick=()=>openModal(c,'eat');
+  return el;
+}
+
+function makeFkCard(c){
+  const el=document.createElement('div');
+  el.className='card fk';
+  el.innerHTML=`
+    <div class="card-header"><div class="card-name">${c.name}</div><div class="tier-pip">T${c.tier}</div></div>
+    <div class="art-zone"><div class="art-bg">${c.art}</div><div style="position:relative;text-align:center"><div class="art-label">🧬 F*CK IT · TIER ${c.tier}</div><div class="art-examples">${c.organisms.split(',').slice(0,3).join(' · ')}</div></div></div>
+    <div class="card-body">
+      <div><div class="row-hdr">DRIVERS</div><div class="tag-row">${c.drivers.slice(0,3).map(d=>`<span class="tag tag-drv">${d}</span>`).join('')}</div></div>
+      <div><div class="row-hdr">TERRAIN</div><div class="tag-row">${c.terrain.map(t=>`<span class="tag tag-ter">${t}</span>`).join('')}</div></div>
+      ${c.requires.length?`<div><div class="row-hdr">REQUIRES</div><div class="tag-row">${c.requires.slice(0,2).map(r=>`<span class="tag tag-req">${r}</span>`).join('')}</div></div>`:''}
+    </div>
+    ${c.unlocks.length?`<div class="unlock-zone"><div class="unlock-hdr">UNLOCKS ▶</div>${c.unlocks.slice(0,2).map(u=>`<div class="unlock-row">${u.what} <span class="unlock-where">[${u.where}]</span></div>`).join('')}</div>`:''}
+    <div class="stats-strip">${statsHtml(c.stats)}</div>
+    <div class="card-footer"><div class="flavor">${c.flavor.substring(0,110)}…</div></div>`;
+  el.onclick=()=>openModal(c,'fk');
+  return el;
+}
+
+function sevPips(n){
+  if(n===0) return '<span style="color:#40d060;font-size:10px;font-weight:bold">✦ POSITIVE EVENT</span>';
+  let h='<div class="sev-bar">';
+  for(let i=1;i<=5;i++) h+=`<div class="sev-pip${i<=n?' on':''}"></div>`;
+  return h+'</div>';
+}
+
+function makeCatCard(c){
+  const el=document.createElement('div');
+  el.className='card cat';
+  const bord=c.severity===0?'#40c040':c.severity>=4?'#ff4040':'var(--cat-l)';
+  el.style.borderColor=bord;
+  const pipBg=c.severity===0?'#40c040':c.severity>=4?'#c04040':'var(--cat-l)';
+  el.innerHTML=`
+    <div class="card-header"><div class="card-name" style="color:${bord}">${c.name}</div><div class="tier-pip" style="background:${pipBg};color:#000;font-size:7px;width:30px">${c.era}</div></div>
+    <div class="art-zone" style="background:#060c14"><div class="art-bg">${c.art}</div><div style="position:relative;text-align:center"><div class="art-label" style="color:var(--cat-l)">☄️ CATASTROPHE</div><div style="padding:4px">${sevPips(c.severity)}</div></div></div>
+    <div class="card-body">
+      <div><div class="row-hdr">SURVIVES WITH</div><div class="tag-row">${c.survives.slice(0,2).map(s=>`<span class="tag tag-cat-good">${s.split('—')[0].trim()}</span>`).join('')}</div></div>
+      <div><div class="row-hdr">PENALIZES</div><div class="tag-row">${c.eliminated.slice(0,2).map(s=>`<span class="tag tag-cat-bad">${s.split('—')[0].trim().split(':')[0]}</span>`).join('')}</div></div>
+    </div>
+    <div class="card-footer" style="background:var(--cat-b)"><div class="flavor">${c.flavor.substring(0,110)}…</div></div>`;
+  el.onclick=()=>openModal(c,'cat');
+  return el;
+}
+
+function openModal(c,type){
+  const body=document.getElementById('modal-body');
+  const col=type==='eat'?'var(--eat-l)':type==='fk'?'var(--fk-l)':'var(--cat-l)';
+  document.getElementById('modal').style.borderColor=col;
+  let html=`<div class="modal-name" style="color:${col}">${c.name}</div>`;
+  if(type==='cat'){
+    html+=`<div class="modal-sub">${c.era} · Severity: ${c.severity===0?'POSITIVE EVENT':'⬛'.repeat(c.severity)}</div>`;
+    html+=`<div class="msec"><h4>EVENT DESCRIPTION</h4><p>${c.event}</p></div>`;
+    html+=`<div class="msec"><h4>GAME EFFECT</h4><p style="color:#a0c8e8">${c.effect}</p></div>`;
+    html+=`<div class="msec"><h4>SURVIVES / BENEFITS</h4>${c.survives.map(s=>`<span class="big-tag" style="border-color:#40c040;color:#80f080;background:#081408">${s}</span>`).join('')}</div>`;
+    html+=`<div class="msec"><h4>PENALTIES / ELIMINATIONS</h4>${c.eliminated.map(s=>`<span class="big-tag" style="border-color:#c04040;color:#f08080;background:#140808">${s}</span>`).join('')}</div>`;
+    html+=`<div class="msec"><h4>FLAVOR</h4><p style="color:var(--muted);font-style:italic">${c.flavor}</p></div>`;
+  } else {
+    html+=`<div class="modal-sub">${c.organisms}</div>`;
+    html+=`<div class="msec"><h4>EVOLUTIONARY DRIVERS</h4>${c.drivers.map(d=>`<span class="driver-full">${d}</span>`).join('')}</div>`;
+    html+=`<div class="msec"><h4>REQUIRED TERRAIN</h4>${c.terrain.map(t=>`<span class="big-tag" style="border-color:var(--ter);color:var(--ter-l);background:var(--ter-d)">${t}</span>`).join('')}</div>`;
+    if(c.requires.length) html+=`<div class="msec"><h4>PREREQUISITE STRATEGIES</h4>${c.requires.map(r=>`<span class="big-tag" style="border-color:#3050b0;color:#8090d0;background:#08101e">${r}</span>`).join('')}</div>`;
+    html+=`<div class="msec"><h4>MUSTER CHAIN</h4><div class="muster-chain">${c.terrain.map(t=>`<div class="mc-row"><span class="mc-terrain">${t}</span><span class="mc-req">${c.requires.length?c.requires.join(' + '):'[None — starting card]'}</span><span class="mc-arrow">→</span><span class="mc-gives" style="color:${col}">${c.name}</span></div>`).join('')}</div></div>`;
+    if(c.unlocks&&c.unlocks.length) html+=`<div class="msec"><h4>UNLOCKS FORWARD</h4><div class="muster-chain">${c.unlocks.map(u=>`<div class="mc-row"><span class="mc-terrain">${u.where}</span><span class="mc-req">${c.name}</span><span class="mc-arrow">→</span><span class="mc-gives" style="color:#70d0a0">${u.what}</span></div>`).join('')}</div></div>`;
+    html+=`<div class="msec"><h4>GAME MECHANIC</h4><p style="color:#b0d0c0">${c.mechanic}</p></div>`;
+    html+=`<div class="msec"><h4>FLAVOR</h4><p style="color:var(--muted);font-style:italic">${c.flavor}</p></div>`;
+    if(c.muster_note) html+=`<div class="msec"><h4>RULEBOOK NOTE</h4><p style="color:var(--ter-l)">${c.muster_note}</p></div>`;
+    html+=`<div class="stats-strip" style="margin-top:10px">${statsHtml(c.stats)}</div>`;
+  }
+  body.innerHTML=html;
+  document.getElementById('overlay').classList.add('open');
+}
+
+function closeModal(e){
+  if(e.target===document.getElementById('overlay')) document.getElementById('overlay').classList.remove('open');
+}
+
+// ── FILTERS ──
+function buildFilter(barId,items,gridId,makeFn,activeClass){
+  const bar=document.getElementById(barId);
+  const tiers=[...new Set(items.map(c=>c.tier))].sort();
+  const all=document.createElement('button');
+  all.className='fp on-all on'; all.textContent='ALL';
+  all.onclick=()=>{bar.querySelectorAll('.fp').forEach(b=>b.className='fp');all.classList.add('on','on-all');renderGrid(gridId,items,null,makeFn);};
+  bar.appendChild(all);
+  tiers.forEach(t=>{
+    const btn=document.createElement('button');
+    btn.className='fp'; btn.textContent=`TIER ${t}`;
+    btn.onclick=()=>{bar.querySelectorAll('.fp').forEach(b=>b.className='fp');btn.classList.add('on',activeClass);renderGrid(gridId,items,t,makeFn);};
+    bar.appendChild(btn);
+  });
+}
+
+function renderGrid(gridId,items,tier,makeFn){
+  const g=document.getElementById(gridId); g.innerHTML='';
+  (tier===null?items:items.filter(c=>c.tier===tier)).forEach(c=>g.appendChild(makeFn(c)));
+}
+
+// ── TERRAIN PANEL ──
+function renderTerrain(){
+  const c=document.getElementById('terrain-cards'); c.innerHTML='';
+  TERRAIN_DATA.forEach(t=>{
+    const el=document.createElement('div');
+    el.className='tcard'; el.style.borderColor=t.color+'60';
+    const drv=t.drivers.map(d=>`<span class="tag tag-drv" style="margin:2px">${d}</span>`).join('');
+    const eRows=t.eat.map(r=>`<div class="muster-row"><span class="muster-req">${r.req}</span><span class="muster-arrow">▶</span><span class="muster-gives">${r.gives}</span></div>`).join('');
+    const fRows=t.fk.map(r=>`<div class="muster-row" style="border-color:#1a1030"><span class="muster-req">${r.req}</span><span class="muster-arrow">▶</span><span class="muster-gives" style="color:var(--fk-l)">${r.gives}</span></div>`).join('');
+    el.innerHTML=`<div class="tcard-name" style="color:${t.color}">${t.icon} ${t.name}</div><div class="tcard-blurb">${t.blurb}</div><div style="margin-bottom:8px">${drv}</div><div class="muster-label eat">🍖 EAT MUSTER CHAIN</div>${eRows}<div class="muster-label fk" style="margin-top:10px">🧬 F*CK MUSTER CHAIN</div>${fRows}`;
+    c.appendChild(el);
+  });
+}
+
+// ── EVO TREE ──
+function renderEvo(){
+  const c=document.getElementById('evo-content'); c.innerHTML='';
+  EVO_ERAS.forEach(era=>{
+    const el=document.createElement('div');
+    el.className='era';
+    const branches=era.branches.map(b=>`<div class="branch"><div class="branch-name">${b.name}</div><div class="branch-eat">🍖 ${b.eat}</div><div class="branch-fk">🧬 ${b.fk}</div></div>`).join('');
+    el.innerHTML=`<div class="era-title">${era.title}<span class="era-time">${era.time}</span></div><div class="branches">${branches}</div>`;
+    c.appendChild(el);
+  });
+}
+
+// ── TAB SWITCHING ──
+const TABS=['eat','fk','cat','muster','rules','evo'];
+const CLS=['ae','af','ac','','ag','am'];
+function showTab(name){
+  TABS.forEach(n=>document.getElementById('panel-'+n).classList.toggle('active',n===name));
+  document.querySelectorAll('.nav-btn').forEach((b,i)=>{b.className='nav-btn';if(TABS[i]===name&&CLS[i])b.classList.add(CLS[i]);});
+}
+
+// ── INIT ──
+buildFilter('eat-fbar',EAT_CARDS,'eat-grid',makeEatCard,'on-eat');
+buildFilter('fk-fbar',FK_CARDS,'fk-grid',makeFkCard,'on-fk');
+renderGrid('eat-grid',EAT_CARDS,null,makeEatCard);
+renderGrid('fk-grid',FK_CARDS,null,makeFkCard);
+CAT_CARDS.forEach(c=>document.getElementById('cat-grid').appendChild(makeCatCard(c)));
+renderTerrain();
+renderEvo();
+</script>
+</body>
+</html>
