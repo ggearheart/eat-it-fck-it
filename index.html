@@ -45,6 +45,7 @@ html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-s
 .nav-btn.ac{background:var(--cat-b);border-color:var(--cat-l);color:var(--cat);}
 .nav-btn.ag{background:var(--ter-d);border-color:var(--green);color:var(--green);}
 .nav-btn.am{background:#fff8f0;border-color:#c08040;color:#8a5820;}
+.nav-btn.ali{background:#f5f0ff;border-color:var(--fk);color:var(--fk);}
 
 .main{padding:20px 24px;max-width:1400px;margin:0 auto;}
 .panel{display:none;}
@@ -191,6 +192,62 @@ html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-s
 .branch-name{font-size:12px;font-weight:600;color:#2a1a0a;margin-bottom:5px;}
 .branch-eat{color:var(--eat);font-size:11px;margin-bottom:3px;}
 .branch-fk{color:var(--fk);font-size:11px;}
+
+/* ── LINEAGE PANEL ── */
+.lineage-intro{background:var(--surf2);border:1.5px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:22px;font-size:13px;color:#3a2a1a;line-height:1.7;}
+.lineage-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px;margin-bottom:36px;}
+.lcard{background:var(--surf);border:2px solid var(--border);border-radius:14px;overflow:hidden;cursor:default;transition:transform .15s,box-shadow .15s;}
+.lcard:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(80,40,0,.11);}
+.lcard-head{padding:18px 18px 10px;display:flex;gap:14px;align-items:flex-start;}
+.lcard-icon{font-size:44px;flex-shrink:0;line-height:1;}
+.lcard-title{font-size:21px;font-weight:700;line-height:1.1;margin-bottom:2px;}
+.lcard-clade{font-size:10px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;}
+.lcard-blurb{font-size:12px;color:#5a4a38;line-height:1.55;font-style:italic;}
+.lcard-body{padding:0 18px 16px;}
+.lcard-section{margin-bottom:11px;}
+.lcard-section-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:5px;}
+.lcard-strategies{display:flex;flex-wrap:wrap;gap:4px;}
+.ls-eat{font-size:10px;padding:2px 9px;border:1.5px solid #e0a880;color:var(--eat);background:var(--eat-d);border-radius:20px;}
+.ls-fk{font-size:10px;padding:2px 9px;border:1.5px solid #c0a0e0;color:var(--fk);background:var(--fk-d);border-radius:20px;}
+.lcard-stats{display:flex;gap:4px;margin:12px 0;}
+.lst{display:flex;flex-direction:column;align-items:center;flex:1;background:var(--surf2);border:1px solid var(--border);border-radius:7px;padding:5px 2px;}
+.lst-label{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:1px;}
+.lst-val{font-size:15px;font-weight:700;}
+.lst-val.hi{color:var(--eat);}
+.lst-val.lo{color:var(--muted);}
+.lcard-special{border-radius:8px;padding:10px 12px;margin-bottom:10px;}
+.lcard-special-name{font-size:11px;font-weight:700;margin-bottom:3px;}
+.lcard-special-rule{font-size:11px;line-height:1.55;}
+.lcard-footer{padding:10px 18px 14px;border-top:1px solid var(--border);}
+.lcard-path{font-size:11px;color:var(--muted);line-height:1.6;}
+.lcard-examples{font-size:10px;color:var(--muted);margin-top:4px;font-style:italic;}
+
+/* WEIRDO VAULT */
+.weirdo-vault{margin-top:8px;}
+.weirdo-vault-hdr{display:flex;align-items:baseline;gap:12px;margin-bottom:6px;}
+.weirdo-vault-title{font-size:18px;font-weight:700;color:var(--fk);}
+.weirdo-vault-sub{font-size:12px;color:var(--muted);}
+.weirdo-note{background:var(--fk-d);border:1.5px solid #c0a0e0;border-radius:8px;padding:10px 14px;font-size:12px;color:#4a3060;line-height:1.6;margin-bottom:16px;}
+.weirdo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;}
+.wcard{background:var(--surf);border:2px solid #c0a0e0;border-radius:12px;overflow:hidden;transition:transform .15s,box-shadow .15s;}
+.wcard:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(120,60,180,.12);}
+.wcard-roll{background:var(--fk-d);border-bottom:1.5px solid #c0a0e0;padding:6px 12px;display:flex;align-items:center;gap:8px;}
+.wcard-roll-pip{font-size:13px;font-weight:700;color:#fff;background:var(--fk);width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.wcard-roll-label{font-size:10px;color:var(--fk);font-weight:600;}
+.wcard-head{padding:12px 14px 6px;display:flex;gap:10px;align-items:flex-start;}
+.wcard-icon{font-size:30px;flex-shrink:0;line-height:1;}
+.wcard-title{font-size:15px;font-weight:700;color:#2a1a0a;margin-bottom:2px;}
+.wcard-clade{font-size:10px;color:var(--muted);line-height:1.4;}
+.wcard-body{padding:0 14px 14px;}
+.wcard-blurb{font-size:11px;color:#5a4a38;font-style:italic;line-height:1.55;margin-bottom:8px;}
+.wcard-strategies{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:8px;}
+.wcard-stats{display:flex;gap:3px;margin-bottom:9px;}
+.wst{display:flex;flex-direction:column;align-items:center;flex:1;background:var(--surf2);border-radius:5px;padding:3px 1px;border:1px solid var(--border);}
+.wst-label{font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;}
+.wst-val{font-size:12px;font-weight:700;}
+.wcard-special{background:var(--fk-d);border:1.5px solid #c0a0e0;border-radius:7px;padding:8px 10px;}
+.wcard-special-label{font-size:9px;font-weight:700;color:var(--fk);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px;}
+.wcard-special-rule{font-size:11px;color:#4a3060;line-height:1.55;}
 </style>
 </head>
 <body>
@@ -215,6 +272,7 @@ html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-s
   <button class="nav-btn" onclick="showTab('muster')">🗺 TERRAIN MUSTER TABLE</button>
   <button class="nav-btn" onclick="showTab('rules')">📋 GAME RULES</button>
   <button class="nav-btn" onclick="showTab('evo')">🌍 EVOLUTIONARY TREE</button>
+  <button class="nav-btn" onclick="showTab('lineage')">🧬 CHOOSE LINEAGE</button>
   <a class="nav-btn" href="board.html" style="text-decoration:none;display:inline-block;background:#f0f5ff;border-color:#3a80c0;color:#1e5080">🗺️ Hex Board →</a>
 </div>
 
@@ -400,6 +458,26 @@ html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-s
 <!-- EVO TREE PANEL -->
 <div id="panel-evo" class="panel">
   <div id="evo-content"></div>
+</div>
+
+<!-- LINEAGE PANEL -->
+<div id="panel-lineage" class="panel">
+  <div class="lineage-intro">
+    <strong>At the start of the game, each player chooses a lineage.</strong> Your lineage sets your starting strategies, stat spread, and a persistent special ability that lasts the entire game.
+    Different lineages open different muster pathways — a Fish player and a Mammal player will evolve very differently even on the same board.
+    <br>The <strong style="color:var(--fk)">Weirdo Vault</strong> below contains 6 outlier organisms that break the normal rules. Roll 1d6 at game start to be assigned one, or agree as a group to let players pick.
+  </div>
+  <div class="lineage-grid" id="lineage-grid"></div>
+  <div class="weirdo-vault">
+    <div class="weirdo-vault-hdr">
+      <div class="weirdo-vault-title">Weirdo Vault</div>
+      <div class="weirdo-vault-sub">Roll 1d6 · or pick by consensus · these creatures break the rules on purpose</div>
+    </div>
+    <div class="weirdo-note">
+      Weirdos are evolutionary outliers — organisms so strange they don't fit any lineage category. Each one has a unique ability unavailable to normal lineages. They are intentionally unbalanced: extremely good at one thing, often terrible at others. Playing a Weirdo is a challenge run.
+    </div>
+    <div class="weirdo-grid" id="weirdo-grid"></div>
+  </div>
 </div>
 
 </div><!-- /main -->
@@ -1249,9 +1327,223 @@ function renderEvo(){
   });
 }
 
+// ════════════════════════════════════════════════════
+// LINEAGE DATA
+// ════════════════════════════════════════════════════
+const LINEAGES=[
+ {id:'birds',name:'Birds',icon:'🦅',clade:'Class Aves',era:'Late Jurassic → present',
+  color:'#1e7ab0',bg:'#edf6fc',specialBg:'#ddf0fb',
+  blurb:'You gave up teeth for beaks and traded heavy bones for hollow ones. Every climate, every continent, every depth of ocean. You went everywhere.',
+  startEat:['Seed Predation / Granivory','Browse / Selective Feeding'],
+  startFk:['Broadcast Spawning','Honest Signal / Sexual Display'],
+  stats:{OFF:2,DEF:2,REP:4,ADA:4,MOV:6},
+  special:{icon:'✈️',name:'Aerial Survey',rule:'Once per turn, look at the top 2 cards of any draw pile before drawing — keep whichever you want. You choose your evolution instead of drawing blind.'},
+  bonuses:['CANOPY FOREST — home terrain','SAVANNAH — no penalty','OPEN OCEAN — seabirds free'],
+  penalties:['VOLCANIC VENT — cannot enter without Chemosynthesis'],
+  path:'Seed Predation → Tool Use → Persistence Hunt  ·  or  ·  Filter Feeding → Echolocation Hunt',
+  examples:'Peregrine falcon · Albatross · Hummingbird · Crow · Penguin · Darwin\'s finches'},
+
+ {id:'mammals',name:'Mammals',icon:'🐘',clade:'Class Mammalia',era:'Triassic → present',
+  color:'#8a5820',bg:'#fcf4ec',specialBg:'#f5e5d0',
+  blurb:'You started small, nocturnal, hiding under the feet of dinosaurs. Then a rock fell from space and you owned everything. Patience is the oldest strategy.',
+  startEat:['Detritivory / Scavenging','Browse / Selective Feeding'],
+  startFk:['Viviparity (Live Birth)','Alloparental Care'],
+  stats:{OFF:3,DEF:3,REP:3,ADA:6,MOV:3},
+  special:{icon:'🔥',name:'Endothermy',rule:'Ignore all cold penalties in ICE AGE hexes. Gain +2 ADA on every Catastrophe survival roll. Offspring inherit 2 strategy cards instead of 1 (lactation + learning).'},
+  bonuses:['ICE AGE — ignore cold penalties','CANOPY FOREST — primate home','SAVANNAH — megafauna range'],
+  penalties:['VOLCANIC VENT — ADA-2 while present'],
+  path:'Viviparity → Extended Parental Care → Pack Hunt → Apex Predator  ·  or  ·  Alloparental → Eusociality',
+  examples:'Elephant · Orca · Wolf · Bat · Naked mole rat · Blue whale'},
+
+ {id:'microbes',name:'Microbes',icon:'🦠',clade:'Bacteria / Archaea / Protists',era:'4.0 BYA → forever',
+  color:'#1a7a70',bg:'#eafaf8',specialBg:'#d0f2ee',
+  blurb:'You were here before oxygen. You\'ll be here after the sun expands. Every other lineage on this board evolved from you. You are not playing to win — you already won.',
+  startEat:['Chemosynthesis','Osmotrophy / Absorption'],
+  startFk:['Binary Fission','Horizontal Gene Transfer'],
+  stats:{OFF:0,DEF:2,REP:10,ADA:7,MOV:1},
+  special:{icon:'♾️',name:'Ubiquity',rule:'Enter any terrain hex for free — no terrain cost ever. Immune to the first Catastrophe card drawn each game. When HGT is in hand, re-roll any failed ADA check once per Catastrophe event.'},
+  bonuses:['ALL TERRAIN — microbes go everywhere','VOLCANIC VENT — home','DEEP CAVE — home'],
+  penalties:['MOV is permanently capped at 2 (you\'re tiny)'],
+  path:'Chemosynthesis → HGT → Spore / Cryptobiosis → max ADA build  ·  or  ·  Osmotrophy → Fungal Farming',
+  examples:'E. coli · Thermophilic archaea · Plasmodium · Yeast · Cyanobacteria · Tardigrade (see Weirdos)'},
+
+ {id:'amphibians',name:'Amphibians',icon:'🐸',clade:'Class Amphibia',era:'Devonian → present',
+  color:'#3a7820',bg:'#f0fae8',specialBg:'#daf2c8',
+  blurb:'First vertebrates to walk on land. You still need water to reproduce. Committed to two worlds and master of neither. That\'s the charm. Also some of you are poisonous.',
+  startEat:['Sit-and-Wait Ambush','Detritivory / Scavenging'],
+  startFk:['Broadcast Spawning','Fragmentation / Regeneration'],
+  stats:{OFF:3,DEF:3,REP:6,ADA:5,MOV:3},
+  special:{icon:'💧',name:'Dual Life',rule:'Move freely between aquatic and terrestrial hexes with no MOV penalty. Cannot be targeted by Ambush strategies while crossing terrain types. Regeneration roll improved: revive on 3+ instead of 4+.'},
+  bonuses:['PRIMORDIAL SWAMP — no terrain cost','SHALLOW SEA — no terrain cost'],
+  penalties:['ICE AGE — MOV-1','DESERT — REP-2 (desiccation)'],
+  path:'Ambush → Venom Injection → Electrosensory Hunt  ·  or  ·  Broadcast → Swarm Breeding → Sexual Display',
+  examples:'Salamander · Axolotl · Poison dart frog · Caecilian · Mudskipper'},
+
+ {id:'reptiles',name:'Reptiles',icon:'🦖',clade:'Class Reptilia',era:'Carboniferous → present',
+  color:'#6a6820',bg:'#f8f8e8',specialBg:'#eeeec0',
+  blurb:'You invented the amniotic egg — reproduction fully freed from water. You ruled the planet for 180 million years. Some of you became birds. The rest of you are still here, waiting.',
+  startEat:['Sit-and-Wait Ambush','Bulk Grazing'],
+  startFk:['Parthenogenesis','Delayed Development / Diapause'],
+  stats:{OFF:4,DEF:5,REP:3,ADA:5,MOV:2},
+  special:{icon:'☀️',name:'Solar Efficiency',rule:'In DESERT or SAVANNAH hexes, OFF+2 and MOV+2. Eggs require no water — immune to water-scarcity F*CK draw penalties. Once per game, may skip a Catastrophe survival roll by entering a dormancy state (lose 1 turn).'},
+  bonuses:['DESERT — ectotherm peak performance','SAVANNAH — apex territory'],
+  penalties:['ICE AGE — ADA-2 (cold-blooded)'],
+  path:'Ambush → Venom Injection → Electrosensory  ·  or  ·  Bulk Grazing → Solo Sprint → Pack Hunt → Apex Crushing Predator',
+  examples:'T. rex · Komodo dragon · Sea turtle · Mosasaur · Anaconda · Gecko'},
+
+ {id:'fish',name:'Fish',icon:'🐟',clade:'Actinopterygii + Chondrichthyes',era:'Cambrian → present',
+  color:'#1a5090',bg:'#eaf0fc',specialBg:'#c8dcf8',
+  blurb:'You invented jaws, paired fins, a lateral line, electroreception, and 30,000 species. Every depth, every temperature, every feeding strategy. Water is yours. You just let the others visit.',
+  startEat:['Filter Feeding','Detritivory / Scavenging'],
+  startFk:['Broadcast Spawning','Sperm Competition'],
+  stats:{OFF:2,DEF:3,REP:8,ADA:3,MOV:5},
+  special:{icon:'🌊',name:'Lateral Line',rule:'Pay no MOV cost in any aquatic hex. Gain DEF+3 while in OPEN OCEAN or SHALLOW SEA. Detect hidden agents in aquatic hexes — opponents cannot use first-strike bonuses against you underwater.'},
+  bonuses:['OPEN OCEAN — free movement','SHALLOW SEA — free movement','PRIMORDIAL SWAMP — early access'],
+  penalties:['DESERT — ADA-2','ICE AGE — ADA-2','CANOPY FOREST — ADA-2'],
+  path:'Filter Feeding → Echolocation Hunt or Kleptoparasitism  ·  or  ·  Solo Sprint → Electrosensory Hunt → Apex Crushing Predator',
+  examples:'Shark · Tuna · Electric eel · Coelacanth · Anglerfish · Leafy sea dragon'},
+];
+
+const WEIRDOS=[
+ {roll:1,id:'lamprey',name:'Lamprey',icon:'🪡',
+  clade:'Order Petromyzontida — jawless, 500 MYA design, unchanged',
+  blurb:'No jaw. No paired fins. Sucker mouth ringed with 11.5 rows of teeth. You\'ve needed zero updates in half a billion years. The design is correct.',
+  startEat:['Parasitism (Feeding)'],
+  startFk:['Semelparous Reproduction'],
+  stats:{OFF:4,DEF:1,REP:6,ADA:4,MOV:4},
+  special:'SUCKER LOCK — Attach to any agent without initiating combat. Drain 1 REP from them per round. They must spend 1 full action in a safe hex to detach you. You can attach and move with them.'},
+
+ {roll:2,id:'platypus',name:'Platypus',icon:'🦆',
+  clade:'Family Ornithorhynchidae — egg-laying venomous mammal with a duck bill and 10 sex chromosomes',
+  blurb:'A mammal. That lays eggs. With a beaver tail, a duck bill, venomous ankle spurs, and electroreception. Ten sex chromosomes. When Europeans first saw a specimen they thought it was a prank.',
+  startEat:['Electrosensory Hunt','Venom Injection'],
+  startFk:['Broadcast Spawning'],
+  stats:{OFF:5,DEF:3,REP:3,ADA:6,MOV:3},
+  special:'PLATYPUS CONFUSION — Once per game, show this card to any player. They must skip their next draw action. No one, including you, can explain why this works.'},
+
+ {roll:3,id:'horseshoe_crab',name:'Horseshoe Crab',icon:'🦀',
+  clade:'Order Xiphosura — not a crab, closer to spiders, 450 MYA unchanged design',
+  blurb:'Your blue copper-based blood clots instantly when it contacts bacterial toxins. Every vaccine ever made has been tested with your blood. You are medical infrastructure. Also: 9 eyes.',
+  startEat:['Detritivory / Scavenging','Filter Feeding'],
+  startFk:['Broadcast Spawning'],
+  stats:{OFF:1,DEF:8,REP:5,ADA:8,MOV:1},
+  special:'LIVING FOSSIL — Immune to Catastrophe cards rated Severity 1–3 (your design survived 5 mass extinctions). For Severity 4–5 cards, roll at +3. Your blood counts as a wildcard immunity token once per game.'},
+
+ {roll:4,id:'fungi',name:'Fungi',icon:'🍄',
+  clade:'Kingdom Fungi — not plant, not animal, older than both, symbiont of everything',
+  blurb:'You invented penicillin. You killed half of Europe with ergot. Every forest on Earth survives because of your mycelium highways. You taste good on pizza. You are the unsung architect.',
+  startEat:['Osmotrophy / Absorption','Trap Building'],
+  startFk:['Vegetative / Clonal Spread'],
+  stats:{OFF:2,DEF:4,REP:5,ADA:7,MOV:0},
+  special:'MYCELIUM NETWORK — Place Network tokens on up to 3 hexes (free action, once per game). Each turn, every agent on a Network hex — including opponents — owes you REP+1. MOV is permanently 0. You don\'t move. You spread.'},
+
+ {roll:5,id:'tardigrade',name:'Tardigrade',icon:'🐛',
+  clade:'Phylum Tardigrada — water bears, 8 legs, face only a mother could love',
+  blurb:'Survive vacuum. 150°C. −272°C. 1,000× the lethal radiation dose for humans. Revived from 30,000-year-old frozen moss. You are the most indestructible animal on Earth and you are half a millimeter long.',
+  startEat:['Osmotrophy / Absorption'],
+  startFk:['Spore / Cryptobiosis','Parthenogenesis'],
+  stats:{OFF:0,DEF:10,REP:2,ADA:10,MOV:1},
+  special:'CRYPTOBIOSIS PLUS — Immune to ALL Catastrophe cards, every game. Simply enter tun state and skip the round. Cannot be eliminated by combat — opponents must force you to forfeit via points instead. REP is permanently capped at 2 and MOV at 1. You win by surviving, not by dominating.'},
+
+ {roll:6,id:'mantis_shrimp',name:'Mantis Shrimp',icon:'🦐',
+  clade:'Order Stomatopoda — 16-color photoreceptors, raptorial strike at bullet speed',
+  blurb:'16 types of photoreceptors (humans have 3). Your dactyl club strikes at 23 m/s — the speed of a .22 caliber bullet — and creates cavitation bubbles hot as the surface of the sun. You see colors that don\'t have names.',
+  startEat:['Sit-and-Wait Ambush','Solo Sprint Pursuit'],
+  startFk:['Honest Signal / Sexual Display'],
+  stats:{OFF:8,DEF:2,REP:4,ADA:3,MOV:4},
+  special:'DACTYL CLUB — Always strike first in combat, regardless of initiative order. Your first attack each combat automatically hits (no roll required) and deals +3 OFF. Opponents\' Ambush and first-strike abilities cannot activate against you.'},
+];
+
+// ── LINEAGE RENDER ──
+function statVal(v){return v>=7?'hi':v<=1?'lo':'';}
+function renderLineages(){
+  const g=document.getElementById('lineage-grid');
+  LINEAGES.forEach(l=>{
+    const el=document.createElement('div');
+    el.className='lcard';
+    el.style.borderColor=l.color;
+    const statsHtml=Object.entries(l.stats).map(([k,v])=>
+      `<div class="lst"><div class="lst-label">${k}</div><div class="lst-val ${statVal(v)}" style="${v>=7?`color:${l.color}`:(v<=1?'color:var(--muted)':'')}">${v}</div></div>`
+    ).join('');
+    const bonuses=l.bonuses.map(b=>`<span style="font-size:9px;padding:2px 8px;border-radius:20px;border:1.5px solid ${l.color}60;color:${l.color};background:${l.bg};margin:2px;display:inline-block">${b}</span>`).join('');
+    const penalties=l.penalties.map(p=>`<span style="font-size:9px;padding:2px 8px;border-radius:20px;border:1.5px solid #e09090;color:#a02020;background:#fff0f0;margin:2px;display:inline-block">${p}</span>`).join('');
+    el.innerHTML=`
+      <div class="lcard-head" style="background:${l.bg}">
+        <div class="lcard-icon">${l.icon}</div>
+        <div style="flex:1">
+          <div class="lcard-title" style="color:${l.color}">${l.name}</div>
+          <div class="lcard-clade">${l.clade} · ${l.era}</div>
+          <div class="lcard-blurb">${l.blurb}</div>
+        </div>
+      </div>
+      <div class="lcard-body">
+        <div class="lcard-stats">${statsHtml}</div>
+        <div class="lcard-section">
+          <div class="lcard-section-label">Starting EAT IT strategies</div>
+          <div class="lcard-strategies">${l.startEat.map(s=>`<span class="ls-eat">🍖 ${s}</span>`).join('')}</div>
+        </div>
+        <div class="lcard-section">
+          <div class="lcard-section-label">Starting F*CK IT strategies</div>
+          <div class="lcard-strategies">${l.startFk.map(s=>`<span class="ls-fk">🧬 ${s}</span>`).join('')}</div>
+        </div>
+        <div class="lcard-special" style="background:${l.specialBg};border:1.5px solid ${l.color}50">
+          <div class="lcard-special-name" style="color:${l.color}">${l.special.icon} ${l.special.name}</div>
+          <div class="lcard-special-rule" style="color:#3a2a1a">${l.special.rule}</div>
+        </div>
+        <div class="lcard-section">
+          <div class="lcard-section-label">Terrain bonuses</div>
+          <div>${bonuses}</div>
+        </div>
+        <div class="lcard-section" style="margin-bottom:0">
+          <div class="lcard-section-label">Terrain penalties</div>
+          <div>${penalties}</div>
+        </div>
+      </div>
+      <div class="lcard-footer">
+        <div class="lcard-path" style="color:${l.color}99"><strong style="color:${l.color}">Upgrade path →</strong> ${l.path}</div>
+        <div class="lcard-examples"><em>${l.examples}</em></div>
+      </div>`;
+    g.appendChild(el);
+  });
+
+  const wg=document.getElementById('weirdo-grid');
+  WEIRDOS.forEach(w=>{
+    const el=document.createElement('div');
+    el.className='wcard';
+    const ws=Object.entries(w.stats).map(([k,v])=>
+      `<div class="wst"><div class="wst-label">${k}</div><div class="wst-val" style="${v>=8?'color:var(--fk)':v<=1?'color:var(--muted)':''}">${v}</div></div>`
+    ).join('');
+    el.innerHTML=`
+      <div class="wcard-roll">
+        <div class="wcard-roll-pip">${w.roll}</div>
+        <div class="wcard-roll-label">Roll a ${w.roll} on d6 to play as this organism</div>
+      </div>
+      <div class="wcard-head">
+        <div class="wcard-icon">${w.icon}</div>
+        <div>
+          <div class="wcard-title">${w.name}</div>
+          <div class="wcard-clade">${w.clade}</div>
+        </div>
+      </div>
+      <div class="wcard-body">
+        <div class="wcard-blurb">${w.blurb}</div>
+        <div style="margin-bottom:6px">
+          <div style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:4px">Starting strategies</div>
+          <div class="wcard-strategies">${w.startEat.map(s=>`<span class="ls-eat">🍖 ${s}</span>`).join('')}${w.startFk.map(s=>`<span class="ls-fk">🧬 ${s}</span>`).join('')}</div>
+        </div>
+        <div class="wcard-stats">${ws}</div>
+        <div class="wcard-special">
+          <div class="wcard-special-label">Special ability</div>
+          <div class="wcard-special-rule">${w.special}</div>
+        </div>
+      </div>`;
+    wg.appendChild(el);
+  });
+}
+
 // ── TAB SWITCHING ──
-const TABS=['eat','fk','cat','muster','rules','evo'];
-const CLS=['ae','af','ac','','ag','am'];
+const TABS=['eat','fk','cat','muster','rules','evo','lineage'];
+const CLS=['ae','af','ac','','ag','am','ali'];
 function showTab(name){
   TABS.forEach(n=>document.getElementById('panel-'+n).classList.toggle('active',n===name));
   document.querySelectorAll('.nav-btn').forEach((b,i)=>{b.className='nav-btn';if(TABS[i]===name&&CLS[i])b.classList.add(CLS[i]);});
@@ -1265,6 +1557,7 @@ renderGrid('fk-grid',FK_CARDS,null,makeFkCard);
 CAT_CARDS.forEach(c=>document.getElementById('cat-grid').appendChild(makeCatCard(c)));
 renderTerrain();
 renderEvo();
+renderLineages();
 </script>
 </body>
 </html>
