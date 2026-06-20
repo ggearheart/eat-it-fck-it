@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>EAT IT | F*CK IT — Battle Resolver</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;}
+:root{
+  --eat:#c4561e;--eat-l:#e8733a;--eat-d:#fdf0ea;--eat-b:#e8d0c0;
+  --fk:#7b4fa0;--fk-l:#9b6fc0;--fk-d:#f5f0ff;--fk-b:#d0c0e0;
+  --surf:#fff;--surf2:#fdf9f3;--border:#e8ddd0;--muted:#9a8a78;
+  --green:#2e6b4f;--blue:#1e5080;
+}
+.hdr{display:flex;align-items:center;gap:12px;padding:10px 20px;background:#fff;border-bottom:2px solid var(--border);flex-wrap:wrap;min-height:52px;}
+.game-title{font-size:17px;font-weight:800;letter-spacing:-.3px;}
+.eat-w{color:var(--eat)}.fk-w{color:var(--fk)}
+.nav-link{padding:5px 12px;border:1.5px solid var(--border);color:var(--muted);text-decoration:none;font-size:11px;font-weight:600;border-radius:20px;transition:all .12s;white-space:nowrap;}
+.nav-link:hover{color:var(--eat);border-color:var(--eat-b);}
+.nav-link.active{background:var(--eat-d);border-color:var(--eat-l);color:var(--eat);}
+.hdr-right{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;}
+
+/* ───── SETUP ───── */
+.setup-wrap{max-width:960px;margin:0 auto;padding:24px 20px;}
+.setup-title{font-size:22px;font-weight:800;margin-bottom:4px;color:#1a0a00;}
+.setup-sub{font-size:13px;color:var(--muted);margin-bottom:22px;}
+.s-section{background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px;}
+.s-section h3{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.type-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.type-btn{padding:16px 12px;border:2px solid var(--border);border-radius:10px;cursor:pointer;text-align:center;background:#fff;transition:all .15s;font-family:inherit;}
+.type-btn .tb-icon{font-size:22px;margin-bottom:4px;}
+.type-btn .tb-name{font-size:13px;font-weight:700;}
+.type-btn .tb-sub{font-size:10px;color:var(--muted);margin-top:2px;}
+.type-btn.eat-sel{border-color:var(--eat);background:var(--eat-d);}
+.type-btn.eat-sel .tb-name{color:var(--eat);}
+.type-btn.fk-sel{border-color:var(--fk);background:var(--fk-d);}
+.type-btn.fk-sel .tb-name{color:var(--fk);}
+.terrain-sel{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;background:#fff;color:#2a1a0a;cursor:pointer;}
+.sides-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.side-label{font-size:11px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.atk-l{color:var(--eat)}.def-l{color:var(--fk)}
+.card-grid{display:flex;flex-direction:column;gap:5px;max-height:260px;overflow-y:auto;padding-right:4px;}
+.cp-card{display:flex;align-items:center;gap:8px;padding:7px 9px;border:1.5px solid var(--border);border-radius:7px;cursor:pointer;transition:all .12s;background:#fff;user-select:none;}
+.cp-card:hover{border-color:#c0b0a0;}
+.cp-card.sel-eat{border-color:var(--eat);background:var(--eat-d);}
+.cp-card.sel-fk{border-color:var(--fk);background:var(--fk-d);}
+.cp-art{font-size:16px;flex-shrink:0;width:22px;text-align:center;}
+.cp-info{flex:1;min-width:0;}
+.cp-name{font-size:11px;font-weight:600;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cp-tier{font-size:9px;color:var(--muted);margin-top:1px;}
+.start-btn{width:100%;padding:14px;background:var(--green);border:none;color:#fff;font-family:inherit;font-size:14px;font-weight:700;border-radius:10px;cursor:pointer;transition:all .15s;margin-top:4px;}
+.start-btn:hover{background:#3d8a65;}
+.start-btn:disabled{background:#b0a898;cursor:not-allowed;}
+
+/* ───── BATTLE LAYOUT ───── */
+#phase-battle{display:flex;flex-direction:column;height:calc(100vh - 52px);}
+.battle-body{display:flex;flex:1;overflow:hidden;}
+.board-col{width:340px;flex-shrink:0;background:#f5f0e8;border-right:1.5px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.board-inner{flex:1;overflow-y:auto;padding:12px;}
+.combat-col{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.sides-row{flex:1;display:grid;grid-template-columns:1fr 1fr;overflow:hidden;}
+.side-pane{padding:12px;overflow-y:auto;display:flex;flex-direction:column;gap:7px;}
+.side-pane:first-child{border-right:1.5px solid var(--border);}
+.side-pane-hdr{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding-bottom:8px;margin-bottom:2px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;}
+.spb{flex-shrink:0;}
+.control-bar{border-top:1.5px solid var(--border);padding:12px;background:#fff;flex-shrink:0;display:flex;flex-direction:column;gap:10px;}
+
+/* ───── TURN TRACKER ───── */
+.turn-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.turn-pips{display:flex;gap:3px;}
+.t-pip{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--muted);transition:all .15s;flex-shrink:0;}
+.t-pip.done{background:#b0a090;color:#fff;border-color:#b0a090;}
+.t-pip.cur{background:var(--eat);color:#fff;border-color:var(--eat);}
+.t-pip.w4{background:var(--fk);color:#fff;border-color:var(--fk);}
+.t-pip.future{background:#fff;}
+.round-badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;border:1.5px solid;}
+.rb-atk{background:var(--eat-d);color:var(--eat);border-color:var(--eat-l);}
+.rb-def{background:var(--fk-d);color:var(--fk);border-color:var(--fk-l);}
+.phase-badge{padding:3px 10px;border-radius:20px;font-size:10px;font-weight:600;background:var(--surf2);border:1.5px solid var(--border);color:var(--muted);}
+.turn-btns{display:flex;gap:5px;flex-wrap:wrap;}
+.t-btn{padding:6px 13px;border:1.5px solid var(--border);border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;background:#fff;font-family:inherit;transition:all .12s;white-space:nowrap;}
+.t-btn:hover{border-color:#b0a090;}
+.t-btn.green{background:var(--green);color:#fff;border-color:var(--green);}
+.t-btn.green:hover{background:#3d8a65;}
+.t-btn.red{background:var(--eat);color:#fff;border-color:var(--eat);}
+.t-btn.purple{background:var(--fk);color:#fff;border-color:var(--fk);}
+.t-btn.grey{background:var(--muted);color:#fff;border-color:var(--muted);}
+.t-btn:disabled{opacity:.35;cursor:not-allowed;}
+.weirdo-alert{background:var(--fk-d);border:1.5px solid var(--fk-l);border-radius:8px;padding:7px 12px;font-size:11px;color:var(--fk);font-weight:600;display:none;align-items:center;gap:6px;}
+
+/* ───── DICE ───── */
+.dice-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.dice-label{font-size:11px;font-weight:600;color:var(--muted);}
+.d-input{width:60px;padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;font-family:inherit;text-align:center;}
+.d-thr{font-size:10px;color:var(--muted);white-space:nowrap;}
+.roll-btn{padding:7px 16px;background:var(--eat);color:#fff;border:none;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
+.roll-btn:hover{background:var(--eat-l);}
+.dice-out{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+.die{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;border:2px solid;transition:all .2s;}
+.die.hit{border-color:var(--green);background:#f0faf4;color:var(--green);}
+.die.miss{border-color:var(--border);background:var(--surf2);color:var(--muted);}
+.dice-sum{font-size:12px;font-weight:700;margin-top:4px;}
+.carry-note{font-size:10px;color:var(--eat);font-weight:600;margin-top:2px;}
+
+/* ───── COMBAT CARDS ───── */
+.cc{background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:9px;transition:all .15s;}
+.cc.dead{opacity:.32;border-style:dashed;pointer-events:none;}
+.cc.weirdo{border-color:var(--fk-l);}
+.cc-top{display:flex;align-items:flex-start;gap:7px;margin-bottom:7px;}
+.cc-art{font-size:18px;flex-shrink:0;line-height:1;}
+.cc-info{flex:1;min-width:0;}
+.cc-name{font-size:11px;font-weight:700;line-height:1.3;}
+.cc-native{font-size:9px;color:var(--green);font-weight:700;margin-top:1px;}
+.cc-dead-x{font-size:9px;color:var(--eat);font-weight:700;text-transform:uppercase;}
+.cc-stats{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:6px;}
+.st{font-size:9px;padding:2px 6px;border-radius:20px;border:1.5px solid;font-weight:700;white-space:nowrap;}
+.st-pow{border-color:#e0b080;color:#7a3000;background:#fdf0e0;}
+.st-skl{border-color:#80b898;color:var(--green);background:#f0faf4;}
+.st-hp{border-color:#80a8e0;color:var(--blue);background:#eef3ff;}
+.st-mov{border-color:#c8b040;color:#6a5000;background:#fffaee;}
+.st-rs{border-color:var(--fk-l);color:var(--fk);background:var(--fk-d);}
+.st-fs{border-color:#c8a840;color:#6a5000;background:#fffce8;}
+.hp-bar{height:7px;background:#ede5d8;border-radius:4px;overflow:hidden;margin-bottom:6px;}
+.hp-fill{height:100%;border-radius:4px;background:var(--green);transition:width .25s;}
+.hp-fill.low{background:#d09030;}
+.hp-fill.crit{background:var(--eat);}
+.cc-actions{display:flex;gap:4px;flex-wrap:wrap;}
+.ca-btn{padding:3px 9px;border:1.5px solid var(--border);border-radius:20px;font-size:9px;font-weight:700;cursor:pointer;background:#fff;font-family:inherit;transition:all .1s;white-space:nowrap;}
+.ca-btn.hit{border-color:var(--eat);color:var(--eat);}
+.ca-btn.hit:hover{background:var(--eat);color:#fff;}
+.ca-btn.kill{background:var(--eat);color:#fff;border-color:var(--eat);}
+.ca-btn.heal{border-color:var(--green);color:var(--green);}
+.ca-btn.heal:hover{background:var(--green);color:#fff;}
+.cc-special{font-size:9px;color:#4a3060;background:var(--fk-d);border-radius:4px;padding:4px 7px;margin-top:4px;line-height:1.5;}
+
+/* ───── BATTLE BOARD ───── */
+.board-title{font-size:13px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+.board-desc{font-size:10px;color:var(--muted);margin-bottom:10px;line-height:1.5;}
+#bbsvg{display:block;width:100%;}
+.feat-legend{margin-top:10px;}
+.feat-legend-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:6px;}
+.fl-item{display:flex;align-items:flex-start;gap:6px;padding:5px 0;border-bottom:1px solid var(--border);}
+.fl-swatch{width:13px;height:13px;border-radius:3px;flex-shrink:0;margin-top:1px;border:1px solid rgba(0,0,0,.12);}
+.fl-text{flex:1;}
+.fl-name{font-size:10px;font-weight:700;}
+.fl-eff{font-size:9px;color:var(--muted);line-height:1.4;margin-top:1px;}
+.log-box{background:var(--surf2);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:10px;color:var(--muted);font-style:italic;max-height:72px;overflow-y:auto;line-height:1.6;}
+
+/* ───── RESULT ───── */
+#phase-result{max-width:680px;margin:0 auto;padding:32px 20px;text-align:center;}
+.result-banner{font-size:30px;font-weight:800;margin-bottom:6px;}
+.result-sub{font-size:13px;color:var(--muted);margin-bottom:28px;}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;text-align:left;}
+.result-box{background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:16px;}
+.result-box h4{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px;}
+.adapt-pick{padding:9px 11px;border-radius:7px;margin-bottom:5px;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:#fff;transition:all .12s;display:flex;align-items:center;gap:8px;}
+.adapt-pick:hover{border-color:var(--eat);background:var(--eat-d);}
+.adapt-pick.chosen{border-color:var(--green);background:#f0faf4;}
+.loss-pick{padding:9px 11px;border-radius:7px;margin-bottom:5px;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:#fff;transition:all .12s;display:flex;align-items:center;gap:8px;}
+.loss-pick:hover{border-color:var(--eat);background:#fff5f0;}
+.loss-pick.chosen{border-color:var(--eat);background:#fff0ec;}
+.result-cta{padding:12px 28px;background:var(--green);color:#fff;border:none;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+
+/* ───── WEIRDO MODAL ───── */
+.overlay{position:fixed;inset:0;background:rgba(40,10,60,.5);z-index:200;display:none;align-items:center;justify-content:center;padding:16px;}
+.overlay.open{display:flex;}
+.wmodal{background:#fff;border:2px solid var(--fk);border-radius:16px;padding:20px;max-width:720px;width:100%;max-height:90vh;overflow-y:auto;}
+.wmodal h2{font-size:18px;font-weight:800;color:var(--fk);margin-bottom:4px;}
+.wmodal p{font-size:11px;color:var(--muted);margin-bottom:16px;line-height:1.5;}
+.wgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:9px;}
+.w-btn{background:#fff;border:2px solid #c0a0e0;border-radius:10px;padding:12px;cursor:pointer;text-align:left;transition:all .15s;font-family:inherit;width:100%;}
+.w-btn:hover{border-color:var(--fk);background:var(--fk-d);}
+.wb-head{font-size:20px;margin-bottom:3px;}
+.wb-name{font-size:13px;font-weight:700;color:var(--fk);margin-bottom:4px;}
+.wb-roll{font-size:9px;color:var(--muted);margin-bottom:4px;}
+.wb-stats{font-size:9px;color:#4a3060;margin-bottom:6px;font-weight:600;}
+.wb-spec{font-size:9px;color:#3a2050;line-height:1.5;}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="game-title"><span class="eat-w">EAT IT</span> | <span class="fk-w">F*CK IT</span></div>
+  <span style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.8px;">Battle Resolver</span>
+  <div class="hdr-right">
+    <a class="nav-link" href="index.html">← Cards & Rules</a>
+    <a class="nav-link" href="board.html">🗺 Hex Board</a>
+    <a class="nav-link active" href="battle.html">⚔️ Battle</a>
+  </div>
+</div>
+
+<!-- ═══════════════════ SETUP ═══════════════════ -->
+<div id="phase-setup">
+<div class="setup-wrap">
+  <div class="setup-title">⚔️ Set Up Battle</div>
+  <div class="setup-sub">Attacker chooses the battle type. Both sides field only that deck's strategies. Defender may summon a Weirdo on round 4.</div>
+
+  <div class="s-section">
+    <h3>1 — Battle Type (attacker chooses)</h3>
+    <div class="type-btns">
+      <button class="type-btn" id="btn-eat" onclick="setBattleType('eat')">
+        <div class="tb-icon">🦷</div>
+        <div class="tb-name eat-w">EAT IT Battle</div>
+        <div class="tb-sub">Cards fight with OFF stat as Power · ADA drives Skill</div>
+      </button>
+      <button class="type-btn" id="btn-fk" onclick="setBattleType('fk')">
+        <div class="tb-icon">🧬</div>
+        <div class="tb-name fk-w">F*CK IT Battle</div>
+        <div class="tb-sub">Cards fight with REP stat as Power · ADA drives Skill</div>
+      </button>
+    </div>
+  </div>
+
+  <div class="s-section">
+    <h3>2 — Battle Terrain (the hex you're fighting over)</h3>
+    <select class="terrain-sel" id="terrain-sel" onchange="setTerrain(this.value)">
+      <option value="">— Select terrain —</option>
+      <option value="V">🌋 Volcanic Vent</option>
+      <option value="P">🌿 Primordial Swamp</option>
+      <option value="S">🐚 Shallow Sea</option>
+      <option value="O">🌊 Open Ocean</option>
+      <option value="I">❄️ Ice Age Tundra</option>
+      <option value="A">🌾 Savannah</option>
+      <option value="F">🌲 Canopy Forest</option>
+      <option value="D">🏜️ Desert</option>
+      <option value="C">🕳️ Deep Cave</option>
+      <option value="G">⚗️ GM Lab</option>
+    </select>
+  </div>
+
+  <div class="s-section">
+    <h3>3 — Choose Strategy Cards for Each Side</h3>
+    <div id="no-type-msg" style="font-size:12px;color:var(--muted);font-style:italic;">Select a battle type above to see available cards.</div>
+    <div id="card-pickers" style="display:none">
+      <div class="sides-grid">
+        <div>
+          <div class="side-label atk-l">⚔️ Attacker's Cards</div>
+          <div class="card-grid" id="atk-cards"></div>
+        </div>
+        <div>
+          <div class="side-label def-l">🛡️ Defender's Cards</div>
+          <div class="card-grid" id="def-cards"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="start-btn" id="start-btn" onclick="startBattle()" disabled>Begin Battle</button>
+</div>
+</div>
+
+<!-- ═══════════════════ BATTLE ═══════════════════ -->
+<div id="phase-battle" style="display:none">
+  <div class="battle-body">
+
+    <!-- LEFT: Battle Board -->
+    <div class="board-col">
+      <div class="board-inner">
+        <div class="board-title" id="board-title"></div>
+        <div class="board-desc" id="board-desc"></div>
+        <svg id="bbsvg" viewBox="0 0 320 230"></svg>
+        <div class="feat-legend" id="feat-legend"></div>
+        <div style="margin-top:12px;">
+          <div class="feat-legend-title">Action Log</div>
+          <div class="log-box" id="log-box">Battle begins…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Combat Panels + Controls -->
+    <div class="combat-col">
+      <div class="sides-row">
+        <!-- Attacker -->
+        <div class="side-pane" id="atk-pane">
+          <div class="side-pane-hdr">
+            <span class="atk-l">⚔️ Attacker</span>
+            <span class="spb" id="atk-alive-count" style="font-size:9px;color:var(--muted);"></span>
+          </div>
+        </div>
+        <!-- Defender -->
+        <div class="side-pane" id="def-pane">
+          <div class="side-pane-hdr">
+            <span class="def-l">🛡️ Defender</span>
+            <span class="spb" id="def-alive-count" style="font-size:9px;color:var(--muted);"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Control Bar -->
+      <div class="control-bar">
+        <!-- Turn tracker -->
+        <div class="turn-row">
+          <div class="turn-pips" id="turn-pips"></div>
+          <div id="round-badge" class="round-badge rb-atk"></div>
+          <div id="phase-badge" class="phase-badge">Move</div>
+        </div>
+        <div class="weirdo-alert" id="weirdo-alert">
+          🧬 Round 4 — Defender may summon a Weirdo!
+          <button class="t-btn purple" onclick="openWeirdoModal()" style="margin-left:auto;">Summon Weirdo</button>
+        </div>
+        <div class="turn-btns">
+          <button class="t-btn" onclick="nextPhase()">Next Phase →</button>
+          <button class="t-btn green" onclick="nextRound()">End Round ↩</button>
+          <button class="t-btn grey" onclick="declareFlee()">Flee</button>
+          <button class="t-btn grey" onclick="declareConcede()">Concede</button>
+          <button class="t-btn red" onclick="endBattle('timeloss')">Time Loss (Rd 7)</button>
+        </div>
+        <!-- Dice roller -->
+        <div class="dice-row">
+          <span class="dice-label">Strike:</span>
+          <input class="d-input" id="pow-in" type="number" min="1" max="20" value="5" placeholder="Power">
+          <span class="d-thr" id="thr-display">hit on 4+</span>
+          <input class="d-input" id="thr-in" type="number" min="2" max="6" value="4" placeholder="Hit on">
+          <button class="roll-btn" onclick="rollStrike()">Roll</button>
+        </div>
+        <div id="dice-out" class="dice-out"></div>
+        <div id="dice-sum" class="dice-sum" style="display:none"></div>
+        <div id="carry-note" class="carry-note" style="display:none"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════ RESULT ═══════════════════ -->
+<div id="phase-result" style="display:none">
+  <div class="result-banner" id="result-banner"></div>
+  <div class="result-sub" id="result-sub"></div>
+  <div class="result-grid">
+    <div class="result-box">
+      <h4>Winner Adapts — Draw 2, Keep 1</h4>
+      <div id="adapt-picks"></div>
+      <div style="font-size:9px;color:var(--muted);margin-top:8px;">Click a card to keep it. The other is discarded.</div>
+    </div>
+    <div class="result-box">
+      <h4>Loser Concedes a Card (Winner's Choice)</h4>
+      <div id="loss-picks"></div>
+      <div style="font-size:9px;color:var(--muted);margin-top:8px;">Winner picks one of the loser's surviving cards to claim.</div>
+    </div>
+  </div>
+  <button class="result-cta" onclick="resetGame()">↺ New Battle</button>
+</div>
+
+<!-- ═══════════════════ WEIRDO MODAL ═══════════════════ -->
+<div class="overlay" id="weirdo-overlay">
+  <div class="wmodal">
+    <h2>🧬 Summon a Weirdo</h2>
+    <p>Choose any Weirdo from the Vault. They enter the battle on the defender's side for the remaining rounds. After battle, the Weirdo returns — they're a mercenary, not a permanent acquisition.</p>
+    <div class="wgrid" id="wgrid"></div>
+    <div style="margin-top:12px;text-align:right;">
+      <button class="t-btn" onclick="closeWeirdoModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────
+// CARD DATA (compact battle stats)
+// off, def, rep, ada, mov all = absolute values from card design
+// ter = terrain codes native to this strategy
+// rs = rangestrike, fs = first-strike
+// ─────────────────────────────────────────
+const EAT = [
+  {id:'chemosynthesis',n:'Chemosynthesis',art:'⚗️',t:0,off:0,def:4,rep:0,ada:5,mov:1,ter:['V','C'],rs:0,fs:0},
+  {id:'anoxygenic',n:'Anoxygenic Photosynthesis',art:'☀️',t:0,off:0,def:2,rep:0,ada:2,mov:1,ter:['V','S'],rs:0,fs:0},
+  {id:'oxygenic',n:'Oxygenic Photosynthesis',art:'🌿',t:0,off:0,def:3,rep:3,ada:4,mov:1,ter:['S','P','F'],rs:0,fs:0},
+  {id:'osmotrophy',n:'Osmotrophy / Absorption',art:'🍄',t:0,off:0,def:0,rep:2,ada:3,mov:1,ter:['P','F'],rs:0,fs:0},
+  {id:'filter_feed',n:'Filter Feeding',art:'🐋',t:1,off:0,def:2,rep:3,ada:2,mov:1,ter:['O','S','P'],rs:0,fs:0},
+  {id:'detritivory',n:'Detritivory / Scavenging',art:'🦅',t:1,off:0,def:3,rep:0,ada:3,mov:1,ter:['P','A','F'],rs:0,fs:0},
+  {id:'parasitism',n:'Parasitism (Feeding)',art:'🪱',t:1,off:2,def:3,rep:0,ada:4,mov:1,ter:['P','F','A','S','D','C'],rs:0,fs:0},
+  {id:'bulk_graze',n:'Bulk Grazing',art:'🦕',t:2,off:0,def:4,rep:2,ada:0,mov:2,ter:['A','F'],rs:0,fs:0},
+  {id:'browse',n:'Browse / Selective Feeding',art:'🦒',t:2,off:0,def:0,rep:0,ada:3,mov:3,ter:['F','A'],rs:0,fs:0},
+  {id:'sit_wait',n:'Sit-and-Wait Ambush',art:'🐊',t:2,off:5,def:3,rep:0,ada:0,mov:1,ter:['P','F','D'],rs:0,fs:1},
+  {id:'seed_pred',n:'Seed Predation',art:'🐦',t:2,off:0,def:0,rep:3,ada:3,mov:1,ter:['F','A','D'],rs:0,fs:0},
+  {id:'venom',n:'Venom Injection',art:'🐍',t:3,off:6,def:4,rep:0,ada:3,mov:1,ter:['D','F','S'],rs:1,fs:0},
+  {id:'trap_build',n:'Trap Building',art:'🕷️',t:3,off:4,def:2,rep:0,ada:4,mov:1,ter:['F','C','P'],rs:0,fs:1},
+  {id:'solo_sprint',n:'Solo Sprint Pursuit',art:'🐆',t:3,off:5,def:2,rep:0,ada:0,mov:6,ter:['A','O'],rs:0,fs:0},
+  {id:'electro',n:'Electrosensory Hunt',art:'🦈',t:3,off:5,def:0,rep:0,ada:4,mov:1,ter:['O','S','C'],rs:1,fs:0},
+  {id:'persistence',n:'Persistence Hunt',art:'🐺',t:4,off:4,def:0,rep:0,ada:4,mov:5,ter:['A','I'],rs:0,fs:0},
+  {id:'pack_hunt',n:'Pack / Cooperative Hunting',art:'🦁',t:4,off:7,def:0,rep:0,ada:5,mov:4,ter:['A','O','I'],rs:0,fs:0},
+  {id:'echolocation',n:'Echolocation Hunt',art:'🦇',t:4,off:5,def:0,rep:0,ada:4,mov:5,ter:['C','O'],rs:1,fs:0},
+  {id:'klepto',n:'Kleptoparasitism',art:'🦴',t:4,off:5,def:2,rep:0,ada:0,mov:5,ter:['A','O'],rs:0,fs:0},
+  {id:'tool_use',n:'Tool Use / Extraction',art:'🐒',t:4,off:4,def:0,rep:0,ada:7,mov:3,ter:['F','A'],rs:0,fs:0},
+  {id:'apex_crush',n:'Apex Crushing Predator',art:'🦖',t:5,off:8,def:5,rep:0,ada:0,mov:2,ter:['A','O','I'],rs:0,fs:0},
+  {id:'fungal_farm',n:'Fungal Farming',art:'🌾',t:5,off:0,def:3,rep:3,ada:6,mov:1,ter:['C','F'],rs:0,fs:0},
+];
+
+const FK = [
+  {id:'binary_fission',n:'Binary Fission',art:'🔬',t:0,off:0,def:0,rep:8,ada:-2,mov:1,ter:['V','P'],rs:0,fs:0},
+  {id:'hgt',n:'Horizontal Gene Transfer',art:'🔄',t:0,off:0,def:0,rep:3,ada:9,mov:1,ter:['V','P'],rs:1,fs:0},
+  {id:'budding',n:'Budding / Colonial',art:'🪸',t:0,off:0,def:2,rep:6,ada:0,mov:1,ter:['P','S'],rs:0,fs:0},
+  {id:'fragmentation',n:'Fragmentation / Regen',art:'⭐',t:0,off:0,def:6,rep:4,ada:0,mov:1,ter:['S','P'],rs:0,fs:0},
+  {id:'broadcast',n:'Broadcast Spawning',art:'🐟',t:1,off:0,def:-2,rep:9,ada:2,mov:1,ter:['O','S','P'],rs:0,fs:0},
+  {id:'parthenogenesis',n:'Parthenogenesis',art:'🦎',t:1,off:0,def:0,rep:7,ada:1,mov:1,ter:['D','C','I'],rs:0,fs:0},
+  {id:'veg_prop',n:'Vegetative / Clonal Spread',art:'🌱',t:1,off:0,def:3,rep:5,ada:0,mov:3,ter:['F','P','A'],rs:0,fs:0},
+  {id:'spore',n:'Spore / Cryptobiosis',art:'💠',t:1,off:0,def:8,rep:4,ada:5,mov:1,ter:['D','I','V'],rs:1,fs:0},
+  {id:'semelparous',n:'Semelparous Reproduction',art:'🐠',t:2,off:3,def:0,rep:8,ada:-1,mov:1,ter:['O','A','I'],rs:0,fs:0},
+  {id:'swarm_breed',n:'Swarm Breeding',art:'🦗',t:2,off:0,def:3,rep:7,ada:0,mov:1,ter:['P','A','S'],rs:0,fs:0},
+  {id:'display',n:'Honest Signal / Display',art:'🦚',t:2,off:0,def:-2,rep:6,ada:4,mov:1,ter:['A','F','S'],rs:0,fs:0},
+  {id:'sperm_comp',n:'Sperm Competition',art:'🔭',t:2,off:0,def:0,rep:6,ada:5,mov:1,ter:['O','S','P','A'],rs:0,fs:0},
+  {id:'delayed_dev',n:'Delayed Development',art:'🐻',t:2,off:0,def:5,rep:0,ada:5,mov:1,ter:['I','D'],rs:0,fs:0},
+  {id:'viviparity',n:'Viviparity (Live Birth)',art:'🐬',t:3,off:0,def:5,rep:3,ada:4,mov:1,ter:['I','D','F'],rs:0,fs:0},
+  {id:'lek',n:'Lek Mating System',art:'🦃',t:3,off:3,def:0,rep:7,ada:0,mov:1,ter:['A','F'],rs:0,fs:0},
+  {id:'infanticide',n:'Infanticide / Takeover',art:'😤',t:3,off:5,def:-1,rep:5,ada:0,mov:1,ter:['A','I'],rs:0,fs:0},
+  {id:'allo_parent',n:'Alloparental Care',art:'🦮',t:3,off:0,def:6,rep:3,ada:5,mov:1,ter:['A','F','C'],rs:0,fs:0},
+  {id:'ext_care',n:'Extended Parental Care',art:'🐘',t:4,off:0,def:4,rep:2,ada:6,mov:1,ter:['F','I'],rs:0,fs:0},
+  {id:'eusocial',n:'Eusociality',art:'🐝',t:4,off:5,def:7,rep:5,ada:0,mov:1,ter:['F','C'],rs:0,fs:0},
+  {id:'seq_herm',n:'Sequential Hermaphroditism',art:'🐡',t:4,off:0,def:0,rep:6,ada:6,mov:1,ter:['S','O'],rs:0,fs:0},
+  {id:'repro_manip',n:'Reproductive Manipulation',art:'🍄',t:4,off:6,def:0,rep:6,ada:5,mov:1,ter:['F','P'],rs:1,fs:0},
+];
+
+const WEIRDOS = [
+  {roll:1,n:'Lamprey',art:'🪡',off:4,def:1,rep:6,ada:4,mov:4,
+   spec:'SUCKER LOCK — Attaches without combat. Each round it remains attached, the target loses 1 Power. Must be forcibly removed (costs the host 1 action).'},
+  {roll:2,n:'Platypus',art:'🦆',off:5,def:3,rep:3,ada:6,mov:3,
+   spec:'ELECTROCONFUSION — Once per battle, force any enemy card to skip its next strike entirely. Cannot be blocked by rangestrike.'},
+  {roll:3,n:'Horseshoe Crab',art:'🦀',off:1,def:8,rep:5,ada:8,mov:1,
+   spec:'LIVING FOSSIL — Cannot be targeted by carry damage. +3 bonus on any survival roll this battle. Has survived every extinction so far.'},
+  {roll:4,n:'Fungi Network',art:'🍄',off:2,def:4,rep:5,ada:7,mov:0,
+   spec:'MYCELIUM WEB — Place a Network token on any hex at setup. Enemy cards touching the Network lose −1 Power each round. Network cannot be moved or destroyed.'},
+  {roll:5,n:'Tardigrade',art:'🐛',off:0,def:10,rep:2,ada:10,mov:1,
+   spec:'INDESTRUCTIBLE — Cannot be eliminated by strikes. Only a Catastrophe card or player concede can remove it. Absorbs up to 2 carry hits per round automatically.'},
+  {roll:6,n:'Mantis Shrimp',art:'🦐',off:8,def:2,rep:4,ada:3,mov:4,
+   spec:'DACTYL CLUB — Always acts first regardless of turn order. First strike auto-hits (no roll needed). Target cannot counter-strike the same round.'},
+];
+
+// ─────────────────────────────────────────
+// BATTLE BOARD DEFINITIONS
+// Grid: 5 rows × 7 cols, oval-clipped
+// Entry hexes: attacker = col 5, rows 1-3
+//              defender = col 1, rows 1-3
+// Feature hexes: center zone cols 2-4
+// ─────────────────────────────────────────
+const BOARD_GRID = [
+  [null,null,'.','.','.',null,null],
+  [null,'EN_D','.','.','.',  'EN_A',null],
+  [null,'EN_D','.','.','.',  'EN_A',null],
+  [null,'EN_D','.','.','.',  'EN_A',null],
+  [null,null,'.','.','.',null,null],
+];
+
+const BOARDS = {
+  V:{name:'Volcanic Vent',icon:'🌋',
+    desc:'Sulfuric vents power chemosynthetic strategies (+1 Power). Rock formations block all rangestrikes through them.',
+    f:{'0,3':'VO','1,2':'VO','1,4':'RO','2,3':'RO','3,2':'VO','3,4':'RO','4,3':'VO'}},
+  P:{name:'Primordial Swamp',icon:'🌿',
+    desc:'Bogs slow all non-native movement (−1 MOV). Swamp pools are impassable to non-aquatic strategies.',
+    f:{'0,2':'BO','0,4':'BO','1,3':'SW','2,2':'BO','2,4':'BO','3,3':'SW','4,3':'BO'}},
+  S:{name:'Shallow Sea',icon:'🐚',
+    desc:'Reef hexes block rangestrikes and boost aquatic Skill (+1). Currents penalize non-aquatic movement (−1 MOV).',
+    f:{'0,3':'WA','1,2':'RE','1,4':'WA','2,3':'WA','3,2':'WA','3,4':'RE','4,3':'WA'}},
+  O:{name:'Open Ocean',icon:'🌊',
+    desc:'Open ground extends all rangestrike range by 1 hex. Deep water zones are impassable to non-aquatic strategies.',
+    f:{'0,3':'OP','1,2':'DE','1,4':'OP','2,3':'OP','3,2':'OP','3,4':'DE','4,3':'OP'}},
+  I:{name:'Ice Age Tundra',icon:'❄️',
+    desc:'Ice sheets everywhere. Non-cold-native strategies lose −1 Skill. Crossing ice costs +1 MOV.',
+    f:{'0,3':'IC','1,2':'IC','1,4':'IC','2,2':'IC','2,4':'IC','3,3':'IC','4,3':'IC'}},
+  A:{name:'Savannah',icon:'🌾',
+    desc:'Open ground extends rangestrike range. Tall grass patches give desert/savannah natives First Strike.',
+    f:{'0,2':'OP','0,4':'OP','1,3':'OP','2,2':'SA','2,4':'SA','3,3':'OP','4,3':'OP'}},
+  F:{name:'Canopy Forest',icon:'🌲',
+    desc:'Dense canopy blocks ALL rangestrikes. Non-forest-native strategies suffer −1 Skill throughout the battle.',
+    f:{'0,3':'TR','1,2':'TR','1,4':'TR','2,3':'TR','3,2':'TR','3,4':'TR','4,3':'TR'}},
+  D:{name:'Desert',icon:'🏜️',
+    desc:'Sand dunes grant desert-native First Strike. Rock formations block rangestrikes and slow non-natives (−1 MOV).',
+    f:{'0,3':'SA','1,2':'RO','1,4':'SA','2,3':'SA','3,2':'SA','3,4':'RO','4,3':'SA'}},
+  C:{name:'Deep Cave',icon:'🕳️',
+    desc:'Darkness penalizes all non-cave-native Skill (−1). Cave-native strategies gain +1 Power. Rock blocks rangestrikes.',
+    f:{'0,2':'RO','0,4':'CA','1,3':'CA','2,2':'CA','2,4':'RO','3,3':'CA','4,3':'RO'}},
+  G:{name:'GM Lab',icon:'⚗️',
+    desc:'Chaotic battleground. Random features from multiple biomes create unpredictable terrain advantages.',
+    f:{'1,2':'VO','1,4':'IC','2,3':'OP','3,2':'TR','3,4':'WA'}},
+};
+
+const FEATS = {
+  '.': {name:'Plain',col:'#ede5d8',tc:'#9a8a78',eff:'No special effect.'},
+  'VO':{name:'Volcanic Flow',col:'#8a1a00',tc:'#ff9070',eff:'Volcanic-native (+1 Power). Non-native: movement halts on entry (lose remaining MOV).'},
+  'BO':{name:'Bog',col:'#1a4028',tc:'#70e090',eff:'Non-swamp-native: −1 MOV while in or crossing.'},
+  'SW':{name:'Swamp Pool',col:'#0a2a18',tc:'#40b070',eff:'Impassable to non-aquatic. Aquatic-native: +1 MOV.'},
+  'WA':{name:'Current',col:'#1a3a6a',tc:'#80b8ff',eff:'Aquatic-native: +1 MOV. Non-aquatic: −1 MOV crossing.'},
+  'RE':{name:'Reef',col:'#1a4a6a',tc:'#60b0ff',eff:'Aquatic-native: +1 Skill. Rangestrikes cannot pass through.'},
+  'DE':{name:'Deep Water',col:'#102060',tc:'#6090f0',eff:'Only aquatic-native strategies may enter.'},
+  'IC':{name:'Ice Sheet',col:'#2a4a6a',tc:'#a0d8f0',eff:'Non-cold-native: −1 Skill. Crossing costs +1 MOV.'},
+  'RO':{name:'Rock Formation',col:'#5a4a38',tc:'#c0a880',eff:'Rangestrikes blocked through this hex. Non-native: −1 MOV.'},
+  'TR':{name:'Forest Canopy',col:'#0e3820',tc:'#60d080',eff:'ALL rangestrikes blocked. Non-forest-native: −1 Skill.'},
+  'SA':{name:'Sand / Tall Grass',col:'#5a3808',tc:'#f0c040',eff:'Desert/savannah-native in this hex: First Strike this round. Non-native: −1 MOV.'},
+  'OP':{name:'Open Ground',col:'#8a6808',tc:'#e8d040',eff:'Rangestrike range +1. No terrain cover available.'},
+  'CA':{name:'Cave Darkness',col:'#2a1840',tc:'#c090f0',eff:'Cave-native: +1 Power. Non-cave-native: −1 Skill.'},
+  'EN_A':{name:'Attacker Entry',col:'#fdf0ea',tc:'#c4561e',eff:'Attacker starting positions.'},
+  'EN_D':{name:'Defender Entry',col:'#f5f0ff',tc:'#7b4fa0',eff:'Defender starting positions.'},
+};
+
+// ─────────────────────────────────────────
+// GAME STATE
+// ─────────────────────────────────────────
+let G = {
+  battleType: null,
+  terrain: null,
+  round: 1,
+  activePlayer: 'attacker', // attacker acts first each round
+  step: 'move',
+  weirdoSummoned: false,
+  weirdoAlerted: false,
+  atk: [],   // [{card, hp, maxHp, alive}]
+  def: [],
+  winner: null,
+  log: [],
+};
+
+let atkSelected = new Set();
+let defSelected = new Set();
+
+// ─────────────────────────────────────────
+// SETUP FUNCTIONS
+// ─────────────────────────────────────────
+function setBattleType(type){
+  G.battleType = type;
+  document.getElementById('btn-eat').className = 'type-btn' + (type==='eat'?' eat-sel':'');
+  document.getElementById('btn-fk').className  = 'type-btn' + (type==='fk' ?' fk-sel' :'');
+  atkSelected.clear(); defSelected.clear();
+  document.getElementById('no-type-msg').style.display = 'none';
+  document.getElementById('card-pickers').style.display = 'block';
+  renderCardPickers();
+  checkStartReady();
+}
+
+function setTerrain(v){
+  G.terrain = v;
+  checkStartReady();
+}
+
+function checkStartReady(){
+  const ok = G.battleType && G.terrain && atkSelected.size > 0 && defSelected.size > 0;
+  document.getElementById('start-btn').disabled = !ok;
+}
+
+function renderCardPickers(){
+  const deck = G.battleType === 'eat' ? EAT : FK;
+  const aCont = document.getElementById('atk-cards');
+  const dCont = document.getElementById('def-cards');
+  const cls = G.battleType === 'eat' ? 'sel-eat' : 'sel-fk';
+  const make = (deck, cont, selSet, suffix) => {
+    cont.innerHTML = '';
+    deck.forEach(c => {
+      const sel = selSet.has(c.id);
+      const div = document.createElement('div');
+      div.className = 'cp-card' + (sel ? ' '+cls : '');
+      div.innerHTML = `<div class="cp-art">${c.art}</div><div class="cp-info"><div class="cp-name">${c.n}</div><div class="cp-tier">Tier ${c.t}</div></div>`;
+      div.onclick = () => {
+        if(selSet.has(c.id)) selSet.delete(c.id);
+        else selSet.add(c.id);
+        renderCardPickers();
+        checkStartReady();
+      };
+      cont.appendChild(div);
+    });
+  };
+  make(deck, aCont, atkSelected);
+  make(deck, dCont, defSelected);
+}
+
+// ─────────────────────────────────────────
+// BATTLE START
+// ─────────────────────────────────────────
+function battleStats(card, battleType, terrain){
+  const pow = Math.max(1, battleType==='eat' ? card.off : card.rep);
+  const rawAda = card.ada;
+  const skill = Math.max(1, Math.min(5, Math.ceil(rawAda / 2)));
+  const hp = Math.max(1, Math.ceil(Math.max(0, card.def) / 2));
+  const mov = Math.max(1, card.mov);
+  const native = card.ter.includes(terrain);
+  const finalSkill = skill + (native ? 1 : 0);
+  const threshold = Math.max(2, 7 - finalSkill);
+  return {pow, skill:finalSkill, hp, mov, native, threshold, rs:card.rs, fs:card.fs};
+}
+
+function startBattle(){
+  const deck = G.battleType === 'eat' ? EAT : FK;
+  G.atk = deck.filter(c=>atkSelected.has(c.id)).map(c=>{
+    const bs = battleStats(c, G.battleType, G.terrain);
+    return {card:c, hp:bs.hp, maxHp:bs.hp, alive:true, bs};
+  });
+  G.def = deck.filter(c=>defSelected.has(c.id)).map(c=>{
+    const bs = battleStats(c, G.battleType, G.terrain);
+    return {card:c, hp:bs.hp, maxHp:bs.hp, alive:true, bs};
+  });
+  G.round = 1; G.activePlayer = 'attacker'; G.step = 'move';
+  G.weirdoSummoned = false; G.weirdoAlerted = false;
+  G.winner = null; G.log = ['⚔️ Battle begins in ' + BOARDS[G.terrain].name + '!'];
+
+  document.getElementById('phase-setup').style.display = 'none';
+  document.getElementById('phase-battle').style.display = 'flex';
+  document.getElementById('phase-battle').style.flexDirection = 'column';
+
+  renderBoard();
+  renderTurns();
+  renderSides();
+}
+
+// ─────────────────────────────────────────
+// BOARD RENDER
+// ─────────────────────────────────────────
+function renderBoard(){
+  const b = BOARDS[G.terrain];
+  document.getElementById('board-title').innerHTML = b.icon + ' ' + b.name;
+  document.getElementById('board-desc').textContent = b.desc;
+
+  const R=24, W=Math.sqrt(3)*R, H=2*R, DY=R*1.5;
+  const PAD=28;
+  const svgW=320, svgH=230;
+  const svg = document.getElementById('bbsvg');
+  svg.setAttribute('viewBox',`0 0 ${svgW} ${svgH}`);
+
+  const hexPts = r => {
+    let pts=[];
+    for(let i=0;i<6;i++){const a=Math.PI/180*(60*i-30);pts.push([r*Math.cos(a),r*Math.sin(a)]);}
+    return pts.map(p=>p.join(',')).join(' ');
+  };
+
+  let cells=[];
+  BOARD_GRID.forEach((row,ri)=>{
+    row.forEach((cell,ci)=>{
+      if(cell===null)return;
+      const feat = b.f[ri+','+ci] || cell;
+      const cx = PAD + ci*W + (ri%2===1?W/2:0);
+      const cy = PAD + ri*DY;
+      cells.push({ri,ci,feat,cx,cy});
+    });
+  });
+
+  const usedFeats = new Set();
+  let s = cells.map(({feat,cx,cy})=>{
+    const fd = FEATS[feat]||FEATS['.'];
+    if(feat!=='EN_A'&&feat!=='EN_D'&&feat!=='.')usedFeats.add(feat);
+    const pts = hexPts(R-1);
+    const ptStr = pts.split(' ').map(p=>{
+      const[x,y]=p.split(',').map(Number);
+      return `${cx+x},${cy+y}`;
+    }).join(' ');
+    const label = feat==='EN_A'?'ATK':feat==='EN_D'?'DEF':feat==='.'?'':feat;
+    const labelColor = fd.tc||'#777';
+    return `<polygon points="${ptStr}" fill="${fd.col}" stroke="#c8b898" stroke-width="1.5"/>
+      <text x="${cx}" y="${cy+4}" text-anchor="middle" font-size="8" fill="${labelColor}" font-family="system-ui,sans-serif" font-weight="700">${label}</text>`;
+  }).join('');
+
+  svg.innerHTML = s;
+
+  // Legend
+  const leg = document.getElementById('feat-legend');
+  leg.innerHTML = `<div class="feat-legend-title">Terrain Features</div>`;
+  [...usedFeats].forEach(f=>{
+    const fd = FEATS[f];
+    if(!fd)return;
+    leg.innerHTML += `<div class="fl-item">
+      <div class="fl-swatch" style="background:${fd.col}"></div>
+      <div class="fl-text"><div class="fl-name">${fd.name}</div><div class="fl-eff">${fd.eff}</div></div>
+    </div>`;
+  });
+}
+
+// ─────────────────────────────────────────
+// SIDES RENDER
+// ─────────────────────────────────────────
+function renderSides(){
+  renderPane('atk', G.atk);
+  renderPane('def', G.def);
+  checkBattleOver();
+}
+
+function renderPane(side, combatants){
+  const pane = document.getElementById(side+'-pane');
+  // Keep header, rebuild cards
+  const hdr = pane.querySelector('.side-pane-hdr');
+  pane.innerHTML = '';
+  pane.appendChild(hdr);
+
+  const alive = combatants.filter(c=>c.alive).length;
+  document.getElementById(side+'-alive-count').textContent = alive + ' / ' + combatants.length + ' alive';
+
+  combatants.forEach((cm,i)=>{
+    const {card,hp,maxHp,alive,bs} = cm;
+    const isWeirdo = !!cm.isWeirdo;
+    const pct = hp/maxHp*100;
+    const fillClass = pct > 50 ? '' : pct > 25 ? 'low' : 'crit';
+    const deadX = alive ? '' : '<div class="cc-dead-x">✕ ELIMINATED</div>';
+    const nativeTag = bs.native ? `<div class="cc-native">⭐ Native (+1 Skill in ${BOARDS[G.terrain].name})</div>` : '';
+    const rsTag = bs.rs ? `<span class="st st-rs">RANGESTRIKE</span>` : '';
+    const fsTag = bs.fs ? `<span class="st st-fs">FIRST STRIKE</span>` : '';
+    const specTag = isWeirdo ? `<div class="cc-special">🧬 ${card.spec}</div>` : '';
+    const wrdoCls = isWeirdo ? ' weirdo' : '';
+    const deckClass = G.battleType === 'eat' ? 'eat-w' : 'fk-w';
+
+    const html = `<div class="cc${alive?'':' dead'}${wrdoCls}" id="cc-${side}-${i}">
+      <div class="cc-top">
+        <div class="cc-art">${card.art}</div>
+        <div class="cc-info">
+          <div class="cc-name">${card.n}</div>
+          ${nativeTag}${deadX}
+        </div>
+      </div>
+      <div class="cc-stats">
+        <span class="st st-pow">PWR ${bs.pow}</span>
+        <span class="st st-skl">SKL ${bs.skill} (hit ${bs.threshold}+)</span>
+        <span class="st st-hp">HP ${hp}/${maxHp}</span>
+        <span class="st st-mov">MOV ${bs.mov}</span>
+        ${rsTag}${fsTag}
+      </div>
+      <div class="hp-bar"><div class="hp-fill ${fillClass}" style="width:${pct}%"></div></div>
+      ${alive ? `<div class="cc-actions">
+        <button class="ca-btn hit" onclick="applyHit('${side}',${i},1)">Hit −1 HP</button>
+        <button class="ca-btn kill" onclick="killCard('${side}',${i})">Eliminate</button>
+        <button class="ca-btn heal" onclick="applyHit('${side}',${i},-1)">Heal +1</button>
+      </div>` : ''}
+      ${specTag}
+    </div>`;
+
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = html;
+    pane.appendChild(wrapper.firstElementChild);
+  });
+}
+
+function applyHit(side, idx, dmg){
+  const list = side==='atk' ? G.atk : G.def;
+  const cm = list[idx];
+  if(!cm.alive) return;
+  cm.hp = Math.max(0, Math.min(cm.maxHp, cm.hp - dmg));
+  if(cm.hp === 0){ cm.alive = false; addLog(`💀 ${cm.card.n} eliminated!`); }
+  else { addLog(dmg > 0 ? `🩸 ${cm.card.n} takes ${dmg} hit (${cm.hp}/${cm.maxHp} HP).` : `💚 ${cm.card.n} heals to ${cm.hp}/${cm.maxHp} HP.`); }
+  renderSides();
+}
+
+function killCard(side, idx){
+  const list = side==='atk' ? G.atk : G.def;
+  list[idx].alive = false;
+  list[idx].hp = 0;
+  addLog(`💀 ${list[idx].card.n} eliminated!`);
+  renderSides();
+}
+
+// ─────────────────────────────────────────
+// TURN / PHASE
+// ─────────────────────────────────────────
+const PHASES = ['move','strike','strikeback'];
+function nextPhase(){
+  const idx = PHASES.indexOf(G.step);
+  if(idx < PHASES.length-1){
+    G.step = PHASES[idx+1];
+    addLog(`→ Phase: ${G.step.toUpperCase()}`);
+  } else {
+    // end this player's turn, switch
+    if(G.activePlayer === 'attacker'){
+      G.activePlayer = 'defender';
+      G.step = 'move';
+      addLog('🛡️ Defender\'s turn — Move phase.');
+    } else {
+      nextRound();
+      return;
+    }
+  }
+  renderTurns();
+}
+
+function nextRound(){
+  G.round++;
+  G.activePlayer = 'attacker';
+  G.step = 'move';
+  if(G.round > 7){ endBattle('timeloss'); return; }
+  addLog(`📅 Round ${G.round} begins.`);
+  if(G.round === 4 && !G.weirdoSummoned){
+    G.weirdoAlerted = true;
+    addLog(`🧬 Round 4! Defender may summon a Weirdo before moving.`);
+  }
+  renderTurns();
+  renderSides();
+}
+
+function renderTurns(){
+  // Pips
+  const pips = document.getElementById('turn-pips');
+  pips.innerHTML = '';
+  for(let i=1;i<=7;i++){
+    const cls = i < G.round ? 'done' : i === G.round ? (i===4?'w4':'cur') : 'future';
+    const label = i===4 ? '4★' : String(i);
+    pips.innerHTML += `<div class="t-pip ${cls}" title="${i===4?'Weirdo summon round':''}">${label}</div>`;
+  }
+
+  // Badges
+  const rb = document.getElementById('round-badge');
+  if(G.activePlayer === 'attacker'){
+    rb.className='round-badge rb-atk'; rb.textContent='Round '+G.round+' — Attacker';
+  } else {
+    rb.className='round-badge rb-def'; rb.textContent='Round '+G.round+' — Defender';
+  }
+  document.getElementById('phase-badge').textContent = G.step.charAt(0).toUpperCase()+G.step.slice(1);
+
+  // Weirdo alert
+  const wa = document.getElementById('weirdo-alert');
+  wa.style.display = (G.round===4 && !G.weirdoSummoned && G.activePlayer==='defender') ? 'flex' : 'none';
+
+  // Threshold helper
+  updateThresholdDisplay();
+}
+
+function updateThresholdDisplay(){
+  const thr = parseInt(document.getElementById('thr-in').value)||4;
+  document.getElementById('thr-display').textContent = `hit on ${thr}+`;
+}
+
+// ─────────────────────────────────────────
+// DICE
+// ─────────────────────────────────────────
+function rollStrike(){
+  const pow = parseInt(document.getElementById('pow-in').value)||5;
+  const thr = parseInt(document.getElementById('thr-in').value)||4;
+  const results = [];
+  let hits = 0;
+  for(let i=0;i<pow;i++){
+    const r = Math.floor(Math.random()*6)+1;
+    const h = r >= thr;
+    if(h) hits++;
+    results.push({r,h});
+  }
+  const out = document.getElementById('dice-out');
+  out.innerHTML = results.map(d=>`<div class="die ${d.h?'hit':'miss'}">${d.r}</div>`).join('');
+  const sumEl = document.getElementById('dice-sum');
+  sumEl.style.display='block';
+  sumEl.innerHTML = `<span style="color:var(--green)">${hits} hit${hits!==1?'s':''}</span> / <span style="color:var(--muted)">${pow-hits} miss${pow-hits!==1?'es':''}</span>`;
+  const carry = document.getElementById('carry-note');
+  if(hits > 1){
+    carry.style.display='block';
+    carry.textContent = `Carry rule: if your target has fewer HP than ${hits} hits, excess carry to an adjacent enemy.`;
+  } else { carry.style.display='none'; }
+  addLog(`🎲 Rolled ${pow} dice (hit ${thr}+): ${hits} hit${hits!==1?'s':''}.`);
+}
+
+document.getElementById('thr-in').addEventListener('input', updateThresholdDisplay);
+
+// ─────────────────────────────────────────
+// SPECIAL ACTIONS
+// ─────────────────────────────────────────
+function declareFlee(){
+  if(!confirm('Defender flees before battle? Defender retreats 1 hex — no cards lost, but attacker gets 1 free muster from the terrain.')) return;
+  addLog('🏃 Defender FLED! No cards lost. Attacker earns 1 free muster.');
+  endBattle('flee');
+}
+
+function declareConcede(){
+  const who = confirm('Attacker concedes? Click OK for attacker, Cancel for defender.') ? 'attacker' : 'defender';
+  addLog(`🏳️ ${who.charAt(0).toUpperCase()+who.slice(1)} CONCEDED. No cards lost. ${who==='attacker'?'Attacker':'Defender'} retreats.`);
+  endBattle('concede');
+}
+
+// ─────────────────────────────────────────
+// WEIRDO SUMMON
+// ─────────────────────────────────────────
+function openWeirdoModal(){
+  const grid = document.getElementById('wgrid');
+  grid.innerHTML = WEIRDOS.map(w=>{
+    const bs = battleStats({off:w.off,def:w.def,rep:w.rep,ada:w.ada,mov:w.mov,ter:[]},G.battleType,G.terrain);
+    return `<button class="w-btn" onclick="summonWeirdo(${w.roll-1})">
+      <div class="wb-head">${w.art}</div>
+      <div class="wb-name">${w.n}</div>
+      <div class="wb-roll">Roll ${w.roll} from the Weirdo Vault</div>
+      <div class="wb-stats">PWR ${bs.pow} · SKL ${bs.skill} (${bs.threshold}+) · HP ${bs.hp} · MOV ${bs.mov}</div>
+      <div class="wb-spec">${w.spec}</div>
+    </button>`;
+  }).join('');
+  document.getElementById('weirdo-overlay').className = 'overlay open';
+}
+
+function closeWeirdoModal(){
+  document.getElementById('weirdo-overlay').className = 'overlay';
+}
+
+function summonWeirdo(idx){
+  closeWeirdoModal();
+  G.weirdoSummoned = true;
+  G.weirdoAlerted = false;
+  const w = WEIRDOS[idx];
+  const bs = battleStats({off:w.off,def:w.def,rep:w.rep,ada:w.ada,mov:w.mov,ter:[]},G.battleType,G.terrain);
+  const wCard = {art:w.art, n:w.n, spec:w.spec, off:w.off, def:w.def, rep:w.rep, ada:w.ada, mov:w.mov, ter:[]};
+  G.def.push({card:wCard, hp:bs.hp, maxHp:bs.hp, alive:true, bs, isWeirdo:true});
+  addLog(`🧬 Weirdo summoned: ${w.art} ${w.n} enters for the defender!`);
+  renderTurns();
+  renderSides();
+}
+
+// ─────────────────────────────────────────
+// CHECK BATTLE OVER
+// ─────────────────────────────────────────
+function checkBattleOver(){
+  const atkAlive = G.atk.filter(c=>c.alive).length;
+  const defAlive = G.def.filter(c=>c.alive).length;
+  if(atkAlive===0 && defAlive===0){ endBattle('draw'); }
+  else if(atkAlive===0){ endBattle('defender'); }
+  else if(defAlive===0){ endBattle('attacker'); }
+}
+
+function endBattle(result){
+  G.winner = result;
+  document.getElementById('phase-battle').style.display = 'none';
+  document.getElementById('phase-result').style.display = 'block';
+  renderResult(result);
+}
+
+// ─────────────────────────────────────────
+// RESULT
+// ─────────────────────────────────────────
+function renderResult(result){
+  const deck = G.battleType === 'eat' ? EAT : FK;
+  const deckLabel = G.battleType === 'eat' ? 'EAT IT' : 'F*CK IT';
+  let banner='', sub='', winnerSide=null;
+
+  if(result==='attacker'){ banner='⚔️ Attacker Wins!'; sub='Defender\'s agent is eliminated from this battle. Winner adapts.'; winnerSide='atk'; }
+  else if(result==='defender'){ banner='🛡️ Defender Wins!'; sub='Attacker\'s agent is eliminated from this battle. Winner adapts.'; winnerSide='def'; }
+  else if(result==='timeloss'){ banner='⏱️ Time Loss — Defender Wins!'; sub='Attacker failed to win by round 7. Defender holds the hex.'; winnerSide='def'; }
+  else if(result==='flee'){ banner='🏃 Defender Fled'; sub='No casualties. Attacker earns 1 free muster from '+BOARDS[G.terrain].name+'.'; winnerSide=null; }
+  else if(result==='concede'){ banner='🏳️ Battle Conceded'; sub='No casualties. Both agents retreat.'; winnerSide=null; }
+  else { banner='💀 Mutual Annihilation'; sub='Both sides eliminated. The hex is unclaimed.'; winnerSide=null; }
+
+  document.getElementById('result-banner').textContent = banner;
+  document.getElementById('result-sub').textContent = sub;
+
+  // Draw 2 adaptation cards
+  const picks = [];
+  while(picks.length < 2){
+    const r = deck[Math.floor(Math.random()*deck.length)];
+    if(!picks.find(p=>p.id===r.id)) picks.push(r);
+  }
+
+  const adaptEl = document.getElementById('adapt-picks');
+  const lossEl = document.getElementById('loss-picks');
+
+  if(winnerSide){
+    adaptEl.innerHTML = picks.map((c,i)=>`<div class="adapt-pick" onclick="chooseAdapt(this)" data-idx="${i}">
+      <span>${c.art}</span><span><strong>${c.n}</strong><br><span style="font-size:9px;color:var(--muted)">Tier ${c.t} ${deckLabel}</span></span>
+    </div>`).join('');
+
+    const loserSide = winnerSide==='atk'?'def':'atk';
+    const loserAlive = (loserSide==='atk'?G.atk:G.def).filter(c=>c.alive&&!c.isWeirdo);
+    if(loserAlive.length > 0){
+      lossEl.innerHTML = loserAlive.map((cm,i)=>`<div class="loss-pick" onclick="chooseLoss(this)" data-idx="${i}">
+        <span>${cm.card.art}</span><span><strong>${cm.card.n}</strong><br><span style="font-size:9px;color:var(--muted)">Winner takes this card</span></span>
+      </div>`).join('');
+    } else {
+      lossEl.innerHTML = '<div style="font-size:11px;color:var(--muted);font-style:italic;">No surviving cards to claim.</div>';
+    }
+  } else {
+    adaptEl.innerHTML = '<div style="font-size:11px;color:var(--muted);font-style:italic;">No adaptation — battle ended without a winner.</div>';
+    lossEl.innerHTML = '<div style="font-size:11px;color:var(--muted);font-style:italic;">No losses claimed.</div>';
+  }
+}
+
+function chooseAdapt(el){
+  document.querySelectorAll('.adapt-pick').forEach(e=>e.classList.remove('chosen'));
+  el.classList.add('chosen');
+}
+
+function chooseLoss(el){
+  document.querySelectorAll('.loss-pick').forEach(e=>e.classList.remove('chosen'));
+  el.classList.add('chosen');
+}
+
+function resetGame(){
+  G = {battleType:null,terrain:null,round:1,activePlayer:'attacker',step:'move',weirdoSummoned:false,weirdoAlerted:false,atk:[],def:[],winner:null,log:[]};
+  atkSelected.clear(); defSelected.clear();
+  document.getElementById('phase-result').style.display='none';
+  document.getElementById('phase-setup').style.display='block';
+  document.getElementById('btn-eat').className='type-btn';
+  document.getElementById('btn-fk').className='type-btn';
+  document.getElementById('terrain-sel').value='';
+  document.getElementById('no-type-msg').style.display='block';
+  document.getElementById('card-pickers').style.display='none';
+  document.getElementById('start-btn').disabled=true;
+  document.getElementById('dice-out').innerHTML='';
+  document.getElementById('dice-sum').style.display='none';
+  document.getElementById('carry-note').style.display='none';
+}
+
+// ─────────────────────────────────────────
+// LOG
+// ─────────────────────────────────────────
+function addLog(msg){
+  G.log.push(msg);
+  const lb = document.getElementById('log-box');
+  if(lb){ lb.innerHTML = G.log.slice(-20).join('<br>'); lb.scrollTop = lb.scrollHeight; }
+}
+</script>
+</body>
+</html>
