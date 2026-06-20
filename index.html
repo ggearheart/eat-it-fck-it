@@ -313,27 +313,57 @@ html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-s
 <!-- RULES PANEL -->
 <div id="panel-rules" class="panel">
   <div class="rules-grid">
+
+    <div class="rules-card" style="border-color:var(--fk);border-width:2px">
+      <h3 style="color:var(--fk)">STEP 0 — CHOOSE YOUR LINEAGE</h3>
+      <div class="mechanic" style="border-left-color:var(--fk)">
+        <div class="mechanic-name" style="color:var(--fk)">BEFORE THE GAME BEGINS</div>
+        <div class="mechanic-desc">Each player selects a <strong>lineage</strong> — the evolutionary branch their agents descend from. Lineage determines your starting strategies, stat spread, starting terrain, and a <strong>persistent special ability</strong> that lasts the entire game. See the <em>Choose Lineage</em> tab for full details on each path.</div>
+      </div>
+      <div class="mechanic" style="border-left-color:var(--fk)">
+        <div class="mechanic-name" style="color:var(--fk)">THE SIX LINEAGES</div>
+        <div class="mechanic-desc">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-top:4px">
+            <div><strong>🦅 Birds</strong> — MOV 6, Aerial Survey</div>
+            <div><strong>🐘 Mammals</strong> — ADA 6, Endothermy</div>
+            <div><strong>🦠 Microbes</strong> — REP 10, Ubiquity</div>
+            <div><strong>🐸 Amphibians</strong> — REP 6, Dual Life</div>
+            <div><strong>🦖 Reptiles</strong> — DEF 5, Solar Efficiency</div>
+            <div><strong>🐟 Fish</strong> — REP 8, Lateral Line</div>
+          </div>
+        </div>
+      </div>
+      <div class="mechanic" style="border-left-color:var(--fk)">
+        <div class="mechanic-name" style="color:var(--fk)">WEIRDO VAULT (OPTIONAL)</div>
+        <div class="mechanic-desc">Instead of choosing a standard lineage, a player may roll 1d6 and be assigned a Weirdo organism (Lamprey, Platypus, Horseshoe Crab, Fungi, Tardigrade, or Mantis Shrimp). Weirdos have extreme stat spreads and unique rule-breaking abilities. Intended as a challenge run or for experienced players only.</div>
+      </div>
+      <div class="mechanic" style="border-left-color:var(--fk)">
+        <div class="mechanic-name" style="color:var(--fk)">LINEAGE LOCKING</div>
+        <div class="mechanic-desc">Your lineage is permanent. Special abilities cannot be lost, stolen, or disabled by strategy cards, combat, or Catastrophe events. They represent deep evolutionary heritage — not a strategy card.</div>
+      </div>
+    </div>
+
     <div class="rules-card">
       <h3>STARTING SETUP</h3>
       <div class="mechanic">
         <div class="mechanic-name">AGENTS</div>
-        <div class="mechanic-desc">Each player begins with 2 identical Ancestral Prokaryote agents on the Primordial Swamp hex. All agents start with the same two strategies: Binary Fission (F*CK) and Chemosynthesis (EAT).</div>
+        <div class="mechanic-desc">Each player places <strong>2 agents</strong> on their lineage's preferred starting terrain hex. Agents begin with their lineage's starting EAT IT and F*CK IT strategies (see Choose Lineage tab). All agents of the same lineage are identical to each other at game start.</div>
       </div>
-      <div class="agent-card">
-        <div class="agent-icon">🦠</div>
-        <div>
-          <div class="agent-name">ANCESTRAL PROKARYOTE</div>
-          <div style="margin-bottom:6px;font-size:10px;color:var(--muted)">Starting agent · all players identical</div>
-          <div class="stat-bar"><span class="stat-label">OFF</span><div class="bar-track"><div class="bar-fill" style="width:10%;background:var(--eat)"></div></div><span style="font-size:10px;color:var(--muted);margin-left:4px">1</span></div>
-          <div class="stat-bar"><span class="stat-label">DEF</span><div class="bar-track"><div class="bar-fill" style="width:30%;background:#4a8aff"></div></div><span style="font-size:10px;color:var(--muted);margin-left:4px">3</span></div>
-          <div class="stat-bar"><span class="stat-label">REP</span><div class="bar-track"><div class="bar-fill" style="width:80%;background:var(--fk)"></div></div><span style="font-size:10px;color:var(--muted);margin-left:4px">8</span></div>
-          <div class="stat-bar"><span class="stat-label">ADAPT</span><div class="bar-track"><div class="bar-fill" style="width:40%;background:var(--drv)"></div></div><span style="font-size:10px;color:var(--muted);margin-left:4px">4</span></div>
-          <div class="stat-bar"><span class="stat-label">MOV</span><div class="bar-track"><div class="bar-fill" style="width:10%;background:var(--ter)"></div></div><span style="font-size:10px;color:var(--muted);margin-left:4px">1</span></div>
+      <div style="background:var(--surf2);border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:10px">
+        <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Starting terrain by lineage</div>
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:11px;">
+          <span>🦅 Birds</span><span style="color:var(--muted)">Canopy Forest or Savannah</span>
+          <span>🐘 Mammals</span><span style="color:var(--muted)">Savannah or Ice Age</span>
+          <span>🦠 Microbes</span><span style="color:var(--muted)">Volcanic Vent or Primordial Swamp</span>
+          <span>🐸 Amphibians</span><span style="color:var(--muted)">Primordial Swamp</span>
+          <span>🦖 Reptiles</span><span style="color:var(--muted)">Desert or Savannah</span>
+          <span>🐟 Fish</span><span style="color:var(--muted)">Shallow Sea or Open Ocean</span>
+          <span>🎲 Weirdos</span><span style="color:var(--muted)">Any hex — place freely</span>
         </div>
       </div>
       <div class="mechanic">
         <div class="mechanic-name">DECKS</div>
-        <div class="mechanic-desc">Three decks: EAT IT (21 cards), F*CK IT (20 cards), CATASTROPHE (20 cards). Shuffle each separately. Catastrophe deck is face-down in center of board.</div>
+        <div class="mechanic-desc">Three decks: EAT IT (21 cards), F*CK IT (20 cards), CATASTROPHE (20 cards). Shuffle each separately. Catastrophe deck is face-down in center of board. Starting strategy cards are taken directly from the relevant decks before shuffling.</div>
       </div>
     </div>
 
