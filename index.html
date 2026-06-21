@@ -441,16 +441,16 @@ html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-s
         <div class="mechanic-desc">Draw from EAT IT or F*CK IT deck based on the hex's icon. If you meet the terrain + prerequisite requirements, you may keep the card. Otherwise discard.</div>
       </div>
       <div class="mechanic">
-        <div class="mechanic-name">3 · OPTIONAL: CHALLENGE</div>
-        <div class="mechanic-desc">May attack an opponent's agent in the same hex. Compare OFF vs DEF. Loser loses 1 strategy card (attacker's choice).</div>
+        <div class="mechanic-name">3 · OPTIONAL: BATTLE</div>
+        <div class="mechanic-desc">If two agents occupy the same hex, the occupying agent may challenge. Attacker declares <strong>EAT IT</strong> or <strong>F*CK IT</strong> battle type. Each side uses only that deck's cards. Resolve on the Battle Board. Winner adapts (draws 2 cards, keeps 1). Loser loses 1 surviving card of winner's choice. If all cards are eliminated, the agent dies — trigger a Spawn Check.</div>
       </div>
       <div class="mechanic">
-        <div class="mechanic-name">4 · REPRODUCE</div>
-        <div class="mechanic-desc">Spend REP points to split agent into two. New agent inherits 1 strategy card from parent. Requires holding at least 1 F*CK IT strategy.</div>
+        <div class="mechanic-name">4 · SPAWN CHECK (after agent death only)</div>
+        <div class="mechanic-desc">When an agent dies, the losing player immediately checks their <strong>highest REP value</strong> held across all surviving agents. If sufficient, they may spawn a replacement next turn at their lineage's starting terrain with base starting strategies only. See Spawn table on the Agent Death card.</div>
       </div>
       <div class="mechanic">
         <div class="mechanic-name">5 · CATASTROPHE CHECK</div>
-        <div class="mechanic-desc">If any player completed a full lap this turn, flip the top Catastrophe card. All agents respond simultaneously.</div>
+        <div class="mechanic-desc">If any player completed a full lap this turn, flip the top Catastrophe card. All agents respond simultaneously. Roll 1d6 + ADA for each agent. Fail threshold is printed on the card.</div>
       </div>
     </div>
 
@@ -478,27 +478,44 @@ html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-s
       </div>
     </div>
 
-    <div class="rules-card">
-      <h3>WIN CONDITIONS</h3>
-      <div class="win-grid">
-        <div class="win-card">
-          <div class="win-name">DOMINATION</div>
-          <div style="font-size:11px;color:var(--muted)">Control 6+ hexes with agents simultaneously. Requires strong MOV and REP.</div>
-        </div>
-        <div class="win-card">
-          <div class="win-name" style="color:var(--eat-l)">APEX EXTINCTION</div>
-          <div style="font-size:11px;color:var(--muted)">Eliminate all other players' agents in direct combat. Requires high OFF and strategic terrain control.</div>
-        </div>
-        <div class="win-card">
-          <div class="win-name" style="color:var(--fk-l)">SINGULARITY</div>
-          <div style="font-size:11px;color:var(--muted)">Collect one Tier 4+ card from each deck simultaneously. Represents full adaptive complexity.</div>
+    <div class="rules-card" style="border-color:#c4561e;border-width:2px">
+      <h3 style="color:#c4561e">WIN CONDITION — ELIMINATION VICTORY</h3>
+      <div class="mechanic" style="border-left-color:#c4561e">
+        <div class="mechanic-name" style="color:#c4561e">LAST LINEAGE STANDING</div>
+        <div class="mechanic-desc">The last player with at least one living agent on the board wins. There are no point tracks, no territory scores — only survival. Every decision is a trade-off between growing stronger (EAT IT) and staying in the game longer (F*CK IT).</div>
+      </div>
+      <div class="mechanic" style="border-left-color:#c4561e">
+        <div class="mechanic-name" style="color:#c4561e">AGENT DEATH</div>
+        <div class="mechanic-desc">An agent dies when <strong>all of its strategy cards are eliminated</strong> in battle, or when it <strong>fails a Catastrophe survival roll</strong> with ADA below the event's threshold. A dead agent is removed from the board immediately. Its cards are discarded — not returned to the deck.</div>
+      </div>
+      <div class="mechanic" style="border-left-color:#c4561e">
+        <div class="mechanic-name" style="color:#c4561e">PLAYER ELIMINATION</div>
+        <div class="mechanic-desc">A player is eliminated when they have no living agents AND insufficient REP to spawn a replacement (see Spawn table). Eliminated players become <strong>Ghost Lineage</strong> — they may advise any active player once per round but take no actions.</div>
+      </div>
+    </div>
+
+    <div class="rules-card" style="border-color:var(--fk);border-width:2px">
+      <h3 style="color:var(--fk)">AGENT DEATH &amp; SPAWN</h3>
+      <div class="mechanic" style="border-left-color:var(--fk)">
+        <div class="mechanic-name" style="color:var(--fk)">SPAWN CHECK</div>
+        <div class="mechanic-desc">Immediately when an agent dies, the player checks their <strong>highest single REP value</strong> held across all F*CK IT cards in any surviving agent's stack. This determines whether and how quickly a replacement spawns.</div>
+      </div>
+      <div style="background:var(--fk-d);border:1.5px solid var(--fk-b);border-radius:8px;padding:12px;margin-bottom:10px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--fk);margin-bottom:8px">Spawn Table — Highest REP in surviving stack</div>
+        <div style="display:grid;grid-template-columns:auto 1fr auto;gap:4px 12px;font-size:11px;align-items:center">
+          <span style="font-weight:700;color:var(--fk)">REP 1–4</span><span style="color:var(--muted)">Cannot spawn — lineage too K-selected. No replacement.</span><span style="font-size:9px;color:#a02020;font-weight:700">NONE</span>
+          <span style="font-weight:700;color:var(--fk)">REP 5–7</span><span style="color:var(--muted)">Slow spawn — skip 2 full turns, then place new agent at starting terrain.</span><span style="font-size:9px;color:#6a5010;font-weight:700">2 TURNS</span>
+          <span style="font-weight:700;color:var(--fk)">REP 8–10</span><span style="color:var(--muted)">Fast spawn — place new agent at starting terrain on your very next turn.</span><span style="font-size:9px;color:var(--green);font-weight:700">NEXT TURN</span>
+          <span style="font-weight:700;color:var(--fk)">REP 11+</span><span style="color:var(--muted)">Swarm spawn — free, immediate. New agent <em>also inherits 1 strategy card</em> from the dead agent (maternal inheritance).</span><span style="font-size:9px;color:var(--green);font-weight:700">FREE + INHERIT</span>
         </div>
       </div>
-      <div style="margin-top:14px">
-        <div class="mechanic">
-          <div class="mechanic-name">ELIMINATION</div>
-          <div class="mechanic-desc">A player is eliminated when their last agent is destroyed in combat OR fails a Catastrophe survival roll with no agents remaining. Eliminated players may spectate and assist others as a "Ghost Lineage" (advisory only).</div>
-        </div>
+      <div class="mechanic" style="border-left-color:var(--fk)">
+        <div class="mechanic-name" style="color:var(--fk)">SPAWN RULES</div>
+        <div class="mechanic-desc">Spawned agents start with lineage base strategies only — no accumulated cards carry over (except the 1 inherited card at REP 11+). Spawned agents may not battle on the turn they are placed. REP 1–4 players are permanently eliminated if they lose their last agent.</div>
+      </div>
+      <div class="mechanic" style="border-left-color:var(--fk)">
+        <div class="mechanic-name" style="color:var(--fk)">K vs R STRATEGIST DYNAMIC</div>
+        <div class="mechanic-desc"><strong>R-strategists</strong> (Microbes REP 10, Fish REP 8, Amphibians REP 6) lose agents freely and replace them fast — they win by attrition and board flooding. <strong>K-strategists</strong> (Reptiles REP 2, Birds REP 4, Mammals REP 3) are hard to kill individually but cannot easily replace losses — guard each agent obsessively.</div>
       </div>
     </div>
 
@@ -514,7 +531,7 @@ html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-s
       </div>
       <div class="mechanic">
         <div class="mechanic-name"><span class="st st-rep">REP</span> &nbsp;REPRODUCTION</div>
-        <div class="mechanic-desc">Speed and volume of reproduction. Spend REP to produce offspring agents.</div>
+        <div class="mechanic-desc">Your lineage's spawn capacity. When an agent dies, your highest REP value determines whether you can replace it and how fast (see Agent Death &amp; Spawn card). REP 1–4 = no spawn. REP 5–7 = 2-turn delay. REP 8–10 = next turn. REP 11+ = free + inherit one card.</div>
       </div>
       <div class="mechanic">
         <div class="mechanic-name"><span class="st st-ada">ADA</span> &nbsp;ADAPT</div>

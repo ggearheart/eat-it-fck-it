@@ -339,6 +339,15 @@ html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-s
       <div style="font-size:9px;color:var(--muted);margin-top:8px;">Winner picks one of the loser's surviving cards to claim.</div>
     </div>
   </div>
+  <div id="spawn-check" style="background:#f5f0ff;border:2px solid var(--fk);border-radius:12px;padding:18px;margin-top:4px;text-align:left;display:none">
+    <div style="font-size:13px;font-weight:800;color:var(--fk);margin-bottom:4px;">🧬 Spawn Check — Loser's Agent Died</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.5">All of the loser's cards were eliminated. Check their <strong>highest single REP value</strong> across any F*CK IT card held in any other surviving agent. Enter it below to see if they can spawn a replacement.</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <label style="font-size:12px;font-weight:600;color:var(--fk)">Loser's highest REP value:</label>
+      <input id="spawn-rep-in" type="number" min="0" max="20" value="0" style="width:70px;padding:6px 10px;border:1.5px solid var(--fk-b);border-radius:8px;font-size:14px;font-family:inherit;text-align:center;" oninput="updateSpawnResult()">
+    </div>
+    <div id="spawn-result"></div>
+  </div>
   <button class="result-cta" onclick="resetGame()">↺ New Battle</button>
 </div>
 
@@ -933,19 +942,32 @@ function renderResult(result){
   const adaptEl = document.getElementById('adapt-picks');
   const lossEl = document.getElementById('loss-picks');
 
+  const spawnPanel = document.getElementById('spawn-check');
+  spawnPanel.style.display = 'none';
+
   if(winnerSide){
     adaptEl.innerHTML = picks.map((c,i)=>`<div class="adapt-pick" onclick="chooseAdapt(this)" data-idx="${i}">
       <span>${c.art}</span><span><strong>${c.n}</strong><br><span style="font-size:9px;color:var(--muted)">Tier ${c.t} ${deckLabel}</span></span>
     </div>`).join('');
 
     const loserSide = winnerSide==='atk'?'def':'atk';
-    const loserAlive = (loserSide==='atk'?G.atk:G.def).filter(c=>c.alive&&!c.isWeirdo);
+    const loserList = loserSide==='atk'?G.atk:G.def;
+    const loserAlive = loserList.filter(c=>c.alive&&!c.isWeirdo);
+    const agentFullyDead = loserAlive.length === 0;
+
     if(loserAlive.length > 0){
       lossEl.innerHTML = loserAlive.map((cm,i)=>`<div class="loss-pick" onclick="chooseLoss(this)" data-idx="${i}">
         <span>${cm.card.art}</span><span><strong>${cm.card.n}</strong><br><span style="font-size:9px;color:var(--muted)">Winner takes this card</span></span>
       </div>`).join('');
     } else {
-      lossEl.innerHTML = '<div style="font-size:11px;color:var(--muted);font-style:italic;">No surviving cards to claim.</div>';
+      lossEl.innerHTML = '<div style="font-size:11px;color:var(--eat);font-weight:700;">⚠️ All cards eliminated — agent is dead.</div><div style="font-size:10px;color:var(--muted);margin-top:4px;">See Spawn Check below.</div>';
+    }
+
+    // Show spawn panel only when the loser's agent is fully eliminated
+    if(agentFullyDead){
+      spawnPanel.style.display = 'block';
+      document.getElementById('spawn-rep-in').value = 0;
+      updateSpawnResult();
     }
   } else {
     adaptEl.innerHTML = '<div style="font-size:11px;color:var(--muted);font-style:italic;">No adaptation — battle ended without a winner.</div>';
@@ -961,6 +983,28 @@ function chooseAdapt(el){
 function chooseLoss(el){
   document.querySelectorAll('.loss-pick').forEach(e=>e.classList.remove('chosen'));
   el.classList.add('chosen');
+}
+
+const SPAWN_TIERS = [
+  {min:0,  max:4,  label:'Cannot Spawn',       cost:'No replacement — lineage too K-selected.',                      color:'#a02020', bg:'#fff0f0'},
+  {min:5,  max:7,  label:'Slow Spawn (2 turns)',cost:'Skip your next 2 full turns, then place a new agent at starting terrain with base strategies only.', color:'#7a5010', bg:'#fffaee'},
+  {min:8,  max:10, label:'Fast Spawn (next turn)',cost:'Place a new agent at starting terrain on your very next turn with base strategies only.',           color:varGreen(), bg:'#f0faf4'},
+  {min:11, max:99, label:'Swarm Spawn (free + inherit)',cost:'Spawn immediately for free. New agent also inherits 1 strategy card from the dead agent (maternal inheritance).', color:'#1a5a80', bg:'#eef5ff'},
+];
+function varGreen(){ return '#2e6b4f'; }
+
+function spawnTier(rep){
+  return SPAWN_TIERS.find(t => rep >= t.min && rep <= t.max) || SPAWN_TIERS[0];
+}
+
+function updateSpawnResult(){
+  const rep = parseInt(document.getElementById('spawn-rep-in').value) || 0;
+  const tier = spawnTier(rep);
+  document.getElementById('spawn-result').innerHTML = `
+    <div style="background:${tier.bg};border:1.5px solid ${tier.color}40;border-radius:8px;padding:12px;">
+      <div style="font-size:13px;font-weight:800;color:${tier.color};margin-bottom:4px;">${tier.label}</div>
+      <div style="font-size:11px;color:#3a2a1a;line-height:1.6">${tier.cost}</div>
+    </div>`;
 }
 
 function resetGame(){
