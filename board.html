@@ -6,127 +6,133 @@
 <title>EAT IT | F*CK IT — Hex Board</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:13px;overflow-x:hidden;}
+html,body{min-height:100vh;background:#fef8ec;color:#1a0a00;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:13px;}
 :root{
   --eat:#c4561e;--eat-l:#e8733a;--eat-d:#fdf0ea;
   --fk:#7b4fa0;--fk-l:#9b6fc0;--fk-d:#f5f0ff;
-  --surf:#ffffff;--surf2:#fdf9f3;--border:#e8ddd0;--muted:#9a8a78;
-  --green:#2e6b4f;--ter:#2e6b4f;--ter-l:#3d8a65;--drv:#2e6b4f;--drv-l:#3d8a65;
-  --cat-b:#f0f5ff;--cat-l:#3a80c0;
+  --ink:#1a0e04;--border:#d4c8b8;--muted:#9a8878;
+  --cream:#fef8ec;--card:#fffdf7;
+  --green:#1e7a40;--blue:#1848a0;
 }
+
 /* ── HEADER ── */
-.hdr{display:flex;align-items:center;gap:14px;padding:12px 20px;background:var(--surf);border-bottom:2px solid var(--border);flex-wrap:wrap;}
-.game-title{font-size:22px;font-weight:700;letter-spacing:0.5px;}
-.eat-w{color:var(--eat);}.fk-w{color:var(--fk);}
-.hdr-sub{font-size:11px;color:var(--muted);font-weight:500;}
-.nav-link{padding:6px 16px;border:1.5px solid var(--border);color:var(--muted);text-decoration:none;font-size:12px;font-weight:500;transition:all .12s;border-radius:20px;}
-.nav-link:hover{color:var(--eat);border-color:var(--eat);}
-.nav-link.active{background:var(--eat-d);border-color:var(--eat);color:var(--eat);}
+.hdr{display:flex;align-items:center;gap:12px;padding:10px 18px;background:var(--card);border-bottom:3px solid var(--ink);flex-wrap:wrap;}
+.game-title{font-size:22px;font-weight:900;letter-spacing:-.5px;line-height:1;}
+.eat-w{color:var(--eat);} .fk-w{color:var(--fk);}
+.hdr-badge{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-top:2px;}
+.nav-link{padding:5px 14px;border:2.5px solid var(--ink);color:var(--ink);text-decoration:none;font-size:11px;font-weight:800;border-radius:4px;transition:all .1s;letter-spacing:.5px;text-transform:uppercase;}
+.nav-link:hover{background:var(--ink);color:#fff;}
+.nav-link.active{background:var(--eat);border-color:var(--eat);color:#fff;}
 
 /* ── TOOLBAR ── */
-.toolbar{display:flex;align-items:center;gap:8px;padding:8px 20px;background:var(--surf);border-bottom:1px solid var(--border);flex-wrap:wrap;}
-.tool-label{font-size:11px;color:var(--muted);font-weight:500;white-space:nowrap;}
-.player-btn{width:30px;height:30px;border:2px solid transparent;border-radius:50%;cursor:pointer;transition:all .15s;position:relative;}
-.player-btn.selected{border-color:#2a1a0a;transform:scale(1.15);}
-.player-btn::after{content:attr(data-n);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;}
-.tbtn{padding:6px 14px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:inherit;font-size:11px;font-weight:500;transition:all .12s;border-radius:20px;}
-.tbtn:hover{color:var(--eat);border-color:var(--eat);}
-.tbtn.on{background:var(--eat-d);border-color:var(--eat);color:var(--eat);}
-.terrain-filter-btn{padding:4px 11px;border:1.5px solid transparent;cursor:pointer;font-size:10px;border-radius:20px;transition:all .12s;opacity:.55;font-family:inherit;font-weight:500;}
-.terrain-filter-btn.on{opacity:1;border-color:rgba(0,0,0,.18);}
-.sep{width:1px;height:24px;background:var(--border);margin:0 4px;}
+.toolbar{display:flex;align-items:center;gap:8px;padding:7px 18px;background:#fdf5e0;border-bottom:2.5px solid var(--ink);flex-wrap:wrap;}
+.tool-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--ink);}
+.player-btn{width:32px;height:32px;border:2.5px solid var(--ink);border-radius:50%;cursor:pointer;transition:all .1s;position:relative;font-size:0;}
+.player-btn.selected{box-shadow:0 0 0 2.5px #fff, 0 0 0 5px var(--ink);transform:scale(1.12);}
+.player-btn::after{content:attr(data-n);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;font-family:'Arial Black',system-ui,sans-serif;}
+.tbtn{padding:5px 13px;border:2px solid var(--ink);background:#fff;color:var(--ink);cursor:pointer;font-family:inherit;font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;border-radius:4px;transition:all .1s;}
+.tbtn:hover{background:var(--ink);color:#fff;}
+.tbtn.on{background:var(--eat);border-color:var(--eat);color:#fff;}
+.terrain-filter-btn{padding:4px 10px;border:2px solid var(--ink);cursor:pointer;font-size:10px;border-radius:4px;transition:all .1s;opacity:.5;font-family:inherit;font-weight:700;background:#fff;}
+.terrain-filter-btn:hover,.terrain-filter-btn.on{opacity:1;background:var(--ink);color:#fff;}
+.sep{width:1.5px;height:22px;background:var(--ink);opacity:.25;margin:0 2px;}
 
 /* ── LAYOUT ── */
-.main-layout{display:flex;min-height:calc(100vh - 100px);}
-.board-wrap{flex:1;min-width:0;overflow:auto;padding:16px;display:flex;align-items:flex-start;justify-content:center;background:#f5f0e8;}
-.info-panel{width:320px;flex-shrink:0;background:var(--surf);border-left:1.5px solid var(--border);padding:16px;overflow-y:auto;max-height:calc(100vh - 100px);position:sticky;top:0;}
-
-/* ── SVG HEX BOARD ── */
-#board-svg{display:block;overflow:visible;}
+.main-layout{display:flex;min-height:calc(100vh - 108px);}
+.board-wrap{flex:1;min-width:0;overflow:auto;padding:20px;display:flex;align-items:flex-start;justify-content:center;background:repeating-linear-gradient(45deg,#f5edda,#f5edda 10px,#f0e8d0 10px,#f0e8d0 20px);}
+.board-frame{background:var(--cream);border:4px solid var(--ink);border-radius:8px;box-shadow:6px 6px 0 var(--ink);padding:12px;display:inline-block;}
+.board-title{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:var(--ink);text-align:center;padding-bottom:8px;border-bottom:2.5px solid var(--ink);margin-bottom:10px;}
+#board-svg{display:block;}
 .hex-group{cursor:pointer;}
-.hex-group polygon{stroke-width:1.5;transition:filter .12s;}
-.hex-group:hover polygon{filter:brightness(1.12);}
-.hex-group.selected polygon{stroke:#2a1a0a !important;stroke-width:3;filter:brightness(1.18);}
-.hex-group.highlighted polygon{stroke:#2a1a0a !important;stroke-width:2.5;filter:brightness(1.12);}
-.hex-group.dimmed polygon{filter:brightness(0.6) saturate(0.4);}
+.hex-group polygon{transition:filter .1s;}
+.hex-group:hover polygon{filter:brightness(1.15);}
+.hex-group.selected polygon.main-poly{filter:brightness(1.2);}
+.hex-group.dimmed polygon.main-poly{filter:brightness(0.5) saturate(0.3);}
+.hex-group.highlighted polygon.main-poly{filter:brightness(1.25) saturate(1.3);}
 .hex-label{pointer-events:none;text-anchor:middle;dominant-baseline:middle;}
-.agent-ring{pointer-events:none;}
 
 /* ── INFO PANEL ── */
-.ip-empty{color:var(--muted);font-size:12px;padding:20px 0;text-align:center;line-height:2;}
-.ip-terrain-name{font-size:19px;font-weight:700;margin-bottom:4px;}
-.ip-icon{font-size:36px;margin-bottom:8px;display:block;}
-.ip-blurb{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:14px;padding-left:10px;border-left:3px solid var(--border);}
-.ip-section{margin-bottom:14px;}
-.ip-section h4{font-size:10px;letter-spacing:1px;color:var(--muted);border-bottom:1px solid var(--border);padding-bottom:5px;margin-bottom:8px;font-weight:600;text-transform:uppercase;}
-.driver-tag{display:inline-block;padding:3px 9px;margin:2px;border:1.5px solid #a0c8b0;background:var(--ter-d, #f0f8f4);color:var(--drv);font-size:10px;border-radius:20px;}
-.muster-row{display:flex;align-items:center;gap:6px;padding:5px 8px;margin-bottom:3px;background:var(--surf2);border:1.5px solid var(--border);font-size:11px;border-radius:6px;}
-.muster-req{color:var(--fk);flex:1;}
-.muster-arrow{color:var(--muted);flex-shrink:0;}
-.muster-gives-eat{color:var(--eat);flex:1;font-weight:600;}
-.muster-gives-fk{color:var(--fk);flex:1;font-weight:600;}
-.muster-label{font-size:10px;letter-spacing:0.8px;margin-bottom:4px;font-weight:600;text-transform:uppercase;}
-.ml-eat{color:var(--eat);}
-.ml-fk{color:var(--fk);}
+.info-panel{width:300px;flex-shrink:0;background:var(--card);border-left:3px solid var(--ink);overflow-y:auto;max-height:calc(100vh - 108px);position:sticky;top:0;}
+.ip-empty{color:var(--muted);font-size:11px;padding:24px 16px;text-align:center;line-height:2.2;border-bottom:2px solid var(--border);}
+.ip-empty strong{color:var(--ink);display:block;font-size:13px;margin-bottom:4px;}
+.ip-header{padding:14px 16px 10px;border-bottom:2.5px solid var(--ink);}
+.ip-icon{font-size:32px;margin-bottom:6px;display:block;}
+.ip-terrain-name{font-size:18px;font-weight:900;line-height:1.1;margin-bottom:2px;}
+.ip-coords{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
+.ip-blurb{font-size:11px;color:#4a3820;line-height:1.65;padding:10px 16px;background:#fffaee;border-bottom:2px solid var(--border);font-style:italic;}
+.ip-section{padding:10px 16px;border-bottom:1.5px solid var(--border);}
+.ip-section-title{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink);margin-bottom:7px;padding-bottom:4px;border-bottom:2px solid currentColor;display:inline-block;}
+.ip-section-title.eat{color:var(--eat);}
+.ip-section-title.fk{color:var(--fk);}
+.driver-tag{display:inline-block;padding:3px 9px;margin:2px 2px 2px 0;border:2px solid var(--ink);background:#fff;color:var(--ink);font-size:9px;font-weight:800;border-radius:3px;text-transform:uppercase;letter-spacing:.5px;}
+.muster-row{display:flex;align-items:flex-start;gap:6px;padding:5px 8px;margin-bottom:3px;border:2px solid var(--border);background:#fff;font-size:10px;border-radius:4px;}
+.mrow-req{color:var(--muted);flex:1;font-weight:600;}
+.mrow-arr{color:var(--ink);font-weight:900;flex-shrink:0;}
+.mrow-gives-eat{color:var(--eat);flex:1;font-weight:800;}
+.mrow-gives-fk{color:var(--fk);flex:1;font-weight:800;}
 
-/* ── GM LAB SPECIAL ── */
-.gm-box{background:#f0f5ff;border:1.5px solid #3a80c0;padding:14px;margin-bottom:14px;border-radius:10px;}
-.gm-title{color:#1e5080;font-size:14px;font-weight:700;margin-bottom:8px;}
-.gm-rule{color:#3a5070;font-size:12px;line-height:1.6;margin-bottom:12px;}
-.dice-btn{width:100%;padding:11px;background:#1e5080;border:none;color:#fff;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;border-radius:8px;}
-.dice-btn:hover{background:#2a6aaa;}
+/* ── GM LAB PANEL ── */
+.gm-box{margin:12px 16px;border:3px solid var(--blue);background:#eef3ff;border-radius:6px;overflow:hidden;}
+.gm-head{background:var(--blue);color:#fff;font-size:12px;font-weight:900;padding:8px 12px;letter-spacing:.5px;}
+.gm-body{padding:12px;}
+.gm-rule{font-size:11px;color:#1a2a50;line-height:1.7;margin-bottom:10px;}
+.dice-btn{width:100%;padding:10px;background:var(--blue);border:none;color:#fff;font-family:inherit;font-size:12px;font-weight:900;cursor:pointer;transition:all .1s;border-radius:4px;letter-spacing:.5px;text-transform:uppercase;}
+.dice-btn:hover{background:#1050c8;}
 .dice-btn:active{transform:scale(.97);}
-.dice-result{text-align:center;margin-top:10px;font-size:28px;min-height:40px;display:flex;align-items:center;justify-content:center;gap:12px;}
-.dice-num{font-size:36px;font-weight:700;transition:all .1s;}
-.dice-outcome{font-size:12px;line-height:1.5;padding:10px;border:1.5px solid;margin-top:8px;border-radius:8px;}
-.dice-win{border-color:#2e7d4f;color:#2e7d4f;background:#f0faf4;}
-.dice-miss{border-color:#b07820;color:#8a5810;background:#fff8ee;}
+.dice-result{text-align:center;margin-top:10px;font-size:28px;min-height:40px;display:flex;align-items:center;justify-content:center;gap:10px;}
+.dice-num{font-size:38px;font-weight:900;font-family:'Arial Black',system-ui,sans-serif;transition:all .1s;}
+.dice-outcome{font-size:11px;line-height:1.6;padding:9px;border:2.5px solid;margin-top:8px;border-radius:5px;}
+.dice-win{border-color:var(--green);color:var(--green);background:#edfaf2;}
+.dice-miss{border-color:#b07820;color:#7a4800;background:#fffaee;}
 
 /* ── LEGEND ── */
-.legend{display:flex;flex-wrap:wrap;gap:6px;padding:10px 20px;background:var(--surf);border-top:1px solid var(--border);}
-.leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);cursor:pointer;padding:3px 8px;border:1.5px solid transparent;transition:all .12s;border-radius:20px;}
-.leg-item:hover{border-color:var(--border);color:#2a1a0a;}
-.leg-swatch{width:14px;height:14px;border:1px solid rgba(0,0,0,.15);flex-shrink:0;border-radius:3px;}
-
-/* coords display */
-.hex-coords{font-size:8px;fill:#00000033;pointer-events:none;text-anchor:middle;}
+.legend{display:flex;flex-wrap:wrap;gap:5px;padding:8px 16px;background:var(--card);border-top:2.5px solid var(--ink);}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:10px;font-weight:700;color:var(--ink);cursor:pointer;padding:3px 8px;border:2px solid transparent;transition:all .1s;border-radius:4px;}
+.leg-item:hover{border-color:var(--ink);}
+.leg-item.on{border-color:var(--ink);background:var(--ink);color:#fff;}
+.leg-swatch{width:14px;height:14px;border:2px solid var(--ink);flex-shrink:0;border-radius:2px;}
 </style>
 </head>
 <body>
 
 <div class="hdr">
   <div>
-    <div class="game-title"><span class="eat-w">EAT</span> <span style="color:var(--muted)">|</span> <span class="fk-w">F*CK</span> <span style="color:var(--muted)">IT</span></div>
-    <div class="hdr-sub">HEX BOARD · TITAN-STYLE MOVEMENT · CLICK A HEX TO MUSTER</div>
+    <div class="game-title"><span class="eat-w">EAT IT</span> <span style="color:var(--border)">|</span> <span class="fk-w">F*CK IT</span></div>
+    <div class="hdr-badge">Hex Board · Titan-Style Movement · Click a Hex to Muster</div>
   </div>
-  <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">
-    <a class="nav-link" href="index.html">← CARD REFERENCE</a>
-    <a class="nav-link active" href="board.html">🗺 HEX BOARD</a>
+  <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+    <a class="nav-link" href="index.html">← Cards & Rules</a>
+    <a class="nav-link active" href="board.html">🗺 Hex Board</a>
+    <a class="nav-link" href="battle.html">⚔️ Battle</a>
   </div>
 </div>
 
 <div class="toolbar">
-  <span class="tool-label">PLACE AGENT:</span>
-  <button class="player-btn selected" data-n="1" style="background:#c04020" onclick="selectPlayer(0)" title="Player 1"></button>
-  <button class="player-btn" data-n="2" style="background:#2060c0" onclick="selectPlayer(1)" title="Player 2"></button>
-  <button class="player-btn" data-n="3" style="background:#208040" onclick="selectPlayer(2)" title="Player 3"></button>
-  <button class="player-btn" data-n="4" style="background:#8020a0" onclick="selectPlayer(3)" title="Player 4"></button>
+  <span class="tool-label">Agent:</span>
+  <button class="player-btn selected" data-n="1" style="background:#d03020" onclick="selectPlayer(0)"></button>
+  <button class="player-btn" data-n="2" style="background:#1858c0" onclick="selectPlayer(1)"></button>
+  <button class="player-btn" data-n="3" style="background:#1a8030" onclick="selectPlayer(2)"></button>
+  <button class="player-btn" data-n="4" style="background:#9020a0" onclick="selectPlayer(3)"></button>
   <div class="sep"></div>
-  <span class="tool-label">HIGHLIGHT:</span>
+  <span class="tool-label">Highlight:</span>
   <div id="terrain-filters" style="display:flex;flex-wrap:wrap;gap:3px;"></div>
   <div class="sep"></div>
-  <button class="tbtn" onclick="clearAgents()">CLEAR AGENTS</button>
-  <button class="tbtn" onclick="clearFilter()">CLEAR FILTER</button>
+  <button class="tbtn" onclick="clearAgents()">Clear Agents</button>
+  <button class="tbtn" onclick="clearFilter()">Clear Filter</button>
 </div>
 
 <div class="main-layout">
   <div class="board-wrap">
-    <svg id="board-svg"></svg>
+    <div class="board-frame">
+      <div class="board-title">🌍 Evolutionary Terrain Map — 44 Hexes · 4 GM Labs</div>
+      <svg id="board-svg"></svg>
+    </div>
   </div>
   <div class="info-panel" id="info-panel">
     <div class="ip-empty">
-      Click any hex to see terrain info,<br>evolutionary drivers, and<br>muster chains.<br><br>
-      Place agent tokens by selecting<br>a player color and clicking hexes.
+      <strong>Click any hex</strong>
+      See terrain info, evolutionary<br>drivers, and muster chains.<br><br>
+      Select a player color above<br>then click to place agents.<br>Click again to remove.
     </div>
   </div>
 </div>
@@ -134,143 +140,155 @@ html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-s
 <div class="legend" id="legend"></div>
 
 <script>
-// ════════════════════════════════════════════════════
-// BOARD LAYOUT
-// Codes: V=Volcanic Vent  P=Primordial Swamp  S=Shallow Sea
-//        O=Open Ocean     I=Ice Age           A=Savannah
-//        F=Canopy Forest  D=Desert            C=Deep Cave
-//        G=GM Lab         null=no hex
-// ════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
+// BOARD LAYOUT — 7×8 oval, 44 hexes, symmetrical
+// V=Volcanic  P=Swamp   S=Shallow Sea  O=Open Ocean
+// I=Ice Age   A=Savannah  F=Forest     D=Desert
+// C=Cave      G=GM Lab    null=empty
+// ═══════════════════════════════════════════
 const BOARD = [
-  //  0     1     2     3     4     5     6     7     8     9    10    11
-  [null, null,  'V',  'P',  'S',  'A',  'I',  'F',  'D',  'S', null, null],  // row 0
-  [null,  'P',  'D',  'O',  'G',  'F',  'A',  'S',  'C',  'G',  'I', null],  // row 1
-  [ 'V',  'S',  'O',  'A',  'I',  'C',  'D',  'F',  'P',  'A',  'D',  'C'],  // row 2
-  [ 'D',  'F',  'G',  'S',  'P',  'A',  'O',  'I',  'F',  'G',  'C',  'S'],  // row 3
-  [ 'I',  'C',  'A',  'O',  'V',  'F',  'D',  'S',  'A',  'V',  'P',  'F'],  // row 4
-  [ 'S',  'A',  'D',  'F',  'I',  'O',  'P',  'C',  'D',  'S',  'A',  'I'],  // row 5
-  [ 'C',  'V',  'P',  'A',  'D',  'S',  'F',  'I',  'O',  'D',  'A',  'S'],  // row 6
-  [null,  'O',  'S',  'G',  'F',  'A',  'C',  'D',  'G',  'I',  'P', null],  // row 7
-  [null, null,  'A',  'I',  'F',  'D',  'S',  'O',  'C',  'A', null, null],  // row 8
+  //   0     1     2     3     4     5     6     7
+  [null, null,  'S',  'V',  'P',  'A', null, null],  // row 0
+  [null,  'I',  'F',  'O',  'G',  'C',  'D', null],  // row 1 (odd)
+  [ 'P',  'A',  'D',  'I',  'V',  'F',  'S',  'O'],  // row 2
+  [ 'P',  'C',  'G',  'F',  'A',  'G',  'I',  'D'],  // row 3 (odd)
+  [ 'O',  'V',  'I',  'A',  'D',  'S',  'P',  'C'],  // row 4
+  [null,  'D',  'C',  'G',  'O',  'A',  'F', null],  // row 5 (odd)
+  [null, null,  'F',  'S',  'I',  'V', null, null],  // row 6
 ];
 
-// ════════════════════════════════════════════════════
-// TERRAIN DATA
-// ════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
+// TERRAIN DATA — comic palette
+// ═══════════════════════════════════════════
 const T = {
-  V:{ name:'Volcanic Vent',    short:'VENT',    icon:'🌋', fill:'#7a2010', stroke:'#c04030', textFill:'#ff8060',
-      drivers:['No sunlight','Chemical mineral gradient','Extreme heat (400°C+)','Anaerobic/sulfuric chemistry'],
+  V:{ name:'Volcanic Vent',    short:'VENT',    icon:'🌋',
+      fill:'#e03010', stroke:'#1a0e04', text:'#fff',
+      labelBg:'#b02000',
+      drivers:['No sunlight','Chemical mineral gradient','Extreme heat (400°C+)','Anaerobic / sulfuric chemistry'],
       blurb:'Life without the sun. Primary unlock node for the earliest metabolic strategies. Chemosynthesis and HGT thrive here.',
-      eat:[{r:'[Start]',g:'Chemosynthesis'},{r:'[Start]',g:'Anoxygenic Photosynthesis'},{r:'Chemosynthesis',g:'Osmotrophy'}],
-      fk: [{r:'[Start]',g:'Binary Fission'},{r:'Binary Fission',g:'Horizontal Gene Transfer'},{r:'HGT',g:'Spore / Cryptobiosis'}] },
+      eat:[{r:'[Start]',g:'Chemosynthesis'},{r:'[Start]',g:'Anoxygenic Photo'},{r:'Chemosynthesis',g:'Osmotrophy'}],
+      fk: [{r:'[Start]',g:'Binary Fission'},{r:'Binary Fission',g:'Horiz. Gene Transfer'},{r:'HGT',g:'Spore / Cryptobiosis'}] },
 
-  P:{ name:'Primordial Swamp', short:'SWAMP',   icon:'🌿', fill:'#1a4a28', stroke:'#30a060', textFill:'#70e090',
-      drivers:['Organic matter accumulation','Seasonal drying/flooding','High biological density','Shallow warm water'],
+  P:{ name:'Primordial Swamp', short:'SWAMP',   icon:'🌿',
+      fill:'#20a048', stroke:'#1a0e04', text:'#fff',
+      labelBg:'#0e7030',
+      drivers:['Organic matter accumulation','Seasonal drying / flooding','High biological density','Shallow warm water'],
       blurb:'The crucible of multicellularity. Where passive feeding diversified and Broadcast Spawning first evolved.',
       eat:[{r:'Chemosynthesis',g:'Osmotrophy'},{r:'Osmotrophy',g:'Detritivory'},{r:'Detritivory',g:'Sit-and-Wait Ambush'}],
       fk: [{r:'Binary Fission',g:'Budding'},{r:'Budding',g:'Broadcast Spawning'},{r:'Broadcast Spawning',g:'Swarm Breeding'}] },
 
-  S:{ name:'Shallow Sea',      short:'SHALLOW', icon:'🐚', fill:'#1a3a6a', stroke:'#4080c0', textFill:'#80b8ff',
+  S:{ name:'Shallow Sea',      short:'SHALLOW', icon:'🐚',
+      fill:'#1890d0', stroke:'#1a0e04', text:'#fff',
+      labelBg:'#0e60a0',
       drivers:['Sunlight penetration','Planktonic prey abundance','Tidal energy cycles','Predation pressure'],
       blurb:'Where photosynthesis scales up, filter feeding evolves, and the Cambrian arms race begins.',
-      eat:[{r:'Anoxygenic Photo',g:'Oxygenic Photosynthesis'},{r:'Oxygenic Photo',g:'Filter Feeding'},{r:'Sit-and-Wait',g:'Venom Injection'}],
-      fk: [{r:'Binary Fission',g:'Fragmentation'},{r:'Budding',g:'Broadcast Spawning'},{r:'Sperm Competition',g:'Sequential Hermaphroditism'}] },
+      eat:[{r:'Anoxygenic Photo',g:'Oxygenic Photo'},{r:'Oxygenic Photo',g:'Filter Feeding'},{r:'Sit-and-Wait',g:'Venom Injection'}],
+      fk: [{r:'Binary Fission',g:'Fragmentation'},{r:'Budding',g:'Broadcast Spawning'},{r:'Sperm Comp.',g:'Sequential Hermaphroditism'}] },
 
-  O:{ name:'Open Ocean',       short:'OCEAN',   icon:'🌊', fill:'#102060', stroke:'#2060c0', textFill:'#6090f0',
+  O:{ name:'Open Ocean',       short:'OCEAN',   icon:'🌊',
+      fill:'#1040b0', stroke:'#1a0e04', text:'#90c8ff',
+      labelBg:'#0a2880',
       drivers:['3D pursuit space','Low food density → high mobility','Darkness below thermocline','Prey dispersal'],
       blurb:'Rewards mobility and sensory specialization. Eliminates ambush strategies. Drives echolocation and broadcast spawning.',
       eat:[{r:'Filter Feeding',g:'Echolocation Hunt'},{r:'Filter Feeding',g:'Kleptoparasitism'},{r:'Solo Sprint',g:'Echolocation Hunt'}],
-      fk: [{r:'Budding',g:'Broadcast Spawning'},{r:'Broadcast Spawning',g:'Semelparous'},{r:'Sperm Competition',g:'Sexual Parasitism'}] },
+      fk: [{r:'Budding',g:'Broadcast Spawning'},{r:'Broadcast Spawning',g:'Semelparous'},{r:'Sperm Comp.',g:'Sequential Hermaphroditism'}] },
 
-  I:{ name:'Ice Age',          short:'ICE AGE', icon:'❄️', fill:'#2a4a6a', stroke:'#70b0d0', textFill:'#a0d8f0',
+  I:{ name:'Ice Age',          short:'ICE AGE', icon:'❄️',
+      fill:'#68c0e8', stroke:'#1a0e04', text:'#0a2840',
+      labelBg:'#3898c0',
       drivers:['Resource crash (plant die-off)','Cold-blooded prey slowdown','Fat storage premium','Endothermy selection'],
       blurb:'Eliminates ectotherms and r-strategists. Rewards endothermy, cooperative groups, and viviparity.',
-      eat:[{r:'Bulk Grazing',g:'Pack/Cooperative Hunt'},{r:'Solo Sprint',g:'Persistence Hunt'},{r:'Pack Hunt',g:'Apex Crushing Predator'}],
-      fk: [{r:'Parthenogenesis + Spore',g:'Delayed Development'},{r:'Delayed Development',g:'Viviparity'},{r:'Viviparity',g:'Extended Parental Care'}] },
+      eat:[{r:'Bulk Grazing',g:'Pack Hunting'},{r:'Solo Sprint',g:'Persistence Hunt'},{r:'Pack Hunt',g:'Apex Crushing Predator'}],
+      fk: [{r:'Parthenogenesis',g:'Delayed Development'},{r:'Delayed Dev.',g:'Viviparity'},{r:'Viviparity',g:'Extended Parental Care'}] },
 
-  A:{ name:'Savannah',         short:'SAVNAH',  icon:'🌾', fill:'#5a3a08', stroke:'#c09020', textFill:'#f0c040',
-      drivers:['Open terrain visibility','High prey density','Arms race: grazers vs hunters','Seasonal drought/flood'],
+  A:{ name:'Savannah',         short:'SAVNAH',  icon:'🌾',
+      fill:'#e8a010', stroke:'#1a0e04', text:'#3a1800',
+      labelBg:'#b07800',
+      drivers:['Open terrain visibility','High prey density','Arms race: grazers vs hunters','Seasonal drought / flood'],
       blurb:'The arena where predator-prey arms races peak. Drives pack hunting, persistence hunting, sexual display, and apex predators.',
-      eat:[{r:'Oxygenic Photo',g:'Bulk Grazing'},{r:'Bulk Grazing',g:'Solo Sprint Pursuit'},{r:'Solo Sprint',g:'Persistence Hunt'},{r:'Solo Sprint + Bulk',g:'Pack/Cooperative Hunt'}],
-      fk: [{r:'Broadcast Spawning',g:'Honest Signal Display'},{r:'Display',g:'Lek Mating'},{r:'Lek',g:'Infanticide/Takeover'},{r:'Infanticide',g:'Alloparental Care'}] },
+      eat:[{r:'Oxygenic Photo',g:'Bulk Grazing'},{r:'Bulk Grazing',g:'Solo Sprint'},{r:'Solo Sprint',g:'Persistence Hunt'},{r:'Solo + Bulk',g:'Pack Hunting'}],
+      fk: [{r:'Broadcast Spawning',g:'Honest Signal Display'},{r:'Display',g:'Lek Mating'},{r:'Lek',g:'Infanticide'},{r:'Infanticide',g:'Alloparental Care'}] },
 
-  F:{ name:'Canopy Forest',    short:'FOREST',  icon:'🌲', fill:'#0e3820', stroke:'#30a050', textFill:'#60d080',
-      drivers:['Vertical niche stratification','Fruit/seed density','Complex 3D navigation','Social group formation'],
+  F:{ name:'Canopy Forest',    short:'FOREST',  icon:'🌲',
+      fill:'#20981a', stroke:'#1a0e04', text:'#fff',
+      labelBg:'#106010',
+      drivers:['Vertical niche stratification','Fruit / seed density','Complex 3D navigation','Social group formation'],
       blurb:'Drives cognitive complexity, tool use, and social bonding. The incubator for primate intelligence and Eusociality.',
-      eat:[{r:'Oxygenic Photo',g:'Browse/Selective'},{r:'Browse',g:'Seed Predation'},{r:'Browse + Seed',g:'Tool Use'},{r:'Detritivory',g:'Trap Building'}],
-      fk: [{r:'Budding',g:'Vegetative/Clonal Spread'},{r:'Viviparity',g:'Extended Parental Care'},{r:'Swarm+Allo+Veg',g:'Eusociality'}] },
+      eat:[{r:'Oxygenic Photo',g:'Browse / Selective'},{r:'Browse',g:'Seed Predation'},{r:'Browse + Seed',g:'Tool Use'},{r:'Detritivory',g:'Trap Building'}],
+      fk: [{r:'Budding',g:'Vegetative / Clonal'},{r:'Viviparity',g:'Extended Parental Care'},{r:'Swarm + Allo',g:'Eusociality'}] },
 
-  D:{ name:'Desert',           short:'DESERT',  icon:'🏜️', fill:'#5a2c08', stroke:'#c07030', textFill:'#f09040',
+  D:{ name:'Desert',           short:'DESERT',  icon:'🏜️',
+      fill:'#e06010', stroke:'#1a0e04', text:'#fff',
+      labelBg:'#a84000',
       drivers:['Water scarcity','Extreme temperature swing','Prey scarce and spaced','Venom value vs large prey'],
       blurb:'Rewards ambush, venom, and parthenogenesis. Eliminates broadcast spawners. Forces maximum energy conservation.',
       eat:[{r:'Detritivory',g:'Sit-and-Wait Ambush'},{r:'Sit-and-Wait',g:'Venom Injection'},{r:'Browse',g:'Seed Predation'}],
-      fk: [{r:'Fragmentation',g:'Parthenogenesis'},{r:'Parthen + Spore',g:'Delayed Development'},{r:'Delayed Dev',g:'Viviparity'}] },
+      fk: [{r:'Fragmentation',g:'Parthenogenesis'},{r:'Parthen. + Spore',g:'Delayed Development'},{r:'Delayed Dev.',g:'Viviparity'}] },
 
-  C:{ name:'Deep Cave',        short:'CAVE',    icon:'🕳️', fill:'#2a1840', stroke:'#7050a0', textFill:'#b080e0',
+  C:{ name:'Deep Cave',        short:'CAVE',    icon:'🕳️',
+      fill:'#7030b8', stroke:'#1a0e04', text:'#e8c0ff',
+      labelBg:'#4a1880',
       drivers:['Total darkness','No photosynthesis base','Sparse food input','Extreme K-selection','Isolation from gene flow'],
       blurb:'Most K-selected environment on Earth. Animals live for centuries, reproduce slowly, develop exotic sensory systems.',
       eat:[{r:'Chemosynthesis',g:'Electrosensory Hunt'},{r:'Sit-and-Wait',g:'Trap Building'},{r:'Osmotrophy+Trap+Tool',g:'Fungal Farming'}],
-      fk: [{r:'Fragmentation',g:'Parthenogenesis'},{r:'Alloparental',g:'Eusociality'},{r:'Sperm Competition',g:'Traumatic Insemination'}] },
+      fk: [{r:'Fragmentation',g:'Parthenogenesis'},{r:'Alloparental',g:'Eusociality'},{r:'Sperm Comp.',g:'Repro. Manipulation'}] },
 
-  G:{ name:'GM Lab',           short:'GM LAB',  icon:'⚗️', fill:'#101830', stroke:'#4080ff', textFill:'#80c0ff',
-      drivers:['Directed evolution','Artificial selection','Mutagenesis chambers','Horizontal gene transfer technology'],
-      blurb:'A laboratory for accelerated evolution. Your agent has stumbled into a genetic modification facility.',
+  G:{ name:'GM Lab',           short:'GM LAB',  icon:'⚗️',
+      fill:'#1840e8', stroke:'#1a0e04', text:'#a0c8ff',
+      labelBg:'#0c28c0',
+      drivers:['Directed evolution','Artificial selection','Mutagenesis chambers','Lateral gene transfer tech'],
+      blurb:'A genetic modification laboratory. Your agent can attempt a Genetic Breakthrough — bypass all muster prerequisites on a roll of 6.',
       special:true,
       eat:[], fk:[] },
 };
 
-// ════════════════════════════════════════════════════
-// HEX GEOMETRY  (pointy-top)
-// ════════════════════════════════════════════════════
-const R   = 38;                       // hex circumradius
-const W   = Math.sqrt(3) * R;         // hex width  ≈ 65.8
-const H   = 2 * R;                    // hex height = 76
-const DX  = W;                        // column spacing
-const DY  = 1.5 * R;                  // row spacing = 57
-const ODD = W / 2;                    // odd-row x offset
-const PAD = R + 4;                    // board padding
+// ═══════════════════════════════════════════
+// HEX GEOMETRY — pointy-top
+// ═══════════════════════════════════════════
+const R   = 42;
+const W   = Math.sqrt(3) * R;   // ≈72.7
+const DY  = 1.5 * R;            // 63
+const ODD = W / 2;
+const PAD = R + 8;
 
 function hexCenter(row, col) {
-  const x = col * DX + (row % 2 === 1 ? ODD : 0) + PAD;
-  const y = row * DY + PAD;
-  return [x, y];
+  return [
+    col * W + (row % 2 === 1 ? ODD : 0) + PAD,
+    row * DY + PAD
+  ];
 }
 
-function hexPoints(cx, cy) {
+function hexPoints(cx, cy, r) {
   const pts = [];
   for (let i = 0; i < 6; i++) {
     const a = Math.PI / 180 * (60 * i - 30);
-    pts.push(`${(cx + R * Math.cos(a)).toFixed(1)},${(cy + R * Math.sin(a)).toFixed(1)}`);
+    pts.push(`${(cx + r * Math.cos(a)).toFixed(1)},${(cy + r * Math.sin(a)).toFixed(1)}`);
   }
   return pts.join(' ');
 }
 
-// ════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
 // STATE
-// ════════════════════════════════════════════════════
-const PLAYER_COLORS = ['#c04020','#2060c0','#208040','#8020a0'];
-const PLAYER_NAMES  = ['Player 1','Player 2','Player 3','Player 4'];
+// ═══════════════════════════════════════════
+const PLAYER_COLORS = ['#d03020','#1858c0','#1a8030','#9020a0'];
 let selectedPlayer = 0;
 let selectedHex = null;
 let filterCode = null;
-const agents = {}; // key: "r,c" → array of playerIndex
+const agents = {};
 
-// ════════════════════════════════════════════════════
-// BUILD SVG BOARD
-// ════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
+// BUILD SVG
+// ═══════════════════════════════════════════
 function buildBoard() {
   const svg = document.getElementById('board-svg');
-  const rows = BOARD.length;
-  const cols = BOARD[0].length;
-
-  // Calculate board dimensions
+  const rows = BOARD.length, cols = BOARD[0].length;
   let maxX = 0, maxY = 0;
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
-      if (BOARD[r][c] === null) continue;
+      if (!BOARD[r][c]) continue;
       const [x, y] = hexCenter(r, c);
-      maxX = Math.max(maxX, x + R);
-      maxY = Math.max(maxY, y + R);
+      maxX = Math.max(maxX, x + R + 4);
+      maxY = Math.max(maxY, y + R + 4);
     }
   }
   svg.setAttribute('viewBox', `0 0 ${maxX + PAD} ${maxY + PAD}`);
@@ -278,144 +296,185 @@ function buildBoard() {
   svg.setAttribute('height', maxY + PAD);
   svg.style.maxWidth = '100%';
 
-  // Hex groups layer
-  const hexLayer = document.createElementNS('http://www.w3.org/2000/svg','g');
-  hexLayer.id = 'hex-layer';
-  svg.appendChild(hexLayer);
+  // Define drop shadow filter
+  const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+  defs.innerHTML = `
+    <filter id="hex-shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#1a0e04" flood-opacity="0.35"/>
+    </filter>
+    <filter id="gm-glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>`;
+  svg.appendChild(defs);
 
-  // Agent layer (rendered on top)
-  const agentLayer = document.createElementNS('http://www.w3.org/2000/svg','g');
+  const hexLayer  = document.createElementNS('http://www.w3.org/2000/svg','g');
+  const agentLayer= document.createElementNS('http://www.w3.org/2000/svg','g');
+  hexLayer.id = 'hex-layer';
   agentLayer.id = 'agent-layer';
+  svg.appendChild(hexLayer);
   svg.appendChild(agentLayer);
 
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       const code = BOARD[r][c];
-      if (code === null) continue;
+      if (!code) continue;
       const td = T[code];
       const [cx, cy] = hexCenter(r, c);
 
       const g = document.createElementNS('http://www.w3.org/2000/svg','g');
       g.classList.add('hex-group');
-      g.dataset.row = r;
-      g.dataset.col = c;
-      g.dataset.code = code;
+      g.dataset.row = r; g.dataset.col = c; g.dataset.code = code;
       g.id = `h${r}_${c}`;
 
-      // Shadow / glow for GM Lab
-      if (code === 'G') {
-        const glow = document.createElementNS('http://www.w3.org/2000/svg','polygon');
-        glow.setAttribute('points', hexPoints(cx, cy));
-        glow.setAttribute('fill', 'none');
-        glow.setAttribute('stroke', '#60a0ff');
-        glow.setAttribute('stroke-width', '4');
-        glow.setAttribute('opacity', '0.4');
-        g.appendChild(glow);
-      }
+      // Shadow polygon (offset for 3D feel)
+      const shadow = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+      shadow.setAttribute('points', hexPoints(cx + 2.5, cy + 3, R - 1));
+      shadow.setAttribute('fill', '#1a0e0466');
+      shadow.setAttribute('stroke', 'none');
+      g.appendChild(shadow);
 
-      // Hex polygon
+      // Main hex
       const poly = document.createElementNS('http://www.w3.org/2000/svg','polygon');
-      poly.setAttribute('points', hexPoints(cx, cy));
+      poly.setAttribute('points', hexPoints(cx, cy, R - 1));
       poly.setAttribute('fill', td.fill);
       poly.setAttribute('stroke', td.stroke);
-      poly.setAttribute('stroke-width', '1.5');
+      poly.setAttribute('stroke-width', '3');
+      poly.setAttribute('stroke-linejoin', 'round');
+      poly.classList.add('main-poly');
       g.appendChild(poly);
 
-      // Terrain icon
+      // GM Lab inner dashed ring
+      if (code === 'G') {
+        const ring = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+        ring.setAttribute('points', hexPoints(cx, cy, R - 10));
+        ring.setAttribute('fill', 'none');
+        ring.setAttribute('stroke', '#a0c8ff');
+        ring.setAttribute('stroke-width', '1.5');
+        ring.setAttribute('stroke-dasharray', '5 3');
+        ring.setAttribute('opacity', '0.7');
+        g.appendChild(ring);
+      }
+
+      // Icon
       const icon = document.createElementNS('http://www.w3.org/2000/svg','text');
       icon.setAttribute('x', cx);
-      icon.setAttribute('y', cy - 8);
-      icon.setAttribute('font-size', code === 'G' ? '20' : '17');
-      icon.setAttribute('class','hex-label');
-      icon.setAttribute('fill', td.textFill);
+      icon.setAttribute('y', cy - 9);
+      icon.setAttribute('font-size', code === 'G' ? '20' : '18');
+      icon.setAttribute('class', 'hex-label');
+      icon.setAttribute('fill', td.text);
       icon.textContent = td.icon;
       g.appendChild(icon);
 
-      // Terrain short name
+      // Label background pill
+      const lblW = td.short.length * 5.8 + 8;
+      const lbg = document.createElementNS('http://www.w3.org/2000/svg','rect');
+      lbg.setAttribute('x', cx - lblW/2);
+      lbg.setAttribute('y', cy + 10);
+      lbg.setAttribute('width', lblW);
+      lbg.setAttribute('height', 13);
+      lbg.setAttribute('rx', '3');
+      lbg.setAttribute('fill', td.labelBg || td.fill);
+      lbg.setAttribute('stroke', td.stroke);
+      lbg.setAttribute('stroke-width', '1.5');
+      g.appendChild(lbg);
+
+      // Label text
       const label = document.createElementNS('http://www.w3.org/2000/svg','text');
       label.setAttribute('x', cx);
-      label.setAttribute('y', cy + 14);
-      label.setAttribute('font-size', '7');
-      label.setAttribute('class','hex-label');
-      label.setAttribute('fill', td.textFill);
-      label.setAttribute('font-family','system-ui, -apple-system, sans-serif');
-      label.setAttribute('letter-spacing', '0.5');
+      label.setAttribute('y', cy + 19);
+      label.setAttribute('font-size', '7.5');
+      label.setAttribute('class', 'hex-label');
+      label.setAttribute('fill', '#fff');
+      label.setAttribute('font-family', "'Arial Black', Impact, system-ui, sans-serif");
+      label.setAttribute('font-weight', '900');
+      label.setAttribute('letter-spacing', '0.8');
       label.textContent = td.short;
       g.appendChild(label);
 
-      // GM Lab pulse ring
-      if (code === 'G') {
-        const ring = document.createElementNS('http://www.w3.org/2000/svg','circle');
-        ring.setAttribute('cx', cx); ring.setAttribute('cy', cy);
-        ring.setAttribute('r', R - 6);
-        ring.setAttribute('fill', 'none');
-        ring.setAttribute('stroke', '#40a0ff');
-        ring.setAttribute('stroke-width', '1');
-        ring.setAttribute('stroke-dasharray', '4 3');
-        ring.setAttribute('opacity', '0.6');
-        g.appendChild(ring);
-      }
+      // Selected highlight ring (hidden by default)
+      const selRing = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+      selRing.setAttribute('points', hexPoints(cx, cy, R + 2));
+      selRing.setAttribute('fill', 'none');
+      selRing.setAttribute('stroke', '#f0d000');
+      selRing.setAttribute('stroke-width', '4');
+      selRing.setAttribute('opacity', '0');
+      selRing.classList.add('sel-ring');
+      g.appendChild(selRing);
 
       g.addEventListener('click', () => onHexClick(r, c, code, cx, cy));
       hexLayer.appendChild(g);
     }
   }
+
+  buildLegend();
+  buildTerrainFilters();
 }
 
-// ════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
 // INTERACTION
-// ════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
 function onHexClick(r, c, code, cx, cy) {
   // Deselect previous
   if (selectedHex) {
-    document.getElementById(`h${selectedHex[0]}_${selectedHex[1]}`)?.classList.remove('selected');
+    const prev = document.getElementById(`h${selectedHex[0]}_${selectedHex[1]}`);
+    prev?.querySelector('.sel-ring')?.setAttribute('opacity','0');
   }
   selectedHex = [r, c];
-  document.getElementById(`h${r}_${c}`).classList.add('selected');
+  document.getElementById(`h${r}_${c}`).querySelector('.sel-ring')?.setAttribute('opacity','1');
 
-  // Place agent
+  // Toggle agent
   const key = `${r},${c}`;
   if (!agents[key]) agents[key] = [];
   const idx = agents[key].indexOf(selectedPlayer);
   if (idx >= 0) {
-    agents[key].splice(idx, 1); // toggle off
-    if (agents[key].length === 0) delete agents[key];
+    agents[key].splice(idx, 1);
+    if (!agents[key].length) delete agents[key];
   } else {
     agents[key].push(selectedPlayer);
   }
   renderAgents();
-
-  // Update info panel
   showInfo(r, c, code);
 }
 
 function renderAgents() {
   const layer = document.getElementById('agent-layer');
   layer.innerHTML = '';
-  Object.entries(agents).forEach(([key, playerList]) => {
+  Object.entries(agents).forEach(([key, list]) => {
     const [r, c] = key.split(',').map(Number);
     const [cx, cy] = hexCenter(r, c);
-    const n = playerList.length;
-    playerList.forEach((pIdx, i) => {
-      const offset = n > 1 ? (i - (n-1)/2) * 12 : 0;
+    const n = list.length;
+    list.forEach((pIdx, i) => {
+      const off = n > 1 ? (i - (n-1)/2) * 14 : 0;
+      // Shadow
+      const cs = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      cs.setAttribute('cx', cx + off + 1.5); cs.setAttribute('cy', cy - 2 + 2);
+      cs.setAttribute('r', '11');
+      cs.setAttribute('fill', '#1a0e0455');
+      layer.appendChild(cs);
+      // Circle
       const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
-      circle.setAttribute('cx', cx + offset);
-      circle.setAttribute('cy', cy - 2);
-      circle.setAttribute('r', 9);
+      circle.setAttribute('cx', cx + off); circle.setAttribute('cy', cy - 2);
+      circle.setAttribute('r', '11');
       circle.setAttribute('fill', PLAYER_COLORS[pIdx]);
       circle.setAttribute('stroke', '#fff');
-      circle.setAttribute('stroke-width', '1.5');
-      circle.setAttribute('opacity', '0.92');
+      circle.setAttribute('stroke-width', '2.5');
       layer.appendChild(circle);
-
+      // Outline
+      const co = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      co.setAttribute('cx', cx + off); co.setAttribute('cy', cy - 2);
+      co.setAttribute('r', '11');
+      co.setAttribute('fill', 'none');
+      co.setAttribute('stroke', '#1a0e04');
+      co.setAttribute('stroke-width', '1.5');
+      layer.appendChild(co);
+      // Number
       const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
-      txt.setAttribute('x', cx + offset);
-      txt.setAttribute('y', cy + 2);
+      txt.setAttribute('x', cx + off); txt.setAttribute('y', cy + 2);
       txt.setAttribute('text-anchor','middle');
       txt.setAttribute('dominant-baseline','middle');
-      txt.setAttribute('font-size','9');
-      txt.setAttribute('font-weight','bold');
-      txt.setAttribute('font-family','Courier New');
+      txt.setAttribute('font-size','11'); txt.setAttribute('font-weight','900');
+      txt.setAttribute('font-family',"'Arial Black',system-ui,sans-serif");
       txt.setAttribute('fill','#fff');
       txt.textContent = pIdx + 1;
       layer.appendChild(txt);
@@ -426,234 +485,167 @@ function renderAgents() {
 function showInfo(r, c, code) {
   const td = T[code];
   const panel = document.getElementById('info-panel');
-  let html = '';
-
-  html += `<div class="ip-section">
-    <span class="ip-icon">${td.icon}</span>
-    <div class="ip-terrain-name" style="color:${td.textFill}">${td.name}</div>
-    <div style="font-size:9px;color:var(--muted);margin-bottom:8px">HEX R${r}·C${c}</div>
-    <div class="ip-blurb">${td.blurb}</div>
-  </div>`;
+  let html = `
+    <div class="ip-header" style="background:${td.fill}22;border-bottom-color:${td.fill}">
+      <span class="ip-icon">${td.icon}</span>
+      <div class="ip-terrain-name" style="color:${td.labelBg||td.fill}">${td.name}</div>
+      <div class="ip-coords">Hex R${r}·C${c}</div>
+    </div>
+    <div class="ip-blurb">${td.blurb}</div>`;
 
   if (td.special) {
-    // GM LAB
     html += `<div class="gm-box">
-      <div class="gm-title">⚗️ GM LAB MECHANICS</div>
-      <div class="gm-rule">
-        Your agent has entered a genetic modification laboratory.<br><br>
-        <strong style="color:#80c8ff">Roll 1d6:</strong><br>
-        🎲 <strong style="color:#40f080">Roll 6</strong> — Muster ANY strategy from either deck. No prerequisites. No terrain requirement.<br>
-        🎲 <strong style="color:#f0c060">Roll 1–5</strong> — Draw 1 card normally. Still need prerequisites.
+      <div class="gm-head">⚗️ GM Lab Mechanics</div>
+      <div class="gm-body">
+        <div class="gm-rule">
+          Your agent entered a genetic modification laboratory.<br><br>
+          <strong>Roll 1d6:</strong><br>
+          🎲 <strong style="color:var(--green)">Roll 6</strong> — Muster ANY strategy from either deck. No prerequisites. No terrain limit.<br>
+          🎲 <strong style="color:#a06010">Roll 1–5</strong> — Draw 1 card normally. Prerequisites still apply.
+        </div>
+        <button class="dice-btn" onclick="rollGMLab()">🎲 Roll the Dice</button>
+        <div class="dice-result" id="dice-result"></div>
+        <div id="dice-outcome"></div>
       </div>
-      <button class="dice-btn" onclick="rollDice()">🎲 ROLL THE DICE</button>
-      <div class="dice-result" id="dice-result"></div>
-      <div id="dice-outcome"></div>
     </div>`;
   } else {
-    // Evolutionary drivers
-    html += `<div class="ip-section"><h4>EVOLUTIONARY DRIVERS</h4>
-      ${td.drivers.map(d=>`<span class="driver-tag">${d}</span>`).join('')}
+    html += `<div class="ip-section">
+      <div class="ip-section-title">Evolutionary Drivers</div>
+      <div style="margin-top:6px">${td.drivers.map(d=>`<span class="driver-tag">${d}</span>`).join('')}</div>
     </div>`;
   }
 
-  // EAT muster chain
   if (td.eat.length) {
     html += `<div class="ip-section">
-      <div class="muster-label ml-eat">🍖 EAT IT — MUSTER CHAIN</div>`;
+      <div class="ip-section-title eat">🍖 EAT IT Muster Chain</div>`;
     td.eat.forEach(m => {
       html += `<div class="muster-row">
-        <span class="muster-req">${m.r}</span>
-        <span class="muster-arrow">▶</span>
-        <span class="muster-gives-eat">${m.g}</span>
+        <span class="mrow-req">${m.r}</span>
+        <span class="mrow-arr">▶</span>
+        <span class="mrow-gives-eat">${m.g}</span>
       </div>`;
     });
     html += '</div>';
   }
 
-  // F*CK muster chain
   if (td.fk.length) {
     html += `<div class="ip-section">
-      <div class="muster-label ml-fk">🧬 F*CK IT — MUSTER CHAIN</div>`;
+      <div class="ip-section-title fk">🧬 F*CK IT Muster Chain</div>`;
     td.fk.forEach(m => {
       html += `<div class="muster-row">
-        <span class="muster-req">${m.r}</span>
-        <span class="muster-arrow">▶</span>
-        <span class="muster-gives-fk">${m.g}</span>
+        <span class="mrow-req">${m.r}</span>
+        <span class="mrow-arr">▶</span>
+        <span class="mrow-gives-fk">${m.g}</span>
       </div>`;
     });
     html += '</div>';
   }
 
-  // Agent info
-  const key = `${r},${c}`;
-  if (agents[key]?.length) {
-    html += `<div class="ip-section"><h4>AGENTS IN THIS HEX</h4>`;
-    agents[key].forEach(p => {
-      html += `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;">
-        <div style="width:14px;height:14px;border-radius:50%;background:${PLAYER_COLORS[p]};border:1px solid #fff6;flex-shrink:0"></div>
-        <span style="font-size:11px">${PLAYER_NAMES[p]}</span>
-      </div>`;
-    });
-    html += '</div>';
-  }
-
-  // Click to remove note
-  html += `<div style="color:var(--muted);font-size:10px;margin-top:12px;border-top:1px solid var(--border);padding-top:8px">
-    Click hex again to toggle your agent token. Select a player color in the toolbar to place that player's token.
+  html += `<div style="padding:10px 16px">
+    <a href="battle.html" style="display:block;text-align:center;padding:8px;background:var(--eat);color:#fff;font-weight:900;font-size:11px;text-decoration:none;border-radius:4px;border:2px solid var(--ink);letter-spacing:.5px;text-transform:uppercase;">⚔️ Battle Here →</a>
   </div>`;
 
   panel.innerHTML = html;
 }
 
-// ════════════════════════════════════════════════════
-// DICE ROLLER (GM LAB)
-// ════════════════════════════════════════════════════
-function rollDice() {
-  const resultEl = document.getElementById('dice-result');
-  const outcomeEl = document.getElementById('dice-outcome');
-  if (!resultEl) return;
-  outcomeEl.innerHTML = '';
-
-  const FACES = ['⚀','⚁','⚂','⚃','⚄','⚅'];
-  let spins = 0;
-  const totalSpins = 18 + Math.floor(Math.random() * 10);
-  const finalRoll = Math.floor(Math.random() * 6) + 1;
-
-  const interval = setInterval(() => {
-    const face = Math.floor(Math.random() * 6);
-    resultEl.innerHTML = `<span class="dice-num">${FACES[face]}</span>`;
-    spins++;
-    if (spins >= totalSpins) {
-      clearInterval(interval);
-      resultEl.innerHTML = `<span class="dice-num" style="font-size:48px">${FACES[finalRoll-1]}</span>
-        <span style="font-size:20px;font-weight:bold;color:${finalRoll===6?'#40f080':'#f0c060'}">${finalRoll}</span>`;
-
-      if (finalRoll === 6) {
-        outcomeEl.innerHTML = `<div class="dice-outcome dice-win">
-          <strong>🧬 GENETIC BREAKTHROUGH!</strong><br>
-          You may muster ANY strategy from either deck. No prerequisites or terrain requirements. Draw immediately.
-        </div>`;
+// ═══════════════════════════════════════════
+// GM LAB DICE
+// ═══════════════════════════════════════════
+let diceAnim = null;
+function rollGMLab() {
+  clearTimeout(diceAnim);
+  const numEl = document.getElementById('dice-result');
+  const outEl = document.getElementById('dice-outcome');
+  if (!numEl) return;
+  let ticks = 0;
+  const faces = ['⚀','⚁','⚂','⚃','⚄','⚅'];
+  function spin() {
+    const f = Math.floor(Math.random()*6);
+    numEl.innerHTML = `<span class="dice-num">${faces[f]}</span>`;
+    ticks++;
+    if (ticks < 10) diceAnim = setTimeout(spin, 60 + ticks * 15);
+    else {
+      const roll = Math.floor(Math.random()*6)+1;
+      numEl.innerHTML = `<span class="dice-num">${faces[roll-1]}</span> <span style="font-size:22px;font-weight:900">${roll}</span>`;
+      if (roll === 6) {
+        outEl.innerHTML = `<div class="dice-outcome dice-win">🧬 <strong>GENETIC BREAKTHROUGH!</strong><br>Muster ANY strategy from either deck. No prerequisites. No terrain limit.</div>`;
       } else {
-        outcomeEl.innerHTML = `<div class="dice-outcome dice-miss">
-          <strong>⚗️ PARTIAL MODIFICATION</strong><br>
-          Draw 1 card from either deck normally. Prerequisite strategies and terrain requirements still apply.
-        </div>`;
+        outEl.innerHTML = `<div class="dice-outcome dice-miss">🧫 Interesting experiment...<br>Draw 1 card normally from any deck. You still need all prerequisites.</div>`;
       }
     }
-  }, 60);
+  }
+  spin();
 }
 
-// ════════════════════════════════════════════════════
-// TERRAIN FILTER / HIGHLIGHT
-// ════════════════════════════════════════════════════
-function setFilter(code) {
-  filterCode = (filterCode === code) ? null : code;
-  applyFilter();
-  // Update filter buttons
-  document.querySelectorAll('.terrain-filter-btn').forEach(b => {
-    b.classList.toggle('on', b.dataset.code === filterCode);
-  });
+// ═══════════════════════════════════════════
+// TOOLBAR
+// ═══════════════════════════════════════════
+function selectPlayer(idx) {
+  selectedPlayer = idx;
+  document.querySelectorAll('.player-btn').forEach((b,i)=>b.classList.toggle('selected',i===idx));
+}
+
+function clearAgents() {
+  Object.keys(agents).forEach(k=>delete agents[k]);
+  renderAgents();
 }
 
 function clearFilter() {
   filterCode = null;
-  applyFilter();
-  document.querySelectorAll('.terrain-filter-btn').forEach(b => b.classList.remove('on'));
-}
-
-function applyFilter() {
-  document.querySelectorAll('.hex-group').forEach(g => {
+  document.querySelectorAll('.terrain-filter-btn').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.leg-item').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.hex-group').forEach(g=>{
     g.classList.remove('highlighted','dimmed');
-    if (filterCode !== null) {
-      if (g.dataset.code === filterCode) g.classList.add('highlighted');
-      else g.classList.add('dimmed');
-    }
   });
 }
 
-// ════════════════════════════════════════════════════
-// PLAYER SELECTION
-// ════════════════════════════════════════════════════
-function selectPlayer(idx) {
-  selectedPlayer = idx;
-  document.querySelectorAll('.player-btn').forEach((b,i) => b.classList.toggle('selected', i === idx));
+function applyFilter(code) {
+  if (filterCode === code) { clearFilter(); return; }
+  filterCode = code;
+  document.querySelectorAll('.terrain-filter-btn').forEach(b=>{
+    b.classList.toggle('on', b.dataset.code === code);
+  });
+  document.querySelectorAll('.leg-item').forEach(b=>{
+    b.classList.toggle('on', b.dataset.code === code);
+  });
+  document.querySelectorAll('.hex-group').forEach(g=>{
+    const match = g.dataset.code === code;
+    g.classList.toggle('highlighted', match);
+    g.classList.toggle('dimmed', !match);
+  });
 }
 
-function clearAgents() {
-  Object.keys(agents).forEach(k => delete agents[k]);
-  renderAgents();
-}
-
-// ════════════════════════════════════════════════════
-// BUILD TOOLBAR FILTERS & LEGEND
-// ════════════════════════════════════════════════════
-function buildFiltersAndLegend() {
-  const filterBar = document.getElementById('terrain-filters');
-  const legend = document.getElementById('legend');
-
+// ═══════════════════════════════════════════
+// LEGEND + FILTERS
+// ═══════════════════════════════════════════
+function buildLegend() {
+  const leg = document.getElementById('legend');
   Object.entries(T).forEach(([code, td]) => {
-    // Filter button
+    const el = document.createElement('div');
+    el.className = 'leg-item';
+    el.dataset.code = code;
+    el.innerHTML = `<div class="leg-swatch" style="background:${td.fill}"></div>${td.icon} ${td.name}`;
+    el.onclick = () => applyFilter(code);
+    leg.appendChild(el);
+  });
+}
+
+function buildTerrainFilters() {
+  const cont = document.getElementById('terrain-filters');
+  Object.entries(T).forEach(([code, td]) => {
     const btn = document.createElement('button');
     btn.className = 'terrain-filter-btn';
     btn.dataset.code = code;
     btn.style.background = td.fill;
+    btn.style.color = td.text;
     btn.style.borderColor = td.stroke;
-    btn.style.color = td.textFill;
-    btn.textContent = td.icon + ' ' + td.short;
-    btn.title = td.name;
-    btn.onclick = () => setFilter(code);
-    filterBar.appendChild(btn);
-
-    // Legend item
-    const leg = document.createElement('div');
-    leg.className = 'leg-item';
-    leg.onclick = () => setFilter(code);
-    leg.innerHTML = `<div class="leg-swatch" style="background:${td.fill};border-color:${td.stroke}"></div>${td.icon} ${td.name}`;
-    leg.title = td.blurb;
-    legend.appendChild(leg);
+    btn.textContent = `${td.icon} ${td.short}`;
+    btn.onclick = () => applyFilter(code);
+    cont.appendChild(btn);
   });
 }
 
-// ════════════════════════════════════════════════════
-// COUNT TERRAIN HEXES (for info)
-// ════════════════════════════════════════════════════
-function countTerrains() {
-  const counts = {};
-  BOARD.forEach(row => row.forEach(code => {
-    if (code !== null) counts[code] = (counts[code]||0) + 1;
-  }));
-  return counts;
-}
-
-// ════════════════════════════════════════════════════
-// INIT
-// ════════════════════════════════════════════════════
 buildBoard();
-buildFiltersAndLegend();
-
-// Show terrain counts on load
-const counts = countTerrains();
-const total = Object.values(counts).reduce((a,b)=>a+b,0);
-document.getElementById('info-panel').innerHTML = `
-  <div style="margin-bottom:12px">
-    <div style="font-size:14px;font-weight:bold;color:var(--ter-l);letter-spacing:2px;margin-bottom:6px">BOARD OVERVIEW</div>
-    <div style="font-size:10px;color:var(--muted);margin-bottom:12px">${total} hexes · 6 GM Labs · 9 terrain types</div>
-    ${Object.entries(counts).map(([code,n])=>`
-      <div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid var(--border);">
-        <div style="width:12px;height:12px;background:${T[code].fill};border:1px solid ${T[code].stroke};flex-shrink:0"></div>
-        <span style="color:${T[code].textFill};flex:1;font-size:11px">${T[code].icon} ${T[code].name}</span>
-        <span style="color:var(--muted);font-size:10px">${n}</span>
-      </div>`).join('')}
-  </div>
-  <div style="color:var(--muted);font-size:10px;margin-top:10px;line-height:1.6">
-    <strong style="color:var(--ter-l)">HOW TO USE:</strong><br>
-    • Click any hex to see its muster chains<br>
-    • Select a player color and click to place agents<br>
-    • Click an occupied hex to remove your agent<br>
-    • Use terrain filter buttons to highlight a biome<br>
-    • GM Lab hexes roll a d6 — roll 6 for a wildcard muster
-  </div>
-`;
 </script>
 </body>
 </html>
