@@ -171,17 +171,67 @@ html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-s
 .bar-fill{height:100%;border-radius:3px;}
 
 /* ── MUSTER TABLE PANEL ── */
-.terrain-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;}
-.tcard{background:var(--surf);border:1.5px solid var(--border);padding:16px;border-radius:12px;}
-.tcard-name{font-size:15px;font-weight:700;margin-bottom:6px;}
-.tcard-blurb{font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.55;}
+.muster-layout{display:grid;grid-template-columns:220px 1fr;gap:16px;align-items:start;}
+.terrain-btns{display:flex;flex-direction:column;gap:5px;}
+.ter-btn{display:flex;align-items:center;gap:8px;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;background:#fff;font-family:inherit;font-size:12px;font-weight:600;text-align:left;transition:all .12s;width:100%;}
+.ter-btn:hover{border-color:#b0a090;}
+.ter-btn.active{color:#fff;border-color:transparent;}
+.muster-right{display:flex;flex-direction:column;gap:14px;}
+.muster-terrain-hdr{padding:12px 16px;border-radius:10px;margin-bottom:4px;}
+.mth-name{font-size:16px;font-weight:800;margin-bottom:3px;}
+.mth-blurb{font-size:11px;line-height:1.5;opacity:.85;}
+.mth-drivers{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;}
+.mth-drv{font-size:9px;padding:2px 8px;border-radius:20px;background:rgba(255,255,255,.3);border:1px solid rgba(255,255,255,.4);font-weight:600;}
+.checker-row{display:flex;gap:14px;flex-wrap:wrap;}
+.checker-col{flex:1;min-width:200px;}
+.checker-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px;padding-bottom:5px;border-bottom:1.5px solid var(--border);}
+.checker-label.eat{color:var(--eat);}
+.checker-label.fk{color:var(--fk);}
+.strat-check{display:flex;align-items:center;gap:6px;padding:4px 7px;border-radius:6px;cursor:pointer;transition:background .1s;font-size:11px;margin-bottom:2px;border:1px solid transparent;user-select:none;}
+.strat-check:hover{background:var(--surf2);}
+.strat-check.checked-eat{background:var(--eat-d);border-color:var(--eat-b);}
+.strat-check.checked-fk{background:var(--fk-d);border-color:var(--fk-b);}
+.sc-box{width:14px;height:14px;border:1.5px solid var(--border);border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;transition:all .1s;}
+.checked-eat .sc-box{background:var(--eat);border-color:var(--eat);color:#fff;}
+.checked-fk .sc-box{background:var(--fk);border-color:var(--fk);color:#fff;}
+.sc-art{font-size:13px;flex-shrink:0;}
+.sc-name{flex:1;font-size:11px;color:#2a1a0a;}
+.sc-tier{font-size:9px;color:var(--muted);}
+.results-section{background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:14px;}
+.rs-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.muster-entry{display:flex;align-items:flex-start;gap:8px;padding:7px 10px;border-radius:7px;margin-bottom:5px;border:1.5px solid;}
+.me-avail{border-color:#90c890;background:#f4faf4;}
+.me-unavail{border-color:var(--border);background:var(--surf2);opacity:.6;}
+.me-cat{border-color:#b090d0;background:#f8f4ff;}
+.me-icon{font-size:14px;flex-shrink:0;}
+.me-body{flex:1;}
+.me-gives{font-size:12px;font-weight:700;}
+.me-gives.eat{color:var(--eat);}
+.me-gives.fk{color:var(--fk);}
+.me-gives.cat{color:#7b4fa0;}
+.me-req{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.4;}
+.me-status{font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;flex-shrink:0;align-self:flex-start;}
+.st-avail{background:#d8f0d8;color:#2a6a2a;}
+.st-need{background:#f0e8d8;color:#7a4a10;}
+.st-cat{background:#e8d8f8;color:#5a2a90;}
+.cat-entry{background:#f8f4ff;border:1.5px solid #b090d0;border-radius:8px;padding:10px 12px;margin-bottom:5px;}
+.cat-hdr{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#7b4fa0;margin-bottom:6px;display:flex;align-items:center;gap:5px;}
+.cat-rule{display:flex;align-items:flex-start;gap:8px;font-size:11px;color:#3a2060;line-height:1.5;}
 .muster-label{font-size:10px;letter-spacing:0.8px;margin-bottom:5px;font-weight:600;text-transform:uppercase;}
 .muster-label.eat{color:var(--eat);}
 .muster-label.fk{color:var(--fk);}
-.muster-row{display:flex;align-items:flex-start;gap:6px;padding:5px 9px;margin-bottom:3px;background:var(--surf2);border:1.5px solid var(--border);font-size:11px;border-radius:6px;}
-.muster-req{color:var(--fk);flex:1;}
-.muster-gives{color:var(--drv);flex:1;font-weight:600;}
-.muster-arrow{color:var(--muted);flex-shrink:0;}
+.ref-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-top:12px;}
+.ref-card{background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:12px;}
+.ref-card-name{font-size:12px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:5px;}
+.ref-mrow{font-size:10px;padding:3px 7px;border-radius:5px;background:var(--surf2);border:1px solid var(--border);margin-bottom:3px;display:flex;align-items:center;gap:4px;}
+.ref-mrow.eat{border-color:var(--eat-b);}
+.ref-mrow.fk{border-color:var(--fk-b);}
+.ref-mrow.cat-row{border-color:#b090d0;background:#f8f4ff;}
+.rmr-req{color:var(--muted);flex:1;}
+.rmr-gives{font-weight:600;}
+.rmr-gives.eat{color:var(--eat);}
+.rmr-gives.fk{color:var(--fk);}
+.rmr-gives.cat{color:#7b4fa0;}
 
 /* ── EVO TREE ── */
 .era{margin-bottom:24px;}
@@ -302,12 +352,25 @@ html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-s
 
 <!-- MUSTER PANEL -->
 <div id="panel-muster" class="panel">
-  <div style="color:var(--muted);font-size:11px;margin-bottom:14px;padding:10px 12px;border-left:2px solid var(--ter-l)">
-    Muster logic: <strong style="color:var(--ter-l)">TERRAIN + PREREQUISITE STRATEGY → UNLOCKS new strategy.</strong>
-    Like Titan's creature recruiting, you can only acquire a strategy if you're in the right terrain and already hold the prerequisite.
-    Some strategies require cross-deck co-requisites (Pack Hunt needs a social F*CK strategy).
+  <div style="color:var(--muted);font-size:11px;margin-bottom:16px;padding:10px 12px;border-left:2px solid var(--ter-l);line-height:1.6">
+    <strong style="color:var(--ter-l)">Titan muster rules:</strong> Land on a terrain hex → check your current strategy stack → recruit ONE new strategy whose prerequisites you already hold. Catastrophe events can unlock apex strategies otherwise inaccessible in that terrain. <strong>Check off what you hold below to see what you can recruit.</strong>
   </div>
-  <div class="terrain-grid" id="terrain-cards"></div>
+  <div class="muster-layout">
+    <div>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:8px;">Select Terrain</div>
+      <div class="terrain-btns" id="terrain-btns"></div>
+    </div>
+    <div class="muster-right">
+      <div id="muster-terrain-hdr"></div>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:4px;">Your Current Strategy Stack — check all you hold</div>
+      <div class="checker-row" id="checker-row"></div>
+      <div id="muster-results"></div>
+      <details style="margin-top:8px;">
+        <summary style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);cursor:pointer;padding:4px 0;">▶ Full Muster Reference (all terrains)</summary>
+        <div class="ref-grid" id="terrain-cards"></div>
+      </details>
+    </div>
+  </div>
 </div>
 
 <!-- RULES PANEL -->
@@ -1109,60 +1172,194 @@ const CAT_CARDS=[
 // ════════════════════════════════════════════════════
 // TERRAIN MUSTER TABLE DATA
 // ════════════════════════════════════════════════════
+// req arrays: all named strategies must be in player's hand. '[START]' = free on first landing.
+// cat entries: same req check PLUS a Catastrophe card of the named severity/type must have been drawn this game.
 const TERRAIN_DATA=[
  {icon:'🌋',name:'VOLCANIC VENT',color:'#d95530',
   drivers:['Chemical mineral gradients','No sunlight','Extreme heat (400°C+)','Anaerobic / sulfuric chemistry'],
   blurb:'Life without the sun. Entire food webs built on sulfur. Primary unlock node for the earliest metabolic strategies.',
-  eat:[{req:'[START]',gives:'Chemosynthesis'},{req:'[START]',gives:'Anoxygenic Photosynthesis'},{req:'Chemosynthesis',gives:'Osmotrophy'}],
-  fk:[{req:'[START]',gives:'Binary Fission'},{req:'Binary Fission',gives:'Horizontal Gene Transfer'},{req:'HGT',gives:'Spore / Cryptobiosis'}]},
+  eat:[
+   {req:[],free:true,gives:'Chemosynthesis',note:'Free on first landing — no prerequisites.'},
+   {req:[],free:true,gives:'Anoxygenic Photosynthesis',note:'Free on first landing — no prerequisites.'},
+   {req:['Chemosynthesis'],gives:'Osmotrophy / Absorption',note:'Sulfur metabolism → organic nutrient absorption.'},
+  ],
+  fk:[
+   {req:[],free:true,gives:'Binary Fission',note:'Free on first landing — the original reproduction.'},
+   {req:['Binary Fission'],gives:'Horizontal Gene Transfer',note:'Rapid division creates opportunity for lateral gene sharing.'},
+   {req:['Horizontal Gene Transfer'],gives:'Spore / Cryptobiosis',note:'HGT encodes stress-resistance genes → dormancy.'},
+  ],
+  cat:[
+   {req:['Chemosynthesis','Horizontal Gene Transfer'],gives:'Fungal Farming / Agriculture',
+    event:'Hydrothermal Collapse (Severity 4+)',
+    note:'Volcanic shutdown forces chemotrophs to cultivate microbial gardens rather than rely on active vents. Bypasses normal Forest/Cave prerequisite.'},
+  ]},
 
  {icon:'🌿',name:'PRIMORDIAL SWAMP',color:'#40b080',
   drivers:['Organic matter accumulation','Seasonal drying / flooding','High biological density','Shallow warm water'],
   blurb:'The crucible of multicellularity. Where passive feeding strategies first diversified.',
-  eat:[{req:'Chemosynthesis',gives:'Osmotrophy'},{req:'Osmotrophy',gives:'Detritivory'},{req:'Detritivory',gives:'Sit-and-Wait Ambush'}],
-  fk:[{req:'Binary Fission',gives:'Budding'},{req:'Budding',gives:'Broadcast Spawning'},{req:'Broadcast Spawning',gives:'Swarm Breeding'}]},
+  eat:[
+   {req:['Chemosynthesis'],gives:'Osmotrophy / Absorption',note:'Chemical metabolism → dissolved-organic absorption.'},
+   {req:['Osmotrophy / Absorption'],gives:'Detritivory / Scavenging',note:'Absorption of dissolved organics → eating decomposing matter.'},
+   {req:['Detritivory / Scavenging'],gives:'Sit-and-Wait Ambush',note:'Scavenging → low-energy ambush of living prey.'},
+   {req:['Osmotrophy / Absorption','Binary Fission'],gives:'Parasitism (Feeding)',note:'High organism density + osmotrophy → feeding on host chemistry.'},
+  ],
+  fk:[
+   {req:['Binary Fission'],gives:'Budding / Colonial',note:'Cell division → asymmetric budding into colonies.'},
+   {req:['Budding / Colonial'],gives:'Broadcast Spawning',note:'Colonial structure → mass synchronized release.'},
+   {req:['Broadcast Spawning'],gives:'Swarm Breeding',note:'Spawning synchrony → density-amplified swarm mating.'},
+   {req:['Budding / Colonial','Osmotrophy / Absorption'],gives:'Fragmentation / Regen',note:'Colonial absorbers → break apart and re-grow.'},
+  ],
+  cat:[
+   {req:['Osmotrophy / Absorption','Budding / Colonial'],gives:'Vegetative / Clonal Spread',
+    event:'Methane Burst / Anoxic Event (Severity 3+)',
+    note:'Oxygen crash kills active hunters; passive clonal spreaders dominate. Bypasses normal Forest prerequisite.'},
+  ]},
 
  {icon:'🐚',name:'SHALLOW SEA',color:'#4080d0',
   drivers:['Sunlight penetration','Planktonic prey abundance','Tidal energy cycles','Predation pressure'],
   blurb:'Where photosynthesis scales up, filter feeding evolves, and the Cambrian arms race begins.',
-  eat:[{req:'Anoxygenic Photo',gives:'Oxygenic Photosynthesis'},{req:'Oxygenic Photo',gives:'Filter Feeding'},{req:'Sit-and-Wait Ambush',gives:'Venom Injection'}],
-  fk:[{req:'Binary Fission',gives:'Fragmentation'},{req:'Budding',gives:'Broadcast Spawning'},{req:'Sperm Competition',gives:'Sequential Hermaphroditism'}]},
+  eat:[
+   {req:['Anoxygenic Photosynthesis'],gives:'Oxygenic Photosynthesis',note:'Sulfur-based photo → water-splitting oxygen-producing photo.'},
+   {req:['Oxygenic Photosynthesis'],gives:'Filter Feeding',note:'Abundant phytoplankton → passive filter evolution.'},
+   {req:['Sit-and-Wait Ambush'],gives:'Venom Injection',note:'Ambush + littoral zone → venom as prey-immobilization tool.'},
+   {req:['Filter Feeding'],gives:'Bulk Grazing',note:'Filter feeding scales up → sustained bulk herbivory.'},
+  ],
+  fk:[
+   {req:['Binary Fission'],gives:'Fragmentation / Regen',note:'Division in currents → fragment-and-regenerate strategy.'},
+   {req:['Budding / Colonial'],gives:'Broadcast Spawning',note:'Colonial → synchronized mass spawning into the water column.'},
+   {req:['Broadcast Spawning'],gives:'Sperm Competition',note:'High spawning density → evolutionary sperm arms race.'},
+   {req:['Sperm Competition'],gives:'Sequential Hermaphroditism',note:'Sperm competition → flexible sex role switching.'},
+  ],
+  cat:[
+   {req:['Broadcast Spawning','Fragmentation / Regen'],gives:'Spore / Cryptobiosis',
+    event:'Ocean Anoxia / Acidification (Severity 3+)',
+    note:'Dissolving shells + anoxia force reproduction into dormant spore form. Bypasses normal Desert/Ice prerequisite.'},
+  ]},
 
  {icon:'🌊',name:'OPEN OCEAN',color:'#2060c0',
   drivers:['Three-dimensional pursuit space','Prey dispersal','Low food density = high mobility','Darkness below thermocline'],
   blurb:'Rewards mobility and sensory specialization. Filters out ambush strategies. Drives echolocation and broadcast spawning.',
-  eat:[{req:'Filter Feeding',gives:'Echolocation Hunt'},{req:'Filter Feeding',gives:'Kleptoparasitism'},{req:'Solo Sprint',gives:'Echolocation Hunt'}],
-  fk:[{req:'Budding',gives:'Broadcast Spawning'},{req:'Broadcast Spawning',gives:'Semelparous'},{req:'Sperm Competition',gives:'Sexual Parasitism'}]},
+  eat:[
+   {req:['Filter Feeding'],gives:'Echolocation Hunt',note:'Filter feeding → active acoustic prey detection.'},
+   {req:['Filter Feeding'],gives:'Kleptoparasitism',note:'Passive feeding → stealing from active hunters.'},
+   {req:['Solo Sprint Pursuit'],gives:'Echolocation Hunt',note:'Sprint pursuit in 3D darkness → sonar navigation.'},
+   {req:['Echolocation Hunt'],gives:'Pack / Cooperative Hunting',note:'Sonar communication → coordinated group hunt.'},
+  ],
+  fk:[
+   {req:['Budding / Colonial'],gives:'Broadcast Spawning',note:'Colonial polyps → pelagic mass spawning.'},
+   {req:['Broadcast Spawning'],gives:'Semelparous Reproduction',note:'Mass spawning → one catastrophic reproductive surge.'},
+   {req:['Sperm Competition'],gives:'Sequential Hermaphroditism',note:'Competition → strategic sex switching.'},
+  ],
+  cat:[
+   {req:['Echolocation Hunt','Broadcast Spawning'],gives:'Reproductive Manipulation',
+    event:'Deep Anoxia / Dead Zone Event (Severity 4+)',
+    note:'Sensory manipulation + mass spawning collapse → parasitic control of host reproduction to ensure lineage survival.'},
+  ]},
 
  {icon:'❄️',name:'ICE AGE',color:'#80c0ff',
   drivers:['Resource crash (plant die-off)','Cold-blooded prey slowdown','Fat storage premium','Endothermy selection'],
   blurb:'Eliminates ectotherms and r-strategists. Rewards endothermy, fat storage, cooperative groups, and viviparity.',
-  eat:[{req:'Bulk Grazing',gives:'Pack/Cooperative Hunt'},{req:'Solo Sprint',gives:'Persistence Hunt'},{req:'Pack Hunt',gives:'Apex Crushing Predator'}],
-  fk:[{req:'Delayed Dev',gives:'Viviparity'},{req:'Parthenogenesis',gives:'Delayed Development'},{req:'Spore',gives:'Delayed Development'}]},
+  eat:[
+   {req:['Bulk Grazing'],gives:'Pack / Cooperative Hunting',note:'Grazing herds attract pack-coordinated predators.'},
+   {req:['Solo Sprint Pursuit'],gives:'Persistence Hunt',note:'Cold slows prey → endothermic pursuit becomes dominant.'},
+   {req:['Pack / Cooperative Hunting'],gives:'Apex Crushing Predator',note:'Cooperative takedown → apex megafauna evolution.'},
+  ],
+  fk:[
+   {req:['Parthenogenesis'],gives:'Delayed Development / Diapause',note:'Asexual reproduction → embryo dormancy through winters.'},
+   {req:['Spore / Cryptobiosis'],gives:'Delayed Development / Diapause',note:'Spore dormancy → vertebrate version of metabolic arrest.'},
+   {req:['Delayed Development / Diapause'],gives:'Viviparity (Live Birth)',note:'Internal development → live birth for cold-climate protection.'},
+  ],
+  cat:[
+   {req:['Solo Sprint Pursuit','Viviparity (Live Birth)'],gives:'Extended Parental Care',
+    event:'Glaciation / Snowball Earth (Severity 4+)',
+    note:'Glaciation wipes out most young — only species with prolonged parental protection survive. Bypasses normal Forest prerequisite.'},
+   {req:['Pack / Cooperative Hunting','Delayed Development / Diapause'],gives:'Alloparental Care',
+    event:'Glaciation (Severity 3+)',
+    note:'Cooperative hunters + slow development → shared offspring care as survival adaptation.'},
+  ]},
 
  {icon:'🌾',name:'SAVANNAH',color:'#d0a030',
   drivers:['Open terrain visibility','High prey density','Seasonal drought / flood','Group predator pressure','Arms race between grazers and hunters'],
   blurb:'The arena where prey and predator arms races peak. Drives pack hunting, persistence hunting, sexual display, and apex predators.',
-  eat:[{req:'Oxygenic Photo',gives:'Bulk Grazing'},{req:'Bulk Grazing',gives:'Solo Sprint Pursuit'},{req:'Solo Sprint',gives:'Persistence Hunt'},{req:'Solo Sprint + Bulk',gives:'Pack/Cooperative Hunt'}],
-  fk:[{req:'Broadcast Spawning',gives:'Honest Signal Display'},{req:'Display',gives:'Lek Mating'},{req:'Lek',gives:'Infanticide/Takeover'},{req:'Infanticide',gives:'Alloparental Care'}]},
+  eat:[
+   {req:['Oxygenic Photosynthesis'],gives:'Bulk Grazing',note:'Grass proliferation → large-scale bulk herbivory.'},
+   {req:['Bulk Grazing'],gives:'Solo Sprint Pursuit',note:'Fast prey arms race → cheetah-style pursuit evolution.'},
+   {req:['Solo Sprint Pursuit'],gives:'Persistence Hunt',note:'Open visibility + endothermy → long-range pursuit.'},
+   {req:['Solo Sprint Pursuit','Bulk Grazing'],gives:'Pack / Cooperative Hunting',note:'Sprint + grazer herds → pack coordination pays off.'},
+  ],
+  fk:[
+   {req:['Broadcast Spawning'],gives:'Honest Signal / Sexual Display',note:'Competitive spawning → visible fitness signals.'},
+   {req:['Honest Signal / Sexual Display'],gives:'Lek Mating System',note:'Display competition → formalized arena mating.'},
+   {req:['Lek Mating System'],gives:'Infanticide / Takeover',note:'Male competition → infanticide clears rivals\' offspring.'},
+   {req:['Infanticide / Takeover'],gives:'Alloparental Care',note:'Infanticide pressure → group defense of offspring.'},
+  ],
+  cat:[
+   {req:['Persistence Hunt','Honest Signal / Sexual Display'],gives:'Tool Use / Extraction',
+    event:'Drought / Desertification (Severity 3+)',
+    note:'Resource scarcity + display intelligence → tool-mediated foraging. Bypasses normal Forest prerequisite.'},
+  ]},
 
  {icon:'🌲',name:'CANOPY FOREST',color:'#40a060',
   drivers:['Vertical niche stratification','Fruit / seed density','Hidden food sources','Complex 3D navigation','Social group formation'],
   blurb:'Drives cognitive complexity, tool use, social bonding. The incubator for primate intelligence.',
-  eat:[{req:'Oxygenic Photo',gives:'Browse/Selective'},{req:'Browse',gives:'Seed Predation'},{req:'Seed Pred + Browse',gives:'Tool Use'},{req:'Detritivory',gives:'Trap Building'}],
-  fk:[{req:'Budding',gives:'Vegetative/Clonal Spread'},{req:'Viviparity',gives:'Extended Parental Care'},{req:'Alloparental',gives:'Eusociality'},{req:'Swarm + Allo + Veg',gives:'Eusociality'}]},
+  eat:[
+   {req:['Oxygenic Photosynthesis'],gives:'Browse / Selective Feeding',note:'Photosynthetic diversity → selective fruit/leaf browsing.'},
+   {req:['Browse / Selective Feeding'],gives:'Seed Predation / Granivory',note:'Browsing → targeted seed exploitation.'},
+   {req:['Seed Predation / Granivory','Browse / Selective Feeding'],gives:'Tool Use / Extraction',note:'Hidden food + manual dexterity → tool use.'},
+   {req:['Detritivory / Scavenging'],gives:'Trap Building',note:'Scavenging niche → web/trap construction.'},
+  ],
+  fk:[
+   {req:['Budding / Colonial'],gives:'Vegetative / Clonal Spread',note:'Colonial → clonal runners and vegetative propagation.'},
+   {req:['Viviparity (Live Birth)'],gives:'Extended Parental Care',note:'Live birth in arboreal environment → prolonged care.'},
+   {req:['Alloparental Care'],gives:'Eusociality',note:'Group care → full reproductive division of labor.'},
+   {req:['Swarm Breeding','Alloparental Care','Vegetative / Clonal Spread'],gives:'Eusociality',note:'Multiple social strategies converge → superorganism.'},
+  ],
+  cat:[
+   {req:['Tool Use / Extraction','Eusociality'],gives:'Fungal Farming / Agriculture',
+    event:'Wildfire / Canopy Collapse (Severity 3+)',
+    note:'Fire destroys foraging range — socially intelligent tool users pivot to cultivating fungal food. Bypasses Cave prerequisite.'},
+  ]},
 
  {icon:'🏜️',name:'DESERT',color:'#d07030',
   drivers:['Water scarcity','Extreme temperature swing','Prey scarce / spaced','Venom value vs large prey'],
   blurb:'Rewards ambush, venom, and parthenogenesis. Eliminates broadcast spawners and filter feeders. Forces energy conservation.',
-  eat:[{req:'Detritivory',gives:'Sit-and-Wait Ambush'},{req:'Sit-and-Wait',gives:'Venom Injection'},{req:'Browse',gives:'Seed Predation'}],
-  fk:[{req:'Fragmentation',gives:'Parthenogenesis'},{req:'Parthen + Spore',gives:'Delayed Development'},{req:'Delayed Dev',gives:'Viviparity'}]},
+  eat:[
+   {req:['Detritivory / Scavenging'],gives:'Sit-and-Wait Ambush',note:'Scavenging → low-metabolism ambush in arid terrain.'},
+   {req:['Sit-and-Wait Ambush'],gives:'Venom Injection',note:'Ambush + scarce prey → venom as fast-kill tool.'},
+   {req:['Browse / Selective Feeding'],gives:'Seed Predation / Granivory',note:'Browse adapted to sparse desert plants → seed focus.'},
+  ],
+  fk:[
+   {req:['Fragmentation / Regen'],gives:'Parthenogenesis',note:'Fragmentation in isolated desert pools → asexual cloning.'},
+   {req:['Parthenogenesis','Spore / Cryptobiosis'],gives:'Delayed Development / Diapause',note:'Two dormancy strategies merge → diapause mastery.'},
+   {req:['Delayed Development / Diapause'],gives:'Viviparity (Live Birth)',note:'Internal development → protection from heat extremes.'},
+  ],
+  cat:[
+   {req:['Venom Injection','Trap Building'],gives:'Electrosensory Hunt',
+    event:'Mass Desertification (Severity 4+)',
+    note:'Extreme prey scarcity forces venom + trap specialists to evolve passive electrical sense to detect buried prey.'},
+  ]},
 
  {icon:'🕳️',name:'DEEP CAVE',color:'#9060d0',
   drivers:['Total darkness','No photosynthesis base','Sparse food input','Isolation from gene flow','K-selection extreme'],
   blurb:'Most K-selected environment on Earth. Animals here live for centuries, reproduce slowly, develop exotic sensory systems.',
-  eat:[{req:'Chemosynthesis',gives:'Electrosensory Hunt'},{req:'Sit-and-Wait',gives:'Trap Building'},{req:'Osmotrophy + Trap + Tool',gives:'Fungal Farming'}],
-  fk:[{req:'Fragmentation',gives:'Parthenogenesis'},{req:'Alloparental',gives:'Eusociality'},{req:'Sperm Competition',gives:'Traumatic Insemination'}]},
+  eat:[
+   {req:['Chemosynthesis'],gives:'Electrosensory Hunt',note:'Cave chemotrophy → passive electrical prey detection.'},
+   {req:['Sit-and-Wait Ambush'],gives:'Trap Building',note:'Darkness ambush → web/trap construction for passive catch.'},
+   {req:['Osmotrophy / Absorption','Trap Building','Tool Use / Extraction'],gives:'Fungal Farming / Agriculture',note:'Nutritional scarcity forces active cultivation of cave fungi.'},
+  ],
+  fk:[
+   {req:['Fragmentation / Regen'],gives:'Parthenogenesis',note:'No mates in isolated caves → asexual cloning.'},
+   {req:['Alloparental Care'],gives:'Eusociality',note:'K-selection extreme + group care → superorganism.'},
+   {req:['Sperm Competition'],gives:'Reproductive Manipulation',note:'Sperm competition in darkness → parasite-mediated control.'},
+  ],
+  cat:[
+   {req:['Echolocation Hunt','Eusociality'],gives:'Reproductive Manipulation',
+    event:'Cave Collapse / Surface Extinction (Severity 4+)',
+    note:'Complete isolation from the surface forces acoustic superorganisms to manipulate host reproduction to guarantee lineage survival.'},
+   {req:['Electrosensory Hunt','Trap Building'],gives:'Echolocation Hunt',
+    event:'Seismic Disruption (Severity 3+)',
+    note:'Disruption of electrical gradients forces pivot to acoustic sonar. Bypasses normal Open Ocean/Cave prerequisite chain.'},
+  ]},
 ];
 
 // ════════════════════════════════════════════════════
@@ -1332,18 +1529,175 @@ function renderGrid(gridId,items,tier,makeFn){
 }
 
 // ── TERRAIN PANEL ──
-function renderTerrain(){
-  const c=document.getElementById('terrain-cards'); c.innerHTML='';
+// ── All unique strategy names for the checker ──
+const ALL_EAT_NAMES = [...new Set(TERRAIN_DATA.flatMap(t=>[...t.eat.map(e=>e.gives),...(t.cat||[]).map(c=>c.gives)]))];
+const ALL_FK_NAMES  = [...new Set(TERRAIN_DATA.flatMap(t=>[...t.fk.map(e=>e.gives),...(t.cat||[]).map(c=>c.gives)]))];
+// Split by which deck they appear in
+const EAT_SET = new Set(TERRAIN_DATA.flatMap(t=>t.eat.map(e=>e.gives)));
+const FK_SET  = new Set(TERRAIN_DATA.flatMap(t=>t.fk.map(e=>e.gives)));
+
+let musterTerrain = 0; // index into TERRAIN_DATA
+let playerStack = new Set(); // strategy names player holds
+
+function renderMuster(){
+  // Terrain buttons
+  const btns = document.getElementById('terrain-btns');
+  if(btns){
+    btns.innerHTML = TERRAIN_DATA.map((t,i)=>`
+      <button class="ter-btn${i===musterTerrain?' active':''}"
+        style="${i===musterTerrain?`background:${t.color};border-color:${t.color};`:''}"
+        onclick="selectTerrain(${i})">
+        <span>${t.icon}</span><span>${t.name}</span>
+      </button>`).join('');
+  }
+
+  // Terrain header
+  const t = TERRAIN_DATA[musterTerrain];
+  const hdr = document.getElementById('muster-terrain-hdr');
+  if(hdr){
+    const drvTags = t.drivers.map(d=>`<span class="mth-drv">${d}</span>`).join('');
+    hdr.innerHTML=`<div class="muster-terrain-hdr" style="background:${t.color};color:#fff">
+      <div class="mth-name">${t.icon} ${t.name}</div>
+      <div class="mth-blurb">${t.blurb}</div>
+      <div class="mth-drivers">${drvTags}</div>
+    </div>`;
+  }
+
+  // Strategy checklist
+  const cr = document.getElementById('checker-row');
+  if(cr){
+    const eatItems = [...EAT_SET].map(n=>checkerItem(n,'eat')).join('');
+    const fkItems  = [...FK_SET].map(n=>checkerItem(n,'fk')).join('');
+    cr.innerHTML=`
+      <div class="checker-col">
+        <div class="checker-label eat">🍖 EAT IT Strategies You Hold</div>
+        ${eatItems}
+      </div>
+      <div class="checker-col">
+        <div class="checker-label fk">🧬 F*CK IT Strategies You Hold</div>
+        ${fkItems}
+      </div>`;
+  }
+
+  renderMusterResults();
+  renderTerrainRef();
+}
+
+function checkerItem(name, deck){
+  const held = playerStack.has(name);
+  const cls = held ? (deck==='eat'?'checked-eat':'checked-fk') : '';
+  return `<label class="strat-check ${cls}" onclick="toggleStack('${name.replace(/'/g,"\\'")}','${deck}')">
+    <div class="sc-box">${held?'✓':''}</div>
+    <span class="sc-name">${name}</span>
+  </label>`;
+}
+
+function toggleStack(name, deck){
+  if(playerStack.has(name)) playerStack.delete(name);
+  else playerStack.add(name);
+  renderMuster();
+}
+
+function selectTerrain(idx){
+  musterTerrain = idx;
+  renderMuster();
+}
+
+function reqsMet(reqArr){
+  return reqArr.every(r => playerStack.has(r));
+}
+
+function renderMusterResults(){
+  const res = document.getElementById('muster-results');
+  if(!res) return;
+  const t = TERRAIN_DATA[musterTerrain];
+
+  const makeEntry = (entry, deck, isCat) => {
+    const met = entry.free || reqsMet(entry.req);
+    const cls = isCat ? 'me-cat' : (met ? 'me-avail' : 'me-unavail');
+    const icon = isCat ? '🌑' : (met ? '✅' : '⬜');
+    const givesColor = isCat ? 'cat' : deck;
+    const statusLabel = isCat
+      ? `<span class="me-status st-cat">CATASTROPHE ONLY</span>`
+      : met
+        ? `<span class="me-status st-avail">CAN RECRUIT</span>`
+        : `<span class="me-status st-need">NEED MORE</span>`;
+    const reqText = entry.free
+      ? 'No prerequisites — free on first landing.'
+      : entry.req.map(r=>{
+          const have = playerStack.has(r);
+          return `<span style="color:${have?'var(--green)':'var(--eat)'};font-weight:700">${have?'✓':'✗'} ${r}</span>`;
+        }).join(' + ');
+    const catLine = isCat ? `<div style="font-size:9px;color:#7b4fa0;margin-top:2px;font-weight:600">🌑 Requires: ${entry.event}</div>` : '';
+    const note = entry.note ? `<div style="font-size:9px;color:var(--muted);margin-top:2px">${entry.note}</div>` : '';
+    return `<div class="muster-entry ${cls}">
+      <div class="me-icon">${icon}</div>
+      <div class="me-body">
+        <div class="me-gives ${givesColor}">${entry.gives}</div>
+        <div class="me-req">${reqText}</div>
+        ${catLine}${note}
+      </div>
+      ${statusLabel}
+    </div>`;
+  };
+
+  const eatEntries = t.eat.map(e=>makeEntry(e,'eat',false)).join('');
+  const fkEntries  = t.fk.map(e=>makeEntry(e,'fk',false)).join('');
+  const catEntries = (t.cat||[]).map(e=>makeEntry(e,'cat',true)).join('');
+  const catSection = t.cat && t.cat.length ? `
+    <div class="results-section" style="border-color:#b090d0">
+      <div class="rs-title" style="color:#7b4fa0">🌑 Catastrophe-Triggered Unlocks</div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:8px;line-height:1.5">
+        These strategies are inaccessible through normal mustering. They unlock ONLY when: (a) you hold the listed prerequisites, AND (b) a Catastrophe card of the named severity has been drawn this game while your agent is in this terrain.
+      </div>
+      ${catEntries}
+    </div>` : '';
+
+  const canRecruit = [...t.eat,...t.fk].filter(e=>!e.free&&reqsMet(e.req)).length;
+  const freePicks  = [...t.eat,...t.fk].filter(e=>e.free).length;
+  const summary = `<div style="font-size:11px;font-weight:600;margin-bottom:10px;color:var(--muted)">
+    ${freePicks > 0 ? `<span style="color:var(--green)">★ ${freePicks} free pick${freePicks!==1?'s':''} (first landing)</span> · ` : ''}
+    <span style="color:${canRecruit>0?'var(--green)':'var(--muted)'}">${canRecruit} strategy${canRecruit!==1?'ies':''} available to recruit</span>
+    <span style="font-size:9px;font-weight:400;margin-left:6px">— recruit ONE per terrain event</span>
+  </div>`;
+
+  res.innerHTML = `
+    ${summary}
+    <div class="results-section" style="margin-bottom:10px">
+      <div class="rs-title">🍖 EAT IT Recruits in ${t.name}</div>
+      ${eatEntries}
+    </div>
+    <div class="results-section" style="margin-bottom:10px">
+      <div class="rs-title">🧬 F*CK IT Recruits in ${t.name}</div>
+      ${fkEntries}
+    </div>
+    ${catSection}`;
+}
+
+function renderTerrainRef(){
+  const c = document.getElementById('terrain-cards');
+  if(!c) return;
+  c.innerHTML = '';
   TERRAIN_DATA.forEach(t=>{
-    const el=document.createElement('div');
-    el.className='tcard'; el.style.borderColor=t.color+'60';
-    const drv=t.drivers.map(d=>`<span class="tag tag-drv" style="margin:2px">${d}</span>`).join('');
-    const eRows=t.eat.map(r=>`<div class="muster-row"><span class="muster-req">${r.req}</span><span class="muster-arrow">▶</span><span class="muster-gives">${r.gives}</span></div>`).join('');
-    const fRows=t.fk.map(r=>`<div class="muster-row" style="border-color:#d0c0e8"><span class="muster-req">${r.req}</span><span class="muster-arrow">▶</span><span class="muster-gives" style="color:var(--fk)">${r.gives}</span></div>`).join('');
-    el.innerHTML=`<div class="tcard-name" style="color:${t.color}">${t.icon} ${t.name}</div><div class="tcard-blurb">${t.blurb}</div><div style="margin-bottom:8px">${drv}</div><div class="muster-label eat">🍖 EAT MUSTER CHAIN</div>${eRows}<div class="muster-label fk" style="margin-top:10px">🧬 F*CK MUSTER CHAIN</div>${fRows}`;
+    const el = document.createElement('div');
+    el.className = 'ref-card';
+    el.style.borderColor = t.color+'60';
+    const makeRow = (entry, deck, isCat) => {
+      const cls = isCat ? 'cat-row' : deck;
+      const prefix = entry.free ? '[START]' : entry.req.join(' + ');
+      const gives = entry.gives;
+      const label = isCat ? `<span class="rmr-gives cat">🌑 ${gives}</span>` : `<span class="rmr-gives ${deck}">${gives}</span>`;
+      return `<div class="ref-mrow ${cls}"><span class="rmr-req">${prefix} →</span> ${label}</div>`;
+    };
+    const eRows = t.eat.map(r=>makeRow(r,'eat',false)).join('');
+    const fRows = t.fk.map(r=>makeRow(r,'fk',false)).join('');
+    const cRows = (t.cat||[]).map(r=>makeRow(r,'cat',true)).join('');
+    el.innerHTML = `<div class="ref-card-name" style="color:${t.color}">${t.icon} ${t.name}</div>${eRows}${fRows}${cRows}`;
     c.appendChild(el);
   });
 }
+
+function renderTerrain(){ renderMuster(); }
 
 // ── EVO TREE ──
 function renderEvo(){
