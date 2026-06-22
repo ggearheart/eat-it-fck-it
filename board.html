@@ -128,9 +128,9 @@ html,body{min-height:100vh;background:#fef8ec;color:#1a0a00;font-family:'Segoe U
   <span id="move-readout" style="font-size:11px;font-weight:800;color:#fef8ec;min-width:230px;">Split a stack if you wish, then roll to move.</span>
   <div class="sep" style="background:#fff;opacity:.3;"></div>
   <span class="tool-label" style="color:#ffd21a;">Signs:</span>
-  <span style="font-size:10px;font-weight:800;color:#ffd21a;">▸▸▸ Arrows — flow (must continue through)</span>
+  <span style="font-size:10px;font-weight:800;color:#ffd21a;">▸▸▸ Arrows — flow (start &amp; continue)</span>
   <span style="font-size:10px;font-weight:800;color:#6ec8f5;">◖ Arch — MAY start this way</span>
-  <span style="font-size:10px;font-weight:800;color:#ff7a6a;">▮ Block — may NOT start this way</span>
+  <span style="font-size:10px;font-weight:800;color:#ff7a6a;">◢◢ Block — MUST start this way</span>
 </div>
 
 <div class="main-layout">
@@ -151,15 +151,15 @@ html,body{min-height:100vh;background:#fef8ec;color:#1a0a00;font-family:'Segoe U
       <div class="gm-body">
         <div class="gm-rule" style="color:#4a3018;">
           <b>1. Split (optional).</b> Before rolling, you may split one stack into two (each keeps ≥2 cards).<br><br>
-          <b>2. Roll 1d6.</b> Every agent you move must move <b>exactly</b> that many pieces — never fewer.<br><br>
+          <b>2. Roll 1d6.</b> You may move some or all agents, but <b>must move at least one</b> if able. Each moves <b>exactly</b> that many pieces — the full count. <i>First turn: you may re-roll once (the second roll is binding).</i><br><br>
           <b>3. Follow the Signs:</b>
           <div style="margin:6px 0 0;padding:8px;border:2px solid var(--border);border-radius:5px;background:#fff;line-height:1.7;">
-            <span style="color:#b07800;font-weight:800;">▸▸▸ Arrows</span> — normal flow. May start this way, and a stack passing <i>through</i> a piece must keep going along the arrows (no backtracking).<br>
-            <span style="color:#1a78b0;font-weight:800;">◖ Arch</span> — you <b>MAY</b> begin a move this way (affects the <i>first</i> step only).<br>
-            <span style="color:#c02018;font-weight:800;">▮ Block</span> — you may <b>NOT</b> begin a move this way (first step only; ignored when passing through).
+            <span style="color:#b07800;font-weight:800;">▸▸▸ Arrows</span> — normal flow. May start this way, and a stack passing <i>through</i> must keep going along the arrows (no backtracking).<br>
+            <span style="color:#1a78b0;font-weight:800;">◖ Arch</span> — you <b>MAY</b> begin a move this way (first step only).<br>
+            <span style="color:#c02018;font-weight:800;">◢◢ Block</span> — you <b>MUST</b> begin a move this way — it's the only path off that piece (first step only; ignored when passing through).
           </div>
           <div style="margin-top:8px;font-size:10px;color:#7a5a3a;">Blocks &amp; Arches govern only your <b>starting</b> piece. Arrows govern both the start and every step after.</div><br>
-          <b>4. Ending a move.</b> Land on an enemy → <b>battle</b>. You may not end on your own stack or on a piece already in battle. A stack of 7 cards can't move. A roll of <b>6</b> also permits teleportation.
+          <b>4. Ending a move.</b> You may move <i>through</i> your own stack but not <b>end</b> on it. Land on an enemy → <b>battle</b> (move stops there). No moving into or across a piece already in battle. A roll of <b>6</b> also permits teleportation.
         </div>
       </div>
     </div>
@@ -535,15 +535,16 @@ function drawMoves(layer) {
           g.appendChild(p);
         });
       });
-    } else if (m.type === 'must') {      // ▮ BLOCK — may not START a move this way
-      const bar = document.createElementNS(SVGNS, 'rect');
-      bar.setAttribute('x', -2.5); bar.setAttribute('y', -9);
-      bar.setAttribute('width', 5); bar.setAttribute('height', 18);
-      bar.setAttribute('rx', 1.5);
-      bar.setAttribute('fill', '#e02418');
-      bar.setAttribute('stroke', '#1a0e04');
-      bar.setAttribute('stroke-width', '2');
-      g.appendChild(bar);
+    } else if (m.type === 'must') {      // ◢◢ BLOCK — MUST start a move this way (forced)
+      [-3, 5].forEach(dx => {
+        const t = document.createElementNS(SVGNS, 'path');
+        t.setAttribute('d', `M ${dx-3},-7 L ${dx+5},0 L ${dx-3},7 Z`);
+        t.setAttribute('fill', '#e02418');
+        t.setAttribute('stroke', '#1a0e04');
+        t.setAttribute('stroke-width', '1.6');
+        t.setAttribute('stroke-linejoin', 'round');
+        g.appendChild(t);
+      });
     } else if (m.type === 'may') {       // ◖ ARCH — may START a move this way
       const bulb = document.createElementNS(SVGNS, 'path');   // half-disc opening outward
       bulb.setAttribute('d', 'M 2,-9 A 9,9 0 0,1 2,9 Z');
@@ -762,7 +763,8 @@ function rollMove() {
       const tele = roll === 6 ? ' (a 6 also allows teleportation)' : '';
       out.innerHTML = `${wantSplit ? '✂️ Split done · ' : ''}` +
         `🎲 <b style="color:#ffd21a">${faces[roll-1]} ${roll}</b> — move each agent <b>exactly ${roll}</b> piece${roll>1?'s':''}${tele}. ` +
-        `First step: leave via ▸▸▸ or ◖, never via ▮. While passing through, follow ▸▸▸ arrows (no backtracking).`;
+        `First step: if your piece has a ◢◢ Block you MUST take it; otherwise leave via ▸▸▸ or ◖. ` +
+        `After that, follow ▸▸▸ arrows only (no backtracking).`;
     }
   }
   spin();
