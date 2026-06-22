@@ -128,7 +128,7 @@ html,body{min-height:100vh;background:#fef8ec;color:#1a0a00;font-family:'Segoe U
   <span id="move-readout" style="font-size:11px;font-weight:800;color:#fef8ec;min-width:230px;">Split a stack if you wish, then roll to move.</span>
   <div class="sep" style="background:#fff;opacity:.3;"></div>
   <span class="tool-label" style="color:#ffd21a;">Signs:</span>
-  <span style="font-size:10px;font-weight:800;color:#ffd21a;">▸▸▸ Arrows — flow (start &amp; continue)</span>
+  <span style="font-size:10px;font-weight:800;color:#ffd21a;">▸ Arrow — direction of travel</span>
   <span style="font-size:10px;font-weight:800;color:#6ec8f5;">◖ Arch — MAY start this way</span>
   <span style="font-size:10px;font-weight:800;color:#ff7a6a;">◢◢ Block — MUST start this way</span>
 </div>
@@ -154,7 +154,7 @@ html,body{min-height:100vh;background:#fef8ec;color:#1a0a00;font-family:'Segoe U
           <b>2. Roll 1d6.</b> You may move some or all agents, but <b>must move at least one</b> if able. Each moves <b>exactly</b> that many pieces — the full count. <i>First turn: you may re-roll once (the second roll is binding).</i><br><br>
           <b>3. Follow the Signs:</b>
           <div style="margin:6px 0 0;padding:8px;border:2px solid var(--border);border-radius:5px;background:#fff;line-height:1.7;">
-            <span style="color:#b07800;font-weight:800;">▸▸▸ Arrows</span> — normal flow. May start this way, and a stack passing <i>through</i> must keep going along the arrows (no backtracking).<br>
+            <span style="color:#b07800;font-weight:800;">▸ Arrows</span> — direction of travel. May start this way, and a stack passing <i>through</i> must keep going along the arrows (no backtracking).<br>
             <span style="color:#1a78b0;font-weight:800;">◖ Arch</span> — you <b>MAY</b> begin a move this way (first step only).<br>
             <span style="color:#c02018;font-weight:800;">◢◢ Block</span> — you <b>MUST</b> begin a move this way — it's the only path off that piece (first step only; ignored when passing through).
           </div>
@@ -521,8 +521,10 @@ function drawMoves(layer) {
     const g = document.createElementNS(SVGNS, 'g');
     g.setAttribute('transform', `translate(${tx(m.mx).toFixed(1)},${ty(m.my).toFixed(1)}) rotate(${m.ang.toFixed(1)})`);
 
-    if (m.type === 'flow') {             // ▸▸▸ normal direction of travel
-      [-7, 0, 7].forEach(dx => {
+    if (m.type === 'flow') { return; }   // triple-arrow overall-flow markers removed
+
+    if (m.type === 'arrow') {            // ▸ single arrow (tower exits / no-backtrack)
+      [0].forEach(dx => {
         const d = `M ${dx-4},-6 L ${dx+4},0 L ${dx-4},6`;
         ['#1a0e04','#ffd21a'].forEach((col, k) => {
           const p = document.createElementNS(SVGNS, 'path');
