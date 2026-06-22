@@ -126,16 +126,16 @@ html,body{min-height:100vh;background:#fef8ec;color:#1a0a00;font-family:'Segoe U
   <button class="tbtn" style="background:#7b4fa0;border-color:#000;color:#fff;" onclick="rollMove()">① Split → ② Roll Movement</button>
   <span id="move-readout" style="font-size:11px;font-weight:800;color:#fef8ec;min-width:230px;">Split a stack if you wish, then roll to move.</span>
   <div class="sep" style="background:#fff;opacity:.3;"></div>
-  <span class="tool-label" style="color:#ffd21a;">Key:</span>
-  <span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;color:#ffd21a;">▸▸▸ Normal</span>
-  <span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;color:#ff7a6a;">■ Required</span>
-  <span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;color:#6ec8f5;">◗ Optional</span>
+  <span class="tool-label" style="color:#ffd21a;">Edges:</span>
+  <span style="font-size:10px;font-weight:800;color:#ffd21a;">▸▸▸ Flow (normal)</span>
+  <span style="font-size:10px;font-weight:800;color:#ff7a6a;">◢◢ Required (must enter)</span>
+  <span style="font-size:10px;font-weight:800;color:#6ec8f5;">◖ Optional (may exit if starting)</span>
 </div>
 
 <div class="main-layout">
   <div class="board-wrap">
     <div class="board-frame">
-      <div class="board-title">🌍 Evolutionary Terrain Map — 37 Hexes · 4 per Edge · Titan Movement</div>
+      <div class="board-title">🌍 Evolutionary Terrain Map — Titan Pieces · 3 Long Edges Each</div>
       <svg id="board-svg"></svg>
     </div>
   </div>
@@ -152,75 +152,132 @@ html,body{min-height:100vh;background:#fef8ec;color:#1a0a00;font-family:'Segoe U
 
 <script>
 // ═══════════════════════════════════════════
-// BOARD LAYOUT — Titan-style flat-top hexagon
-// 9 hexes per edge (cube radius N=8 → 217 hexes)
-// Terrains assigned by hash; GM Labs at center + 6 sector towers
-// V=Volcanic P=Swamp S=Shallow O=Ocean I=Ice A=Savannah
-// F=Forest D=Desert C=Cave G=GM Lab
+// BOARD ENGINE — Titan truncated-triangle pieces
+// Each piece is a hexagon with 3 LONG edges (movement in/out, 3 neighbours)
+// and 3 SHORT edges (corners / walls). Pieces are the faces of a triangular
+// tiling clipped to a big flat-top hexagon.
+//
+// Movement markers on long edges:
+//   'flow'  ▸▸▸ triple chevrons = NORMAL direction of travel
+//   'must'  ◣◢ two triangles into a piece = REQUIRED: a stack crossing this
+//           edge must keep moving INTO that piece if movement remains
+//   'may'   →◖ arrow + bulb = OPTIONAL: if you START here you MAY exit this
+//           way, or instead follow the ▸▸▸ flow — your choice
 // ═══════════════════════════════════════════
-const N = 3;                       // rings → edge length = N+1 = 4
 const TERRAIN_CODES = ['V','P','S','O','I','A','F','D','C'];
+const L = 96;                 // triangle side length
+const TRUNC = 0.20;           // corner truncation fraction
+const SQ3 = Math.sqrt(3);
+const BR = 2.62 * L;          // big-hexagon radius (tunes hexes-per-edge)
 
-// Pointy-top axial neighbour directions, ordered clockwise from East.
-const DIRS = [[1,0],[0,1],[-1,1],[-1,0],[0,-1],[1,-1]];
-const TOWER_KEYS = new Set(['0,0']);          // center GM Lab
-
-// deterministic hash → terrain code
-function hashCode(q, r) {
-  let h = ((q * 73856093) ^ (r * 19349663) ^ ((q + r) * 83492791)) >>> 0;
+function hashCode(p, q, u) {
+  let h = ((p*73856093) ^ (q*19349663) ^ ((p+q+u)*83492791)) >>> 0;
   return TERRAIN_CODES[h % TERRAIN_CODES.length];
 }
-function cubeDist(q, r) { return (Math.abs(q) + Math.abs(r) + Math.abs(-q - r)) / 2; }
+const lerp = (P, Q, f) => [P[0] + (Q[0]-P[0])*f, P[1] + (Q[1]-P[1])*f];
+const Pt = (p, q) => [ (p + q/2) * L, q * (SQ3/2) * L ];   // lattice point
 
-// Generate all cells inside the big hexagon
-const CELLS = [];
-const CELL_KEYS = new Set();
-for (let q = -N; q <= N; q++) {
-  for (let r = -N; r <= N; r++) {
-    if (Math.abs(-q - r) > N) continue;       // outside hexagon
-    const key = `${q},${r}`;
-    const code = TOWER_KEYS.has(key) ? 'G' : hashCode(q, r);
-    CELLS.push({ q, r, code });
-    CELL_KEYS.add(key);
+// big flat-top hexagon polygon (vertices at 0°,60°…) for clipping
+const HEXPOLY = [];
+for (let k = 0; k < 6; k++) {
+  const a = Math.PI/180 * (60*k);
+  HEXPOLY.push([BR*Math.cos(a), BR*Math.sin(a)]);
+}
+function inBoard(x, y) {
+  let inside = false;
+  for (let i = 0, j = 5; i < 6; j = i++) {
+    const [xi, yi] = HEXPOLY[i], [xj, yj] = HEXPOLY[j];
+    if (((yi > y) !== (yj > y)) && (x < (xj-xi)*(y-yi)/(yj-yi) + xi)) inside = !inside;
+  }
+  return inside;
+}
+
+// Enumerate triangle faces (up u=0, down u=1) and keep those inside the board
+const PIECES = [];
+const PIECE_BY_ID = {};
+const edgeMap = {};                       // edgeKey → [pieceId,…]
+function ptKey(p, q) { return `${p},${q}`; }
+
+for (let q = -8; q <= 8; q++) {
+  for (let p = -8; p <= 8; p++) {
+    for (let u = 0; u <= 1; u++) {
+      // triangle lattice corners
+      const corners = u === 0
+        ? [[p,q],[p+1,q],[p,q+1]]            // up
+        : [[p+1,q],[p,q+1],[p+1,q+1]];       // down
+      const V = corners.map(([cp,cq]) => Pt(cp, cq));
+      const cx = (V[0][0]+V[1][0]+V[2][0])/3;
+      const cy = (V[0][1]+V[1][1]+V[2][1])/3;
+      if (!inBoard(cx, cy)) continue;
+      const id = `t${p}_${q}_${u}`.replace(/-/g,'n');
+      // truncated-triangle outline (6 verts): long edges along corner sides
+      const verts = [
+        lerp(V[0],V[1],TRUNC), lerp(V[0],V[1],1-TRUNC),
+        lerp(V[1],V[2],TRUNC), lerp(V[1],V[2],1-TRUNC),
+        lerp(V[2],V[0],TRUNC), lerp(V[2],V[0],1-TRUNC),
+      ];
+      // three long edges, by the lattice-corner pairs they lie on
+      const longEdges = [
+        { ck:[corners[0],corners[1]], mid:lerp(V[0],V[1],0.5) },
+        { ck:[corners[1],corners[2]], mid:lerp(V[1],V[2],0.5) },
+        { ck:[corners[2],corners[0]], mid:lerp(V[2],V[0],0.5) },
+      ].map(e => {
+        const k = [ptKey(...e.ck[0]), ptKey(...e.ck[1])].sort().join('|');
+        (edgeMap[k] = edgeMap[k] || []).push(id);
+        return { key:k, mid:e.mid };
+      });
+      const piece = { id, code:hashCode(p,q,u), cx, cy, verts, longEdges, nbrs:[] };
+      PIECES.push(piece);
+      PIECE_BY_ID[id] = piece;
+    }
   }
 }
 
+// Center-most piece becomes the GM Lab
+let centerPiece = PIECES.reduce((a,b) => (a.cx*a.cx+a.cy*a.cy <= b.cx*b.cx+b.cy*b.cy ? a : b));
+centerPiece.code = 'G';
+
+// Resolve neighbours across each shared long edge
+PIECES.forEach(pc => pc.longEdges.forEach(e => {
+  const ids = edgeMap[e.key].filter(x => x !== pc.id);
+  e.toId = ids[0] || null;
+}));
+
 // ═══════════════════════════════════════════
-// MOVEMENT GRAPH — Titan-style edge markers
-//   'arrow'   triple chevrons  = NORMAL flow (clockwise outer ring)
-//   'block'   square bar       = REQUIRED direction (forced branch)
-//   'rounded' arch             = OPTIONAL direction (may divert)
-// Each marker sits on the shared edge from (q,r) toward (tq,tr).
+// MOVEMENT MARKERS — assign one marker per shared long edge
+//   tangential edges → ▸▸▸ flow (clockwise circulation)
+//   radial edges     → ◣◢ required (deep) or →◖ optional (touches boundary)
 // ═══════════════════════════════════════════
+const norm = (vx, vy) => { const m = Math.hypot(vx,vy)||1; return [vx/m, vy/m]; };
+const isBoundary = pc => pc.longEdges.some(e => !e.toId);
 const MOVES = [];
+const doneEdge = new Set();
 
-// 1) NORMAL flow: clockwise around the outer ring (distance === N)
-const ring = CELLS.filter(c => cubeDist(c.q, c.r) === N)
-  .map(c => { const [x,y] = [c.q, c.r]; return c; })
-  .sort((a, b) => {
-    const aa = Math.atan2(a.r + a.q/2, a.q + a.r/2);   // rough angular sort
-    const bb = Math.atan2(b.r + b.q/2, b.q + b.r/2);
-    return aa - bb;
-  });
-for (let i = 0; i < ring.length; i++) {
-  const a = ring[i], b = ring[(i + 1) % ring.length];
-  if (cubeDist(a.q - b.q, a.r - b.r) === 1)          // only if truly adjacent
-    MOVES.push({ q:a.q, r:a.r, tq:b.q, tr:b.r, type:'arrow' });
-}
+PIECES.forEach(pc => pc.longEdges.forEach(e => {
+  if (!e.toId || doneEdge.has(e.key)) return;
+  doneEdge.add(e.key);
+  const nb = PIECE_BY_ID[e.toId];
+  const [mx, my] = e.mid;
+  const cross = norm(nb.cx - pc.cx, nb.cy - pc.cy);          // pc → nb
+  const radial = norm(mx, my);                              // outward from board center
+  const cwTan = norm(my, -mx);                              // clockwise tangent
+  const tang = Math.abs(cross[0]*cwTan[0] + cross[1]*cwTan[1]);
+  const rad  = Math.abs(cross[0]*radial[0] + cross[1]*radial[1]);
 
-// 2) Six spokes inward along each axial direction: corner→center
-//    OPTIONAL dive at the corner (rounded), then REQUIRED the rest (block)
-DIRS.forEach(([dq, dr]) => {
-  for (let k = N; k >= 1; k--) {
-    const fromKey = `${dq*k},${dr*k}`;
-    const toKey   = `${dq*(k-1)},${dr*(k-1)}`;
-    if (!CELL_KEYS.has(fromKey) || !CELL_KEYS.has(toKey)) continue;
-    MOVES.push({
-      q:dq*k, r:dr*k, tq:dq*(k-1), tr:dr*(k-1),
-      type: k === N ? 'rounded' : 'block'
-    });
+  if (tang >= rad) {
+    // normal flow — orient arrow in the clockwise direction
+    const fwd = (cross[0]*cwTan[0] + cross[1]*cwTan[1]) >= 0;
+    const from = fwd ? pc : nb, to = fwd ? nb : pc;
+    MOVES.push({ mx, my, ang: Math.atan2(to.cy-from.cy, to.cx-from.cx)*180/Math.PI, type:'flow' });
+  } else {
+    // radial — point toward the inner piece
+    const inner = (pc.cx*pc.cx+pc.cy*pc.cy) <= (nb.cx*nb.cx+nb.cy*nb.cy) ? pc : nb;
+    const outer = inner === pc ? nb : pc;
+    const ang = Math.atan2(inner.cy-outer.cy, inner.cx-outer.cx)*180/Math.PI;
+    const type = (isBoundary(pc) || isBoundary(nb)) ? 'may' : 'must';
+    MOVES.push({ mx, my, ang, type });
   }
-});
+}));
 
 // ═══════════════════════════════════════════
 // TERRAIN DATA — comic palette
@@ -308,33 +365,21 @@ const T = {
 };
 
 // ═══════════════════════════════════════════
-// HEX GEOMETRY — pointy-top (vertices top/bottom)
-// → big hexagon has flat top edge, points left/right (Titan silhouette)
+// VIEW TRANSFORM — shift lattice coords into positive SVG space
 // ═══════════════════════════════════════════
-const R   = 52;                  // circumradius
-const W   = Math.sqrt(3) * R;    // hex width (flat-to-flat)
-const VSP = 1.5 * R;             // vertical row spacing
-const PAD = R + 10;
-
-function hexCenter(q, r) {
-  return [
-    W * (q + r / 2) + PAD + W * N,
-    VSP * r + PAD + VSP * N
-  ];
-}
-
-function hexPoints(cx, cy, rad) {
-  const pts = [];
-  for (let i = 0; i < 6; i++) {
-    const a = Math.PI / 180 * (60 * i - 30);  // pointy-top: vertices at top/bottom
-    pts.push(`${(cx + rad * Math.cos(a)).toFixed(1)},${(cy + rad * Math.sin(a)).toFixed(1)}`);
-  }
-  return pts.join(' ');
-}
+const PAD = 24;
+let MINX = Infinity, MINY = Infinity, MAXX = -Infinity, MAXY = -Infinity;
+PIECES.forEach(pc => pc.verts.forEach(([x,y]) => {
+  MINX = Math.min(MINX, x); MINY = Math.min(MINY, y);
+  MAXX = Math.max(MAXX, x); MAXY = Math.max(MAXY, y);
+}));
+const OX = PAD - MINX, OY = PAD - MINY;
+const tx = x => x + OX, ty = y => y + OY;   // world → svg
 
 // ═══════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════
+const SVGNS = 'http://www.w3.org/2000/svg';
 const PLAYER_COLORS = ['#d03020','#1858c0','#1a8030','#9020a0'];
 let selectedPlayer = 0;
 let selectedHex = null;
@@ -346,62 +391,41 @@ const agents = {};
 // ═══════════════════════════════════════════
 function buildBoard() {
   const svg = document.getElementById('board-svg');
-  let maxX = 0, maxY = 0;
-  CELLS.forEach(({q, r}) => {
-    const [x, y] = hexCenter(q, r);
-    maxX = Math.max(maxX, x + R + 4);
-    maxY = Math.max(maxY, y + R + 4);
-  });
-  svg.setAttribute('viewBox', `0 0 ${maxX + PAD} ${maxY + PAD}`);
-  svg.setAttribute('width',  maxX + PAD);
-  svg.setAttribute('height', maxY + PAD);
+  const w = (MAXX - MINX) + PAD*2, h = (MAXY - MINY) + PAD*2;
+  svg.setAttribute('viewBox', `0 0 ${w.toFixed(0)} ${h.toFixed(0)}`);
+  svg.setAttribute('width',  w.toFixed(0));
+  svg.setAttribute('height', h.toFixed(0));
   svg.style.maxWidth = '100%';
 
-  // Define drop shadow filter
-  const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
-  defs.innerHTML = `
-    <filter id="hex-shadow" x="-10%" y="-10%" width="120%" height="130%">
-      <feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#1a0e04" flood-opacity="0.35"/>
-    </filter>
-    <filter id="gm-glow">
-      <feGaussianBlur stdDeviation="3" result="blur"/>
-      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>`;
-  svg.appendChild(defs);
+  const hexLayer  = document.createElementNS(SVGNS,'g');
+  const moveLayer = document.createElementNS(SVGNS,'g');
+  const agentLayer= document.createElementNS(SVGNS,'g');
+  hexLayer.id = 'hex-layer'; moveLayer.id = 'move-layer'; agentLayer.id = 'agent-layer';
+  svg.appendChild(hexLayer); svg.appendChild(moveLayer); svg.appendChild(agentLayer);
 
-  const hexLayer  = document.createElementNS('http://www.w3.org/2000/svg','g');
-  const moveLayer = document.createElementNS('http://www.w3.org/2000/svg','g');
-  const agentLayer= document.createElementNS('http://www.w3.org/2000/svg','g');
-  hexLayer.id = 'hex-layer';
-  moveLayer.id = 'move-layer';
-  agentLayer.id = 'agent-layer';
-  svg.appendChild(hexLayer);
-  svg.appendChild(moveLayer);
-  svg.appendChild(agentLayer);
+  PIECES.forEach(pc => {
+      const td = T[pc.code];
+      const cx = tx(pc.cx), cy = ty(pc.cy);
+      const ptsStr = pc.verts.map(([x,y]) => `${tx(x).toFixed(1)},${ty(y).toFixed(1)}`).join(' ');
 
-  CELLS.forEach(({q, r, code}) => {
-      const td = T[code];
-      const [cx, cy] = hexCenter(q, r);
-
-      const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+      const g = document.createElementNS(SVGNS,'g');
       g.classList.add('hex-group');
-      g.dataset.q = q; g.dataset.r = r; g.dataset.code = code;
-      g.id = `h${q}_${r}`.replace(/-/g,'n');
+      g.dataset.code = pc.code; g.id = pc.id;
 
-      // Main hex (inset to leave dark gap → Titan look)
-      const poly = document.createElementNS('http://www.w3.org/2000/svg','polygon');
-      poly.setAttribute('points', hexPoints(cx, cy, R - 2.5));
+      // Main truncated-triangle piece
+      const poly = document.createElementNS(SVGNS,'polygon');
+      poly.setAttribute('points', ptsStr);
       poly.setAttribute('fill', td.fill);
       poly.setAttribute('stroke', td.stroke);
-      poly.setAttribute('stroke-width', '2.5');
+      poly.setAttribute('stroke-width', '3');
       poly.setAttribute('stroke-linejoin', 'round');
       poly.classList.add('main-poly');
       g.appendChild(poly);
 
-      // GM Lab inner dashed ring
-      if (code === 'G') {
-        const ring = document.createElementNS('http://www.w3.org/2000/svg','polygon');
-        ring.setAttribute('points', hexPoints(cx, cy, R - 9));
+      if (pc.code === 'G') {            // GM Lab dashed inner ring
+        const ip = pc.verts.map(([x,y]) => `${(tx(x)+(cx-tx(x))*0.28).toFixed(1)},${(ty(y)+(cy-ty(y))*0.28).toFixed(1)}`).join(' ');
+        const ring = document.createElementNS(SVGNS,'polygon');
+        ring.setAttribute('points', ip);
         ring.setAttribute('fill', 'none');
         ring.setAttribute('stroke', '#a0c8ff');
         ring.setAttribute('stroke-width', '1.5');
@@ -411,52 +435,46 @@ function buildBoard() {
       }
 
       // Icon
-      const icon = document.createElementNS('http://www.w3.org/2000/svg','text');
-      icon.setAttribute('x', cx);
-      icon.setAttribute('y', cy - 11);
-      icon.setAttribute('font-size', code === 'G' ? '27' : '24');
+      const icon = document.createElementNS(SVGNS,'text');
+      icon.setAttribute('x', cx); icon.setAttribute('y', cy - 8);
+      icon.setAttribute('font-size', pc.code === 'G' ? '22' : '20');
       icon.setAttribute('class', 'hex-label');
       icon.setAttribute('fill', td.text);
       icon.textContent = td.icon;
       g.appendChild(icon);
 
-      // Label background pill
-      const lblW = td.short.length * 6.6 + 10;
-      const lbg = document.createElementNS('http://www.w3.org/2000/svg','rect');
-      lbg.setAttribute('x', cx - lblW/2);
-      lbg.setAttribute('y', cy + 9);
-      lbg.setAttribute('width', lblW);
-      lbg.setAttribute('height', 15);
+      // Label pill + text
+      const lblW = td.short.length * 6.0 + 9;
+      const lbg = document.createElementNS(SVGNS,'rect');
+      lbg.setAttribute('x', cx - lblW/2); lbg.setAttribute('y', cy + 8);
+      lbg.setAttribute('width', lblW); lbg.setAttribute('height', 14);
       lbg.setAttribute('rx', '3');
       lbg.setAttribute('fill', td.labelBg || td.fill);
-      lbg.setAttribute('stroke', td.stroke);
-      lbg.setAttribute('stroke-width', '1.5');
+      lbg.setAttribute('stroke', td.stroke); lbg.setAttribute('stroke-width', '1.5');
       g.appendChild(lbg);
-
-      // Label text
-      const label = document.createElementNS('http://www.w3.org/2000/svg','text');
-      label.setAttribute('x', cx);
-      label.setAttribute('y', cy + 19.5);
-      label.setAttribute('font-size', '9');
+      const label = document.createElementNS(SVGNS,'text');
+      label.setAttribute('x', cx); label.setAttribute('y', cy + 18);
+      label.setAttribute('font-size', '8.2');
       label.setAttribute('class', 'hex-label');
       label.setAttribute('fill', '#fff');
       label.setAttribute('font-family', "'Arial Black', Impact, system-ui, sans-serif");
       label.setAttribute('font-weight', '900');
-      label.setAttribute('letter-spacing', '0.6');
+      label.setAttribute('letter-spacing', '0.5');
       label.textContent = td.short;
       g.appendChild(label);
 
-      // Selected highlight ring (hidden by default)
-      const selRing = document.createElementNS('http://www.w3.org/2000/svg','polygon');
-      selRing.setAttribute('points', hexPoints(cx, cy, R - 0.5));
+      // Selected highlight outline
+      const selRing = document.createElementNS(SVGNS,'polygon');
+      selRing.setAttribute('points', ptsStr);
       selRing.setAttribute('fill', 'none');
       selRing.setAttribute('stroke', '#f0d000');
-      selRing.setAttribute('stroke-width', '4');
+      selRing.setAttribute('stroke-width', '5');
+      selRing.setAttribute('stroke-linejoin', 'round');
       selRing.setAttribute('opacity', '0');
       selRing.classList.add('sel-ring');
       g.appendChild(selRing);
 
-      g.addEventListener('click', () => onHexClick(q, r, code));
+      g.addEventListener('click', () => onHexClick(pc.id));
       hexLayer.appendChild(g);
   });
 
@@ -466,56 +484,52 @@ function buildBoard() {
 }
 
 // ═══════════════════════════════════════════
-// MOVEMENT MARKERS — drawn on shared hex edges
+// MOVEMENT MARKERS — drawn on the LONG edges
 // ═══════════════════════════════════════════
-const SVGNS = 'http://www.w3.org/2000/svg';
 function drawMoves(layer) {
   MOVES.forEach(m => {
-    const [ax, ay] = hexCenter(m.q, m.r);
-    const [bx, by] = hexCenter(m.tq, m.tr);
-    // place marker on the shared edge: ~40% of the way toward neighbour
-    const mx = ax + (bx - ax) * 0.40;
-    const my = ay + (by - ay) * 0.40;
-    const deg = Math.atan2(by - ay, bx - ax) * 180 / Math.PI;
     const g = document.createElementNS(SVGNS, 'g');
-    g.setAttribute('transform', `translate(${mx.toFixed(1)},${my.toFixed(1)}) rotate(${deg.toFixed(1)})`);
+    g.setAttribute('transform', `translate(${tx(m.mx).toFixed(1)},${ty(m.my).toFixed(1)}) rotate(${m.ang.toFixed(1)})`);
 
-    if (m.type === 'arrow') {            // ▸▸▸ normal flow
+    if (m.type === 'flow') {             // ▸▸▸ normal direction of travel
       [-7, 0, 7].forEach(dx => {
         const d = `M ${dx-4},-6 L ${dx+4},0 L ${dx-4},6`;
-        const under = document.createElementNS(SVGNS, 'path');
-        under.setAttribute('d', d);
-        under.setAttribute('fill', 'none');
-        under.setAttribute('stroke', '#1a0e04');
-        under.setAttribute('stroke-width', '4.5');
-        under.setAttribute('stroke-linecap', 'round');
-        under.setAttribute('stroke-linejoin', 'round');
-        g.appendChild(under);
-        const over = document.createElementNS(SVGNS, 'path');
-        over.setAttribute('d', d);
-        over.setAttribute('fill', 'none');
-        over.setAttribute('stroke', '#ffd21a');
-        over.setAttribute('stroke-width', '2.2');
-        over.setAttribute('stroke-linecap', 'round');
-        over.setAttribute('stroke-linejoin', 'round');
-        g.appendChild(over);
+        ['#1a0e04','#ffd21a'].forEach((col, k) => {
+          const p = document.createElementNS(SVGNS, 'path');
+          p.setAttribute('d', d);
+          p.setAttribute('fill', 'none');
+          p.setAttribute('stroke', col);
+          p.setAttribute('stroke-width', k ? '2.2' : '4.5');
+          p.setAttribute('stroke-linecap', 'round');
+          p.setAttribute('stroke-linejoin', 'round');
+          g.appendChild(p);
+        });
       });
-    } else if (m.type === 'block') {     // ■ required
-      const r1 = document.createElementNS(SVGNS, 'rect');
-      r1.setAttribute('x', -7); r1.setAttribute('y', -9);
-      r1.setAttribute('width', 14); r1.setAttribute('height', 18);
-      r1.setAttribute('rx', 2);
-      r1.setAttribute('fill', '#d12020');
-      r1.setAttribute('stroke', '#1a0e04');
-      r1.setAttribute('stroke-width', '2.5');
-      g.appendChild(r1);
-    } else if (m.type === 'rounded') {   // ◗ optional
-      const a1 = document.createElementNS(SVGNS, 'path');
-      a1.setAttribute('d', 'M 0,-10 A 10,10 0 0,1 0,10 Z');
-      a1.setAttribute('fill', '#2aa0e0');
-      a1.setAttribute('stroke', '#1a0e04');
-      a1.setAttribute('stroke-width', '2.5');
-      g.appendChild(a1);
+    } else if (m.type === 'must') {      // ◢◢ two triangles INTO the piece (required)
+      [-3, 5].forEach(dx => {
+        const t = document.createElementNS(SVGNS, 'path');
+        t.setAttribute('d', `M ${dx-3},-7 L ${dx+5},0 L ${dx-3},7 Z`);
+        t.setAttribute('fill', '#e02418');
+        t.setAttribute('stroke', '#1a0e04');
+        t.setAttribute('stroke-width', '1.6');
+        t.setAttribute('stroke-linejoin', 'round');
+        g.appendChild(t);
+      });
+    } else if (m.type === 'may') {       // →◖ arrow + bulb (optional exit)
+      const bulb = document.createElementNS(SVGNS, 'path');   // half-disc opening outward
+      bulb.setAttribute('d', 'M 2,-9 A 9,9 0 0,1 2,9 Z');
+      bulb.setAttribute('fill', '#2aa0e0');
+      bulb.setAttribute('stroke', '#1a0e04');
+      bulb.setAttribute('stroke-width', '2');
+      g.appendChild(bulb);
+      const arr = document.createElementNS(SVGNS, 'path');
+      arr.setAttribute('d', 'M -8,-5 L -1,0 L -8,5');
+      arr.setAttribute('fill', 'none');
+      arr.setAttribute('stroke', '#bfe8ff');
+      arr.setAttribute('stroke-width', '2.4');
+      arr.setAttribute('stroke-linecap', 'round');
+      arr.setAttribute('stroke-linejoin', 'round');
+      g.appendChild(arr);
     }
     layer.appendChild(g);
   });
@@ -524,37 +538,34 @@ function drawMoves(layer) {
 // ═══════════════════════════════════════════
 // INTERACTION
 // ═══════════════════════════════════════════
-function hexId(q, r) { return `h${q}_${r}`.replace(/-/g,'n'); }
-
-function onHexClick(q, r, code) {
+function onHexClick(id) {
+  const pc = PIECE_BY_ID[id];
   // Deselect previous
   if (selectedHex) {
-    const prev = document.getElementById(hexId(selectedHex[0], selectedHex[1]));
-    prev?.querySelector('.sel-ring')?.setAttribute('opacity','0');
+    document.getElementById(selectedHex)?.querySelector('.sel-ring')?.setAttribute('opacity','0');
   }
-  selectedHex = [q, r];
-  document.getElementById(hexId(q, r)).querySelector('.sel-ring')?.setAttribute('opacity','1');
+  selectedHex = id;
+  document.getElementById(id).querySelector('.sel-ring')?.setAttribute('opacity','1');
 
   // Toggle agent
-  const key = `${q},${r}`;
-  if (!agents[key]) agents[key] = [];
-  const idx = agents[key].indexOf(selectedPlayer);
+  if (!agents[id]) agents[id] = [];
+  const idx = agents[id].indexOf(selectedPlayer);
   if (idx >= 0) {
-    agents[key].splice(idx, 1);
-    if (!agents[key].length) delete agents[key];
+    agents[id].splice(idx, 1);
+    if (!agents[id].length) delete agents[id];
   } else {
-    agents[key].push(selectedPlayer);
+    agents[id].push(selectedPlayer);
   }
   renderAgents();
-  showInfo(q, r, code);
+  showInfo(pc);
 }
 
 function renderAgents() {
   const layer = document.getElementById('agent-layer');
   layer.innerHTML = '';
-  Object.entries(agents).forEach(([key, list]) => {
-    const [q, r] = key.split(',').map(Number);
-    const [cx, cy] = hexCenter(q, r);
+  Object.entries(agents).forEach(([id, list]) => {
+    const pc = PIECE_BY_ID[id];
+    const cx = tx(pc.cx), cy = ty(pc.cy);
     const n = list.length;
     list.forEach((pIdx, i) => {
       const off = n > 1 ? (i - (n-1)/2) * 14 : 0;
@@ -594,14 +605,15 @@ function renderAgents() {
   });
 }
 
-function showInfo(q, r, code) {
-  const td = T[code];
+function showInfo(pc) {
+  const td = T[pc.code];
   const panel = document.getElementById('info-panel');
+  const nNbr = pc.longEdges.filter(e => e.toId).length;
   let html = `
     <div class="ip-header" style="background:${td.fill}22;border-bottom-color:${td.fill}">
       <span class="ip-icon">${td.icon}</span>
       <div class="ip-terrain-name" style="color:${td.labelBg||td.fill}">${td.name}</div>
-      <div class="ip-coords">Hex ${q},${r}</div>
+      <div class="ip-coords">${pc.id} · ${nNbr} movement edge${nNbr!==1?'s':''}</div>
     </div>
     <div class="ip-blurb">${td.blurb}</div>`;
 
@@ -719,8 +731,8 @@ function rollMove() {
     else {
       const roll = Math.floor(Math.random()*6) + 1;
       out.innerHTML = `${wantSplit ? '✂️ Split done · ' : ''}` +
-        `🎲 <b style="color:#ffd21a">${faces[roll-1]} ${roll}</b> — move each agent <b>exactly ${roll}</b> hex${roll>1?'es':''} ` +
-        `along ▸▸▸ (or ■ required / ◗ optional) edges.`;
+        `🎲 <b style="color:#ffd21a">${faces[roll-1]} ${roll}</b> — move each agent <b>exactly ${roll}</b> piece${roll>1?'s':''}: ` +
+        `follow ▸▸▸ flow, obey ◢◢ required entries, take ◖ optional exits only from your start piece.`;
     }
   }
   spin();
