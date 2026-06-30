@@ -331,6 +331,8 @@ html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-s
       <div id="arena-atk" class="arena-slot"></div>
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
         <div style="font-size:20px;font-weight:900;color:var(--muted);">VS</div>
+        <button id="commit-btn" onclick="commitActive()" disabled
+          style="display:none;padding:8px 6px;border:2px solid #000;background:#1e7a40;color:#fff;font-family:inherit;font-size:11px;font-weight:800;border-radius:8px;cursor:pointer;width:100%;">✓ Commit</button>
         <button id="resolve-btn" onclick="resolveClash()" disabled
           style="padding:8px 6px;border:2px solid #000;background:#c4561e;color:#fff;font-family:inherit;font-size:11px;font-weight:800;border-radius:8px;cursor:pointer;width:100%;">🎲 Resolve</button>
       </div>
@@ -696,6 +698,7 @@ function freshG(){ return {
   alloc: {atk: {meta:CFG.energyPerRound, repro:0}, def: {meta:CFG.energyPerRound, repro:0}},
   stack: {atk: [], def: []},
   played: {atk: null, def: null},
+  pending: {atk: null, def: null},   // previewed-but-not-committed pick
   scenario: null,           // active scenario this round
   cata: null,               // active catastrophe this round
   weirdoUsed: false, musterUsed: false,
@@ -784,6 +787,7 @@ function beginRound(){
   G.alloc.atk = {meta:CFG.energyPerRound, repro:0};
   G.alloc.def = {meta:CFG.energyPerRound, repro:0};
   G.scenario = null; G.story = '';
+  G.pending = {atk:null, def:null};
   G.cata = null;
   const forced = (G.round===3 || G.round===6);
   if(forced || Math.floor(Math.random()*6)===0){
@@ -798,7 +802,7 @@ function startBattle(){
   G.stack.def = deck.filter(c=>defSelected.has(c.id)).map(c=>mkInst(c));
   G.round = 1; G.step = 'scenario';
   G.life = {atk: START_LIFE, def: START_LIFE};
-  G.played = {atk:null, def:null};
+  G.played = {atk:null, def:null}; G.pending = {atk:null, def:null};
   G.weirdoUsed = false; G.musterUsed = false;
   G.winner = null; G.outcome = '';
   G.log = ['⚔️ Terrain Clash in ' + BOARDS[G.terrain].name + '! Life ' + START_LIFE + ' each.'];
@@ -893,14 +897,22 @@ function setAlloc(side, meta){
   G.alloc[side] = {meta, repro: G.energy[side]-meta};
   renderClash();
 }
-function playCard(side, idx){
-  if(G.winner) return;
+// Preview a card in the arena (not committed — swappable)
+function selectCard(side, idx){
+  if(G.winner || !deployTurn(side)) return;
   const inst = G.stack[side][idx];
   if(!inst || (inst.exhausted && !hasKW(inst.card,'swarm'))) return;
-  if(G.step==='p1' && side===firstPicker()){ G.played[side]=idx; G.step='p2'; }
-  else if(G.step==='p2' && side===secondPicker()){ G.played[side]=idx; G.step='ready'; }
-  else return;
+  G.pending[side] = idx;
   closeCardDetail();
+  renderClash();
+}
+// Lock in the previewed card → advance the deploy step
+function commitActive(){
+  const side = G.step==='p1' ? firstPicker() : (G.step==='p2' ? secondPicker() : null);
+  if(!side || G.pending[side]==null) return;
+  G.played[side] = G.pending[side];
+  G.pending[side] = null;
+  G.step = (G.step==='p1') ? 'p2' : 'ready';
   renderClash();
 }
 
@@ -967,20 +979,29 @@ function kwTags(card){
 }
 function arenaSlot(side){
   const el = document.getElementById('arena-'+side);
-  const idx = G.played[side];
   el.className = 'arena-slot ' + (side==='atk'?'atk-side':'def-side');
-  if(idx==null){ el.innerHTML = `<div style="color:var(--muted);font-size:11px;">${side==='atk'?'⚔️ Attacker':'🛡️ Defender'}<br>—</div>`; return; }
+  const committed = G.played[side]!=null;
+  const previewing = !committed && deployTurn(side) && G.pending[side]!=null;
+  const idx = committed ? G.played[side] : (previewing ? G.pending[side] : null);
+  if(idx==null){
+    const hint = deployTurn(side) ? '<br><span style="font-size:9px">tap a strategy below to preview</span>' : '';
+    el.innerHTML = `<div style="color:var(--muted);font-size:11px;">${side==='atk'?'⚔️ Attacker':'🛡️ Defender'}<br>—${hint}</div>`;
+    return;
+  }
   const inst = G.stack[side][idx];
   const oppIdx = G.played[side==='atk'?'def':'atk'];
   const oppCard = oppIdx!=null ? G.stack[side==='atk'?'def':'atk'][oppIdx].card : null;
   const p = diceProfile(inst, side, oppCard);
   el.classList.add('filled');
-  el.innerHTML = `<div class="as-art">${inst.card.art}</div>
+  if(previewing) el.style.outline = '3px dashed #f0c000'; else el.style.outline='';
+  const badge = previewing ? `<div style="font-size:8px;font-weight:900;letter-spacing:1px;color:#a07000;background:#fff3c4;border:1px solid #d4b020;border-radius:3px;padding:1px 5px;display:inline-block;margin-bottom:2px;">PREVIEW · tap to inspect / swap below</div>` : '';
+  el.innerHTML = `${badge}<div class="as-art">${inst.card.art}</div>
     <div class="as-name">${inst.card.n}${inst.isWeirdo?' 🧬':''}</div>
     <div class="as-pow">🎲${p.dice}</div>
     <div style="font-size:10px;font-weight:800;color:var(--muted)">hits on ${p.hitOn}+ · ~${expHits(p).toFixed(1)} hits</div>
     <div class="as-break">${p.parts.join(' · ')}</div>
     <div class="as-tags">${kwTags(inst.card)}</div>`;
+  if(previewing) el.onclick = ()=>openCardDetail(side, idx); else el.onclick = null;
 }
 function stackList(side){
   const cont = document.getElementById('stack-'+side);
@@ -989,13 +1010,15 @@ function stackList(side){
   cont.innerHTML = '';
   G.stack[side].forEach((inst,i)=>{
     const p = diceProfile(inst, side, null);
+    const isPreview = activeSide && G.pending[side]===i;
     const isPlayed = G.played[side]===i;
     const div = document.createElement('div');
-    div.className = 'stk-card' + (inst.exhausted&&!hasKW(inst.card,'swarm')?' exhausted':'') + (isPlayed?' played':'');
+    div.className = 'stk-card' + (inst.exhausted&&!hasKW(inst.card,'swarm')?' exhausted':'') + (isPreview||isPlayed?' played':'');
     div.innerHTML = `<span class="sc-art">${inst.card.art}</span>
-      <span class="sc-name">${inst.card.n}${inst.isWeirdo?' 🧬':''}${inst.adapt?` <span style="color:#1a8030">+${inst.adapt}</span>`:''}<br>${kwTags(inst.card)}</span>
+      <span class="sc-name">${inst.card.n}${inst.isWeirdo?' 🧬':''}${inst.adapt?` <span style="color:#1a8030">+${inst.adapt}</span>`:''}${isPreview?' <span style="color:#a07000;font-size:9px;font-weight:900">◀ previewing</span>':''}<br>${kwTags(inst.card)}</span>
       <span class="sc-pow">🎲${p.dice}<br><span style="font-size:8px;color:var(--muted)">${p.hitOn}+</span></span>`;
-    div.onclick = ()=>openCardDetail(side,i);
+    // during your deploy turn, click = preview (swappable); otherwise = inspect
+    div.onclick = activeSide ? ()=>selectCard(side,i) : ()=>openCardDetail(side,i);
     cont.appendChild(div);
   });
 }
@@ -1053,7 +1076,7 @@ function openCardDetail(side, idx){
       <span style="color:var(--muted);font-size:10px">${p.parts.join(' · ')}</span>
     </div>
     <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end;">
-      ${canDeploy?`<button class="t-btn" style="background:#c4561e;color:#fff;" onclick="playCard('${side}',${idx})">Deploy this strategy →</button>`:''}
+      ${canDeploy?`<button class="t-btn" style="background:#c4561e;color:#fff;" onclick="selectCard('${side}',${idx})">▲ Preview in arena</button>`:''}
       <button class="t-btn" onclick="closeCardDetail()">Close</button>
     </div>`;
   document.getElementById('card-overlay').className = 'overlay open';
@@ -1093,13 +1116,23 @@ function renderClash(){
   arenaSlot('atk'); arenaSlot('def');
   stackList('atk'); stackList('def');
 
-  document.getElementById('resolve-btn').disabled = (G.step!=='ready');
+  // Commit (during deploy) vs Resolve (when both committed)
+  const deploying = (G.step==='p1' || G.step==='p2');
+  const activeS = G.step==='p1' ? firstPicker() : (G.step==='p2' ? secondPicker() : null);
+  const commitBtn = document.getElementById('commit-btn');
+  const resolveBtn = document.getElementById('resolve-btn');
+  commitBtn.style.display = deploying ? 'block' : 'none';
+  commitBtn.disabled = !(activeS && G.pending[activeS]!=null);
+  commitBtn.textContent = (activeS && G.pending[activeS]!=null)
+    ? `✓ Commit ${G.stack[activeS][G.pending[activeS]].card.n.split(' ')[0]}` : '✓ Commit';
+  resolveBtn.style.display = deploying ? 'none' : 'block';
+  resolveBtn.disabled = (G.step!=='ready');
   document.getElementById('clash-outcome').innerHTML = G.outcome||'';
 
   let prompt = '';
   if(G.step==='scenario') prompt = `🎲 ${sideName(roller())} rolls the scenario first.`;
-  else if(G.step==='p1') prompt = `${sideName(firstPicker())} deploys first — tap a strategy to inspect & deploy.`;
-  else if(G.step==='p2') prompt = `${sideName(secondPicker())} responds — tap a strategy to inspect & deploy.`;
+  else if(G.step==='p1') prompt = `${sideName(firstPicker())} deploys first — tap a strategy to preview, then ✓ Commit (or tap another to swap).`;
+  else if(G.step==='p2') prompt = `${sideName(secondPicker())} responds — preview, swap freely, then ✓ Commit.`;
   else if(G.step==='ready') prompt = '⚡ Both committed — Resolve: each strategy rolls its dice.';
   document.getElementById('turn-prompt').textContent = prompt;
 
