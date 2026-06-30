@@ -200,6 +200,17 @@ html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-s
 .card-art{overflow:hidden;border-radius:12px;border:3px solid #0b0b0b;box-shadow:2px 2px 0 #0b0b0b;flex-shrink:0;}
 .card-art svg{width:100%;height:100%;display:block;}
 .arena-slot .card-art{margin:0 auto 4px;}
+/* Steps + set-variable chips */
+.var-chip{font-size:11px;font-weight:700;padding:6px 12px;border:2px solid var(--border,#e8ddd0);border-radius:10px;background:#fff;color:#4a3820;}
+.var-chip b{font-weight:900;}
+.var-chip.set-terrain{border-color:#3a7a4a;background:#eef7f0;}
+.var-chip.set-scenario{border-color:#2a6aa0;background:#eef4fb;}
+.var-chip.set-cata{border-color:#e02418;background:#fdeeec;}
+.step-pill{flex:1;min-width:120px;padding:7px 10px;border:2px solid var(--border,#e8ddd0);border-radius:10px;background:#fff;color:#9a8878;line-height:1.3;}
+.step-pill.active{border-color:#c4561e;background:#fdf0ea;color:#1a0e04;box-shadow:0 2px 0 #c4561e;}
+.step-pill.done{border-color:#3a7a4a;background:#eef7f0;color:#3a7a4a;}
+.step-pill b{display:block;font-size:11px;}
+.step-pill span{font-size:9px;font-weight:600;}
 </style>
 </head>
 <body>
@@ -296,15 +307,18 @@ html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-s
 <div id="phase-battle" style="display:none">
   <div style="max-width:980px;margin:0 auto;padding:14px;">
 
-    <!-- Status bar -->
-    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--surf2,#fdf9f3);border:2px solid var(--border,#e8ddd0);border-radius:12px;padding:10px 16px;margin-bottom:12px;">
-      <div style="font-size:15px;font-weight:900;" id="clash-terrain"></div>
-      <div style="font-size:11px;color:var(--muted);flex:1;min-width:160px;" id="clash-terrain-desc"></div>
-      <div id="clash-round" style="font-size:13px;font-weight:900;padding:5px 12px;border-radius:8px;background:#1a140c;color:#ffd21a;"></div>
-      <div id="clash-type" style="font-size:11px;font-weight:800;"></div>
+    <!-- HOW IT PLAYS — numbered steps -->
+    <div id="steps-bar" style="display:flex;gap:6px;flex-wrap:wrap;align-items:stretch;margin-bottom:10px;font-size:10px;font-weight:700;"></div>
+
+    <!-- SET VARIABLES — the basis for this clash -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+      <div id="var-terrain" class="var-chip"></div>
+      <div id="var-scenario" class="var-chip"></div>
+      <div id="var-cata" class="var-chip"></div>
+      <div id="var-round" class="var-chip" style="margin-left:auto;"></div>
     </div>
 
-    <!-- Scenario bar (roll + story) -->
+    <!-- ACTION: scenario roll (step 2) OR catastrophe check (round 3) -->
     <div id="scenario-bar" style="background:#10243a;border:2px solid #2a6aa0;border-radius:12px;padding:10px 16px;margin-bottom:10px;color:#dff;">
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <span id="scenario-title" style="font-size:14px;font-weight:900;">🎲 Scenario</span>
@@ -313,7 +327,16 @@ html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-s
       <div id="story-text" style="font-size:12px;line-height:1.5;margin-top:6px;color:#cfe8ff;font-style:italic;"></div>
     </div>
 
-    <!-- Catastrophe banner -->
+    <!-- ROUND 3 — Catastrophe check (matched dice) -->
+    <div id="cata-check" style="display:none;background:#2a0e0e;border:2px solid #e02418;border-radius:12px;padding:12px 16px;margin-bottom:10px;color:#ffd2c0;text-align:center;">
+      <div style="font-size:14px;font-weight:900;color:#ff9a6a;">☄️ Round 3 — Catastrophe Check!</div>
+      <div style="font-size:11px;line-height:1.5;margin:5px 0;">Both players roll 1d6. <b>Match the number → a catastrophe strikes and warps the rest of the battle.</b> No match → the terrain &amp; scenario rule the day.</div>
+      <div id="cata-dice" style="font-size:30px;margin:6px 0;min-height:34px;"></div>
+      <button id="cata-roll-btn" onclick="rollCataCheck()" style="padding:7px 18px;border:2px solid #000;background:#ffd21a;color:#1a140c;font-family:inherit;font-size:13px;font-weight:900;border-radius:8px;cursor:pointer;">🎲 Roll Both Dice</button>
+      <div id="cata-check-result" style="font-size:12px;font-weight:800;margin-top:6px;"></div>
+    </div>
+
+    <!-- Persistent catastrophe banner (rest of battle) -->
     <div id="cata-banner" style="display:none;align-items:center;gap:10px;background:#2a0e0e;border:2px solid #e02418;border-radius:12px;padding:10px 16px;margin-bottom:12px;color:#ffd2c0;"></div>
 
     <!-- Life + energy trackers -->
@@ -694,9 +717,10 @@ const WEIRDO_STACKS = {
 // ─────────────────────────────────────────
 // GAME STATE
 // ─────────────────────────────────────────
+const CATA_ROUND = 3;       // round of the matched-dice catastrophe check
 function freshG(){ return {
   battleType: null, terrain: null, round: 1,
-  step: 'scenario',         // 'scenario' (roll) → 'p1' (first picker) → 'p2' → 'ready'
+  step: 'scenario',         // 'catacheck' → 'scenario' (roll) → 'p1' → 'p2' → 'ready'
   life: {atk: START_LIFE, def: START_LIFE},
   energy: {atk: CFG.energyPerRound, def: CFG.energyPerRound},
   alloc: {atk: {meta:CFG.energyPerRound, repro:0}, def: {meta:CFG.energyPerRound, repro:0}},
@@ -704,7 +728,9 @@ function freshG(){ return {
   played: {atk: null, def: null},
   pending: {atk: null, def: null},   // previewed-but-not-committed pick
   scenario: null,           // active scenario this round
-  cata: null,               // active catastrophe this round
+  cata: null,               // catastrophe (persists rest of battle once triggered)
+  cataChecked: false,       // round-3 matched-dice check already done?
+  cataDice: null,           // {a,d} of the catastrophe check, for display
   weirdoUsed: false, musterUsed: false,
   winner: null, outcome: '', log: [],
 }; }
@@ -792,13 +818,26 @@ function beginRound(){
   G.alloc.def = {meta:CFG.energyPerRound, repro:0};
   G.scenario = null; G.story = '';
   G.pending = {atk:null, def:null};
-  G.cata = null;
-  const forced = (G.round===3 || G.round===6);
-  if(forced || Math.floor(Math.random()*6)===0){
-    G.cata = CATASTROPHES[Math.floor(Math.random()*CATASTROPHES.length)];
-    addLog(`${G.cata.icon} CATASTROPHE — ${G.cata.name}: ${G.cata.head}`);
-  }
+  // Catastrophe (G.cata) persists once triggered — never cleared here.
+  // Round 3 opens with the matched-dice catastrophe check.
+  G.step = (G.round===CATA_ROUND && !G.cataChecked) ? 'catacheck' : 'scenario';
 }
+
+// Round 3: each player rolls 1d6 — a match unleashes a catastrophe for the rest of the battle.
+function rollCataCheck(){
+  if(G.step!=='catacheck' || G.cataChecked) return;
+  const a = rollDie(), d = rollDie();
+  G.cataDice = {a, d};
+  G.cataChecked = true;
+  if(a === d){
+    G.cata = CATASTROPHES[Math.floor(Math.random()*CATASTROPHES.length)];
+    addLog(`☄️ Catastrophe check: both rolled ${a} — MATCH! ${G.cata.icon} ${G.cata.name} strikes for the rest of the battle.`);
+  } else {
+    addLog(`☄️ Catastrophe check: ${a} vs ${d} — no match. The terrain & scenario rule the day.`);
+  }
+  renderClash();
+}
+function proceedFromCata(){ G.step='scenario'; renderClash(); }
 
 function startBattle(){
   const deck = G.battleType === 'eat' ? EAT : FK;
@@ -808,6 +847,7 @@ function startBattle(){
   G.life = {atk: START_LIFE, def: START_LIFE};
   G.played = {atk:null, def:null}; G.pending = {atk:null, def:null};
   G.weirdoUsed = false; G.musterUsed = false;
+  G.cata = null; G.cataChecked = false; G.cataDice = null;
   G.winner = null; G.outcome = '';
   G.log = ['⚔️ Terrain Clash in ' + BOARDS[G.terrain].name + '! Life ' + START_LIFE + ' each.'];
   beginRound();
@@ -1190,31 +1230,74 @@ function closeCardDetail(){ document.getElementById('card-overlay').className = 
 
 function renderClash(){
   const b = BOARDS[G.terrain];
-  document.getElementById('clash-terrain').innerHTML = b.icon+' '+b.name;
-  document.getElementById('clash-terrain-desc').textContent = (TERRAIN_FX[G.terrain]||{}).note || b.desc;
-  document.getElementById('clash-round').textContent = 'Round '+G.round;
-  document.getElementById('clash-type').innerHTML = G.battleType==='eat'
-    ? '<span class="eat-w">🦷 EAT IT — Power = OFF</span>' : '<span class="fk-w">🧬 F*CK IT — Power = REP</span>';
+  const deployStep = (G.step==='p1'||G.step==='p2'||G.step==='ready');
+  const scenarioSet = !!G.scenario;
   document.getElementById('life-atk').textContent = hearts('atk');
   document.getElementById('life-def').textContent = hearts('def');
 
-  // scenario bar
+  // ── HOW IT PLAYS — steps
+  const cataStateTxt = G.cata ? `☄️ ${G.cata.name} struck!` : (G.cataChecked ? 'No catastrophe — terrain & scenario rule' : `Round ${CATA_ROUND}: roll matched dice → catastrophe`);
+  const cataCls = G.cata ? 'done' : (G.step==='catacheck' ? 'active' : (G.cataChecked?'done':''));
+  const steps = [
+    {cls:'done', n:'① Terrain', s:'sets the stage'},
+    {cls:(G.step==='catacheck'||G.step==='scenario')?'active':'done', n:'② Scenario', s:'rolled each round'},
+    {cls:deployStep?'active':'', n:'③ Choose strategy', s:'best for terrain + scenario'},
+    {cls:cataCls, n:'☄️ Catastrophe', s:cataStateTxt},
+  ];
+  document.getElementById('steps-bar').innerHTML = steps.map(s=>`<div class="step-pill ${s.cls}"><b>${s.n}</b><span>${s.s}</span></div>`).join('');
+
+  // ── SET VARIABLES
+  document.getElementById('var-terrain').className='var-chip set-terrain';
+  document.getElementById('var-terrain').innerHTML = `${b.icon} Terrain: <b>${b.name}</b><br><span style="font-size:9px;color:var(--muted)">${(TERRAIN_FX[G.terrain]||{}).note||''}</span>`;
+  const vs = document.getElementById('var-scenario');
+  vs.className = 'var-chip' + (scenarioSet?' set-scenario':'');
+  vs.innerHTML = scenarioSet ? `${G.scenario.icon} Scenario: <b>${G.scenario.name}</b><br><span style="font-size:9px;color:var(--muted)">${G.scenario.tag}</span>` : `🎲 Scenario: <b>— not yet rolled</b>`;
+  const vc = document.getElementById('var-cata');
+  vc.className = 'var-chip' + (G.cata?' set-cata':'');
+  vc.innerHTML = G.cata ? `${G.cata.icon} Catastrophe: <b>${G.cata.name}</b><br><span style="font-size:9px;color:var(--muted)">${G.cata.head}</span>` : (G.cataChecked ? `🍃 Catastrophe: <b>none</b>` : `☄️ Catastrophe: <b>checked at round ${CATA_ROUND}</b>`);
+  document.getElementById('var-round').className='var-chip';
+  document.getElementById('var-round').innerHTML = `Round <b>${G.round}</b><br><span style="font-size:9px">${G.battleType==='eat'?'🦷 EAT IT · Power=OFF':'🧬 F*CK IT · Power=REP'}</span>`;
+
+  // ── ACTION: scenario roll vs catastrophe check
+  const scenBar = document.getElementById('scenario-bar');
+  const cataPanel = document.getElementById('cata-check');
+  scenBar.style.display = (G.step==='catacheck') ? 'none' : 'block';
+  cataPanel.style.display = (G.step==='catacheck') ? 'block' : 'none';
+
   const sTitle = document.getElementById('scenario-title');
   const rollBtn = document.getElementById('roll-scenario-btn');
   const story = document.getElementById('story-text');
   if(G.step==='scenario'){
-    sTitle.textContent = `🎲 ${sideName(roller())} rolls to set the scenario`;
+    sTitle.textContent = `🎲 ${sideName(roller())} rolls to set the round's scenario`;
     rollBtn.style.display='inline-block';
-    story.textContent = 'Each terrain throws a different challenge. Roll to reveal what this round demands…';
-  } else if(G.scenario){
+    story.textContent = 'Each round the terrain throws a fresh challenge. Roll to reveal what this one demands…';
+  } else if(scenarioSet){
     sTitle.innerHTML = `${G.scenario.icon} ${G.scenario.name} <span style="font-size:11px;font-weight:600;color:#9cf">— ${G.scenario.tag}</span>`;
     rollBtn.style.display='none';
     story.textContent = G.story;
   }
 
-  // catastrophe banner
+  if(G.step==='catacheck'){
+    const dd = document.getElementById('cata-dice');
+    const cr = document.getElementById('cata-check-result');
+    const btn = document.getElementById('cata-roll-btn');
+    const face = n => '⚀⚁⚂⚃⚄⚅'[n-1];
+    if(G.cataChecked){
+      dd.innerHTML = `<span class="atk-l">⚔️ ${face(G.cataDice.a)}</span> &nbsp; <span class="def-l">🛡️ ${face(G.cataDice.d)}</span>`;
+      cr.innerHTML = G.cata
+        ? `<span style="color:#ff7a6a">☄️ MATCH on ${G.cataDice.a}! ${G.cata.icon} <b>${G.cata.name}</b> — ${G.cata.head}</span>`
+        : `<span style="color:#bfe8c4">🍃 ${G.cataDice.a} ≠ ${G.cataDice.d} — no catastrophe. Carry on.</span>`;
+      btn.textContent = 'Continue →'; btn.onclick = proceedFromCata;
+    } else {
+      dd.innerHTML = '⚔️ ❓ &nbsp; 🛡️ ❓';
+      cr.innerHTML = '';
+      btn.textContent = '🎲 Roll Both Dice'; btn.onclick = rollCataCheck;
+    }
+  }
+
+  // persistent catastrophe banner (rest of battle)
   const cb = document.getElementById('cata-banner');
-  if(G.cata){ cb.style.display='flex'; cb.innerHTML = `<span style="font-size:22px">${G.cata.icon}</span><span><b style="color:#ff7a6a">${G.cata.name}</b> — ${G.cata.head} <span style="color:#d8a;font-size:10px">(this round)</span></span>`; }
+  if(G.cata && G.step!=='catacheck'){ cb.style.display='flex'; cb.innerHTML = `<span style="font-size:22px">${G.cata.icon}</span><span><b style="color:#ff7a6a">${G.cata.name}</b> — ${G.cata.head} <span style="color:#d8a;font-size:10px">(rest of battle)</span></span>`; }
   else cb.style.display='none';
 
   allocControl('atk'); allocControl('def');
