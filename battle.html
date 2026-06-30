@@ -196,6 +196,24 @@ html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-s
   <div class="setup-title">⚔️ Set Up Battle</div>
   <div class="setup-sub">Attacker chooses the battle type. Both sides field only that deck's strategies. Defender may summon a Weirdo on round 4.</div>
 
+  <div class="s-section" style="background:#1a140c;border:2px solid #000;border-radius:12px;">
+    <h3 style="color:#ffd21a;">⚡ Quick Skirmish — Sandbox Testing</h3>
+    <div style="font-size:11px;color:#d8cdb8;margin-bottom:10px;line-height:1.5">Test battle mechanics fast without a full game. Auto-fills random stacks so you can iterate on combat balance.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      <label style="font-size:11px;font-weight:700;color:#ffd21a;">Cards per side:</label>
+      <select id="skirmish-size" style="padding:5px 8px;border-radius:6px;border:2px solid #000;font-family:inherit;font-size:12px;font-weight:700;">
+        <option value="0">Random (2–5)</option>
+        <option value="2">2 each</option>
+        <option value="3">3 each</option>
+        <option value="4">4 each</option>
+        <option value="5">5 each</option>
+        <option value="7">7 each (max)</option>
+      </select>
+      <button onclick="quickSkirmish(true)" style="padding:7px 16px;border:2px solid #000;background:#c4561e;color:#fff;font-family:inherit;font-size:12px;font-weight:800;border-radius:6px;cursor:pointer;text-transform:uppercase;letter-spacing:.5px;">🎲 Random Battle &amp; Fight</button>
+      <button onclick="quickSkirmish(false)" style="padding:7px 16px;border:2px solid #000;background:#fff;color:#1a0e04;font-family:inherit;font-size:12px;font-weight:800;border-radius:6px;cursor:pointer;text-transform:uppercase;letter-spacing:.5px;">🎲 Fill Random (then edit)</button>
+    </div>
+  </div>
+
   <div class="s-section">
     <h3>1 — Battle Type (attacker chooses)</h3>
     <div class="type-btns">
@@ -348,7 +366,10 @@ html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-s
     </div>
     <div id="spawn-result"></div>
   </div>
-  <button class="result-cta" onclick="resetGame()">↺ New Battle</button>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+    <button class="result-cta" onclick="resetGame()">↺ New Battle</button>
+    <button class="result-cta" onclick="rematchRandom()" style="background:#1a140c;color:#ffd21a;">⚡ Random Rematch</button>
+  </div>
 </div>
 
 <!-- ═══════════════════ WEIRDO MODAL ═══════════════════ -->
@@ -1006,6 +1027,36 @@ function updateSpawnResult(){
       <div style="font-size:11px;color:#3a2a1a;line-height:1.6">${tier.cost}</div>
     </div>`;
 }
+
+// ─────────────────────────────────────────
+// QUICK SKIRMISH (sandbox testing)
+// ─────────────────────────────────────────
+const TERRAIN_CODES_ALL = ['V','P','S','O','I','A','F','D','C','G'];
+function randInt(n){ return Math.floor(Math.random()*n); }
+function fillRandomStack(selSet, deck, count){
+  selSet.clear();
+  const pool = [...deck];
+  const n = Math.min(count, pool.length);
+  for(let k=0; k<n && pool.length; k++){
+    selSet.add(pool.splice(randInt(pool.length),1)[0].id);
+  }
+}
+function quickSkirmish(autoStart){
+  const type = Math.random() < 0.5 ? 'eat' : 'fk';
+  setBattleType(type);                              // sets G.battleType + renders pickers
+  const ter = TERRAIN_CODES_ALL[randInt(TERRAIN_CODES_ALL.length)];
+  document.getElementById('terrain-sel').value = ter;
+  setTerrain(ter);
+  const sizeSel = parseInt(document.getElementById('skirmish-size').value, 10) || 0;
+  const deck = type === 'eat' ? EAT : FK;
+  const sizeFor = () => sizeSel > 0 ? sizeSel : 2 + randInt(4);   // 2–5 when "Random"
+  fillRandomStack(atkSelected, deck, sizeFor());
+  fillRandomStack(defSelected, deck, sizeFor());
+  renderCardPickers();
+  checkStartReady();
+  if(autoStart) startBattle();
+}
+function rematchRandom(){ resetGame(); quickSkirmish(true); }
 
 function resetGame(){
   G = {battleType:null,terrain:null,round:1,activePlayer:'attacker',step:'move',weirdoSummoned:false,weirdoAlerted:false,atk:[],def:[],winner:null,log:[]};
