@@ -211,6 +211,15 @@ html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-s
 .step-pill.done{border-color:#3a7a4a;background:#eef7f0;color:#3a7a4a;}
 .step-pill b{display:block;font-size:11px;}
 .step-pill span{font-size:9px;font-weight:600;}
+/* Per-battle-type theming */
+#battle-wrap.battle-eat{background:linear-gradient(#fbeee5,#fffdf9);border-color:#c4561e;box-shadow:0 0 0 2px #fbeee5,6px 6px 0 rgba(196,86,30,.18);}
+#battle-wrap.battle-fk{background:linear-gradient(#f3ecfa,#fffdf9);border-color:#7b4fa0;box-shadow:0 0 0 2px #f3ecfa,6px 6px 0 rgba(123,79,160,.18);}
+#battle-wrap.battle-eat #resolve-btn{background:#c4561e;}
+#battle-wrap.battle-fk  #resolve-btn{background:#7b4fa0;}
+#battle-wrap.battle-eat #scenario-bar{background:#3a1c0e;border-color:#c4561e;}
+#battle-wrap.battle-fk  #scenario-bar{background:#241433;border-color:#7b4fa0;}
+#battle-wrap.battle-eat #var-round{border-color:#c4561e;background:#fbeee5;}
+#battle-wrap.battle-fk  #var-round{border-color:#7b4fa0;background:#f3ecfa;}
 </style>
 </head>
 <body>
@@ -305,7 +314,7 @@ html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-s
 
 <!-- ═══════════════════ BATTLE (Terrain Clash) ═══════════════════ -->
 <div id="phase-battle" style="display:none">
-  <div style="max-width:980px;margin:0 auto;padding:14px;">
+  <div id="battle-wrap" style="max-width:980px;margin:0 auto;padding:14px;border-radius:14px;border:3px solid transparent;">
 
     <!-- HOW IT PLAYS — numbered steps -->
     <div id="steps-bar" style="display:flex;gap:6px;flex-wrap:wrap;align-items:stretch;margin-bottom:10px;font-size:10px;font-weight:700;"></div>
@@ -1232,6 +1241,7 @@ function closeCardDetail(){ document.getElementById('card-overlay').className = 
 
 function renderClash(){
   const b = BOARDS[G.terrain];
+  document.getElementById('battle-wrap').className = 'battle-' + (G.battleType||'eat');
   const deployStep = (G.step==='p1'||G.step==='p2'||G.step==='ready');
   const scenarioSet = !!G.scenario;
   document.getElementById('life-atk').textContent = hearts('atk');
