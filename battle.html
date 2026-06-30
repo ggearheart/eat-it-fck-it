@@ -176,6 +176,26 @@ html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-s
 .wb-roll{font-size:9px;color:var(--muted);margin-bottom:4px;}
 .wb-stats{font-size:9px;color:#4a3060;margin-bottom:6px;font-weight:600;}
 .wb-spec{font-size:9px;color:#3a2050;line-height:1.5;}
+/* Terrain Clash */
+.arena-slot{border:2.5px dashed var(--border,#ccc);border-radius:12px;min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px;text-align:center;background:#fff;}
+.arena-slot.filled{border-style:solid;}
+.arena-slot.atk-side.filled{border-color:var(--eat);background:var(--eat-d,#fdf0ea);}
+.arena-slot.def-side.filled{border-color:var(--fk);background:var(--fk-d,#f5f0ff);}
+.arena-slot .as-art{font-size:34px;}
+.arena-slot .as-name{font-size:12px;font-weight:900;margin:3px 0;line-height:1.2;}
+.arena-slot .as-pow{font-size:26px;font-weight:900;}
+.arena-slot .as-break{font-size:9px;color:var(--muted);line-height:1.4;margin-top:3px;}
+.arena-slot .as-tags{font-size:8px;font-weight:800;letter-spacing:.5px;margin-top:3px;}
+.arena-slot.win{box-shadow:0 0 0 3px #f0c000;}
+.arena-slot.lose{opacity:.45;}
+.stk-card{display:flex;align-items:center;gap:8px;padding:6px 9px;border:2px solid var(--border,#e8ddd0);border-radius:8px;background:#fff;cursor:pointer;transition:all .1s;font-size:11px;}
+.stk-card:hover{border-color:#1a0e04;}
+.stk-card.exhausted{opacity:.4;cursor:not-allowed;}
+.stk-card.played{border-color:#f0c000;background:#fffaee;}
+.stk-card .sc-art{font-size:18px;}
+.stk-card .sc-name{font-weight:800;flex:1;}
+.stk-card .sc-pow{font-weight:900;}
+.stk-list.active .stk-card:not(.exhausted){border-color:#1a8030;box-shadow:0 0 0 1px #1a8030;}
 </style>
 </head>
 <body>
@@ -194,7 +214,7 @@ html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-s
 <div id="phase-setup">
 <div class="setup-wrap">
   <div class="setup-title">⚔️ Set Up Battle</div>
-  <div class="setup-sub">Attacker chooses the battle type. Both sides field only that deck's strategies. Defender may summon a Weirdo on round 4.</div>
+  <div class="setup-sub">Terrain Clash (Mindbug-style): no movement — strategies duel head-to-head, terrain decides. Attacker plays first, defender responds. Higher terrain-modified Power wins each clash; loser drops 1 life (start 5). Winner's card adapts +1 Power. Attacker may summon a Weirdo after round 2; a defender who survives 4 rounds may muster a terrain-native strategy.</div>
 
   <div class="s-section" style="background:#1a140c;border:2px solid #000;border-radius:12px;">
     <h3 style="color:#ffd21a;">⚡ Quick Skirmish — Sandbox Testing</h3>
@@ -268,76 +288,77 @@ html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-s
 </div>
 </div>
 
-<!-- ═══════════════════ BATTLE ═══════════════════ -->
+<!-- ═══════════════════ BATTLE (Terrain Clash) ═══════════════════ -->
 <div id="phase-battle" style="display:none">
-  <div class="battle-body">
+  <div style="max-width:980px;margin:0 auto;padding:14px;">
 
-    <!-- LEFT: Battle Board -->
-    <div class="board-col">
-      <div class="board-inner">
-        <div class="board-title" id="board-title"></div>
-        <div class="board-desc" id="board-desc"></div>
-        <svg id="bbsvg" viewBox="0 0 320 230"></svg>
-        <div class="feat-legend" id="feat-legend"></div>
-        <div style="margin-top:12px;">
-          <div class="feat-legend-title">Action Log</div>
-          <div class="log-box" id="log-box">Battle begins…</div>
-        </div>
+    <!-- Status bar -->
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--surf2,#fdf9f3);border:2px solid var(--border,#e8ddd0);border-radius:12px;padding:10px 16px;margin-bottom:12px;">
+      <div style="font-size:15px;font-weight:900;" id="clash-terrain"></div>
+      <div style="font-size:11px;color:var(--muted);flex:1;min-width:160px;" id="clash-terrain-desc"></div>
+      <div id="clash-round" style="font-size:13px;font-weight:900;padding:5px 12px;border-radius:8px;background:#1a140c;color:#ffd21a;"></div>
+      <div id="clash-type" style="font-size:11px;font-weight:800;"></div>
+    </div>
+
+    <!-- Life trackers -->
+    <div style="display:flex;gap:12px;margin-bottom:10px;">
+      <div style="flex:1;text-align:center;border:2px solid var(--eat);border-radius:10px;padding:8px;background:var(--eat-d,#fdf0ea);">
+        <div class="atk-l" style="font-weight:900;font-size:13px;">⚔️ Attacker</div>
+        <div id="life-atk" style="font-size:18px;letter-spacing:2px;"></div>
+      </div>
+      <div style="flex:1;text-align:center;border:2px solid var(--fk);border-radius:10px;padding:8px;background:var(--fk-d,#f5f0ff);">
+        <div class="def-l" style="font-weight:900;font-size:13px;">🛡️ Defender</div>
+        <div id="life-def" style="font-size:18px;letter-spacing:2px;"></div>
       </div>
     </div>
 
-    <!-- RIGHT: Combat Panels + Controls -->
-    <div class="combat-col">
-      <div class="sides-row">
-        <!-- Attacker -->
-        <div class="side-pane" id="atk-pane">
-          <div class="side-pane-hdr">
-            <span class="atk-l">⚔️ Attacker</span>
-            <span class="spb" id="atk-alive-count" style="font-size:9px;color:var(--muted);"></span>
-          </div>
-        </div>
-        <!-- Defender -->
-        <div class="side-pane" id="def-pane">
-          <div class="side-pane-hdr">
-            <span class="def-l">🛡️ Defender</span>
-            <span class="spb" id="def-alive-count" style="font-size:9px;color:var(--muted);"></span>
-          </div>
-        </div>
+    <!-- Clash arena -->
+    <div style="display:grid;grid-template-columns:1fr 70px 1fr;gap:10px;align-items:stretch;margin-bottom:10px;">
+      <div id="arena-atk" class="arena-slot"></div>
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;">
+        <div style="font-size:22px;font-weight:900;color:var(--muted);">VS</div>
+        <button id="resolve-btn" onclick="resolveClash()" disabled
+          style="padding:8px 6px;border:2px solid #000;background:#c4561e;color:#fff;font-family:inherit;font-size:11px;font-weight:800;border-radius:8px;cursor:pointer;width:100%;">Resolve</button>
       </div>
+      <div id="arena-def" class="arena-slot"></div>
+    </div>
 
-      <!-- Control Bar -->
-      <div class="control-bar">
-        <!-- Turn tracker -->
-        <div class="turn-row">
-          <div class="turn-pips" id="turn-pips"></div>
-          <div id="round-badge" class="round-badge rb-atk"></div>
-          <div id="phase-badge" class="phase-badge">Move</div>
-        </div>
-        <div class="weirdo-alert" id="weirdo-alert">
-          🧬 Round 4 — Defender may summon a Weirdo!
-          <button class="t-btn purple" onclick="openWeirdoModal()" style="margin-left:auto;">Summon Weirdo</button>
-        </div>
-        <div class="turn-btns">
-          <button class="t-btn" onclick="nextPhase()">Next Phase →</button>
-          <button class="t-btn green" onclick="nextRound()">End Round ↩</button>
-          <button class="t-btn grey" onclick="declareFlee()">Flee</button>
-          <button class="t-btn grey" onclick="declareConcede()">Concede</button>
-          <button class="t-btn red" onclick="endBattle('timeloss')">Time Loss (Rd 7)</button>
-        </div>
-        <!-- Dice roller -->
-        <div class="dice-row">
-          <span class="dice-label">Strike:</span>
-          <input class="d-input" id="pow-in" type="number" min="1" max="20" value="5" placeholder="Power">
-          <span class="d-thr" id="thr-display">hit on 4+</span>
-          <input class="d-input" id="thr-in" type="number" min="2" max="6" value="4" placeholder="Hit on">
-          <button class="roll-btn" onclick="rollStrike()">Roll</button>
-        </div>
-        <div id="dice-out" class="dice-out"></div>
-        <div id="dice-sum" class="dice-sum" style="display:none"></div>
-        <div id="carry-note" class="carry-note" style="display:none"></div>
+    <div id="clash-outcome" style="text-align:center;font-size:13px;font-weight:800;min-height:22px;margin-bottom:8px;"></div>
+    <div id="turn-prompt" style="text-align:center;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px;"></div>
+
+    <!-- Mid-battle options -->
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;">
+      <button id="opt-weirdo" onclick="openWeirdoModal()" style="display:none;padding:7px 14px;border:2px solid #000;background:#7b4fa0;color:#fff;font-family:inherit;font-size:11px;font-weight:800;border-radius:8px;cursor:pointer;">🧬 Summon Weirdo (attacker)</button>
+      <button id="opt-muster" onclick="openMusterModal()" style="display:none;padding:7px 14px;border:2px solid #000;background:#1e7a40;color:#fff;font-family:inherit;font-size:11px;font-weight:800;border-radius:8px;cursor:pointer;">🌿 Muster Strategy (defender)</button>
+      <button onclick="declareConcede()" style="padding:7px 14px;border:2px solid var(--border,#ccc);background:#fff;color:var(--muted);font-family:inherit;font-size:11px;font-weight:700;border-radius:8px;cursor:pointer;">🏳️ Concede</button>
+    </div>
+
+    <!-- Stacks (hands) -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+      <div>
+        <div class="atk-l" style="font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">⚔️ Attacker's Stack</div>
+        <div id="stack-atk" style="display:flex;flex-direction:column;gap:5px;"></div>
+      </div>
+      <div>
+        <div class="def-l" style="font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">🛡️ Defender's Stack</div>
+        <div id="stack-def" style="display:flex;flex-direction:column;gap:5px;"></div>
       </div>
     </div>
 
+    <div class="feat-legend-title" style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);">Action Log</div>
+    <div class="log-box" id="log-box" style="max-height:120px;overflow:auto;font-size:11px;line-height:1.6;border:1.5px solid var(--border,#e8ddd0);border-radius:8px;padding:8px;background:#fff;">Battle begins…</div>
+  </div>
+</div>
+
+<!-- ═══════════════════ MUSTER MODAL ═══════════════════ -->
+<div class="overlay" id="muster-overlay">
+  <div class="wmodal">
+    <h2>🌿 Muster a Strategy</h2>
+    <p>You survived 4 rounds. Recruit one strategy native to this terrain into your stack (Titan muster rule). It joins the battle immediately.</p>
+    <div class="wgrid" id="muster-grid"></div>
+    <div style="margin-top:12px;text-align:right;">
+      <button class="t-btn" onclick="closeMusterModal()">Cancel</button>
+    </div>
   </div>
 </div>
 
@@ -345,21 +366,9 @@ html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-s
 <div id="phase-result" style="display:none">
   <div class="result-banner" id="result-banner"></div>
   <div class="result-sub" id="result-sub"></div>
-  <div class="result-grid">
-    <div class="result-box">
-      <h4>Winner Adapts — Draw 2, Keep 1</h4>
-      <div id="adapt-picks"></div>
-      <div style="font-size:9px;color:var(--muted);margin-top:8px;">Click a card to keep it. The other is discarded.</div>
-    </div>
-    <div class="result-box">
-      <h4>Loser Concedes a Card (Winner's Choice)</h4>
-      <div id="loss-picks"></div>
-      <div style="font-size:9px;color:var(--muted);margin-top:8px;">Winner picks one of the loser's surviving cards to claim.</div>
-    </div>
-  </div>
   <div id="spawn-check" style="background:#f5f0ff;border:2px solid var(--fk);border-radius:12px;padding:18px;margin-top:4px;text-align:left;display:none">
     <div style="font-size:13px;font-weight:800;color:var(--fk);margin-bottom:4px;">🧬 Spawn Check — Loser's Agent Died</div>
-    <div style="font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.5">All of the loser's cards were eliminated. Check their <strong>highest single REP value</strong> across any F*CK IT card held in any other surviving agent. Enter it below to see if they can spawn a replacement.</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.5">The losing agent was eliminated in the clash. Check their <strong>highest single REP value</strong> across any F*CK IT card held in another surviving agent. Enter it below to see if they can spawn a replacement.</div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
       <label style="font-size:12px;font-weight:600;color:var(--fk)">Loser's highest REP value:</label>
       <input id="spawn-rep-in" type="number" min="0" max="20" value="0" style="width:70px;padding:6px 10px;border:1.5px solid var(--fk-b);border-radius:8px;font-size:14px;font-family:inherit;text-align:center;" oninput="updateSpawnResult()">
@@ -376,7 +385,7 @@ html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-s
 <div class="overlay" id="weirdo-overlay">
   <div class="wmodal">
     <h2>🧬 Summon a Weirdo</h2>
-    <p>Choose any Weirdo from the Vault. They enter the battle on the defender's side for the remaining rounds. After battle, the Weirdo returns — they're a mercenary, not a permanent acquisition.</p>
+    <p>Available to the attacker after round 2. Choose any Weirdo from the Vault — it joins the attacker's stack as a playable card for the rest of the battle (a one-time mercenary).</p>
     <div class="wgrid" id="wgrid"></div>
     <div style="margin-top:12px;text-align:right;">
       <button class="t-btn" onclick="closeWeirdoModal()">Cancel</button>
@@ -524,16 +533,17 @@ const FEATS = {
 // ─────────────────────────────────────────
 // GAME STATE
 // ─────────────────────────────────────────
+const START_LIFE = 5;
 let G = {
   battleType: null,
   terrain: null,
   round: 1,
-  activePlayer: 'attacker', // attacker acts first each round
-  step: 'move',
-  weirdoSummoned: false,
-  weirdoAlerted: false,
-  atk: [],   // [{card, hp, maxHp, alive}]
-  def: [],
+  step: 'atk',              // 'atk' = attacker to play, 'def' = defender to play, 'ready' = resolve
+  life: {atk: START_LIFE, def: START_LIFE},
+  stack: {atk: [], def: []},// instances: {card, adapt, exhausted, isWeirdo}
+  played: {atk: null, def: null}, // index into stack
+  weirdoUsed: false,
+  musterUsed: false,
   winner: null,
   log: [],
 };
@@ -605,327 +615,230 @@ function battleStats(card, battleType, terrain){
   return {pow, skill:finalSkill, hp, mov, native, threshold, rs:card.rs, fs:card.fs};
 }
 
+function mkInst(card, isWeirdo){ return {card, adapt:0, exhausted:false, isWeirdo:!!isWeirdo}; }
+
 function startBattle(){
   const deck = G.battleType === 'eat' ? EAT : FK;
-  G.atk = deck.filter(c=>atkSelected.has(c.id)).map(c=>{
-    const bs = battleStats(c, G.battleType, G.terrain);
-    return {card:c, hp:bs.hp, maxHp:bs.hp, alive:true, bs};
-  });
-  G.def = deck.filter(c=>defSelected.has(c.id)).map(c=>{
-    const bs = battleStats(c, G.battleType, G.terrain);
-    return {card:c, hp:bs.hp, maxHp:bs.hp, alive:true, bs};
-  });
-  G.round = 1; G.activePlayer = 'attacker'; G.step = 'move';
-  G.weirdoSummoned = false; G.weirdoAlerted = false;
-  G.winner = null; G.log = ['⚔️ Battle begins in ' + BOARDS[G.terrain].name + '!'];
+  G.stack.atk = deck.filter(c=>atkSelected.has(c.id)).map(c=>mkInst(c));
+  G.stack.def = deck.filter(c=>defSelected.has(c.id)).map(c=>mkInst(c));
+  G.round = 1; G.step = 'atk';
+  G.life = {atk: START_LIFE, def: START_LIFE};
+  G.played = {atk:null, def:null};
+  G.weirdoUsed = false; G.musterUsed = false;
+  G.winner = null; G.outcome = '';
+  G.log = ['⚔️ Terrain Clash begins in ' + BOARDS[G.terrain].name + '! Each side starts with ' + START_LIFE + ' life.'];
 
   document.getElementById('phase-setup').style.display = 'none';
-  document.getElementById('phase-battle').style.display = 'flex';
-  document.getElementById('phase-battle').style.flexDirection = 'column';
-
-  renderBoard();
-  renderTurns();
-  renderSides();
+  document.getElementById('phase-battle').style.display = 'block';
+  renderClash();
 }
 
 // ─────────────────────────────────────────
-// BOARD RENDER
+// CLASH MATH (deterministic, terrain-driven)
 // ─────────────────────────────────────────
-function renderBoard(){
-  const b = BOARDS[G.terrain];
-  document.getElementById('board-title').innerHTML = b.icon + ' ' + b.name;
-  document.getElementById('board-desc').textContent = b.desc;
+const RANGE_BLOCKED = ['F','C'];   // dense terrains negate rangestrike
+function effPower(inst){
+  const c = inst.card;
+  const base = G.battleType === 'eat' ? c.off : c.rep;
+  let p = base + inst.adapt;
+  const parts = [`${base} base`];
+  if(inst.adapt) parts.push(`+${inst.adapt} adapt`);
+  const native = (c.ter||[]).includes(G.terrain);
+  if(native){ p += 2; parts.push('+2 native'); }
+  if(native && (G.terrain==='V'||G.terrain==='C')){ p += 1; parts.push('+1 terrain'); }
+  if(c.fs){ p += 1; parts.push('+1 first-strike'); }
+  if(c.rs && !RANGE_BLOCKED.includes(G.terrain)){ p += 1; parts.push('+1 rangestrike'); }
+  else if(c.rs){ parts.push('rangestrike blocked'); }
+  return {pow: Math.max(0,p), parts, native};
+}
 
-  const R=24, W=Math.sqrt(3)*R, H=2*R, DY=R*1.5;
-  const PAD=28;
-  const svgW=320, svgH=230;
-  const svg = document.getElementById('bbsvg');
-  svg.setAttribute('viewBox',`0 0 ${svgW} ${svgH}`);
-
-  const hexPts = r => {
-    let pts=[];
-    for(let i=0;i<6;i++){const a=Math.PI/180*(60*i-30);pts.push([r*Math.cos(a),r*Math.sin(a)]);}
-    return pts.map(p=>p.join(',')).join(' ');
-  };
-
-  let cells=[];
-  BOARD_GRID.forEach((row,ri)=>{
-    row.forEach((cell,ci)=>{
-      if(cell===null)return;
-      const feat = b.f[ri+','+ci] || cell;
-      const cx = PAD + ci*W + (ri%2===1?W/2:0);
-      const cy = PAD + ri*DY;
-      cells.push({ri,ci,feat,cx,cy});
-    });
-  });
-
-  const usedFeats = new Set();
-  let s = cells.map(({feat,cx,cy})=>{
-    const fd = FEATS[feat]||FEATS['.'];
-    if(feat!=='EN_A'&&feat!=='EN_D'&&feat!=='.')usedFeats.add(feat);
-    const pts = hexPts(R-1);
-    const ptStr = pts.split(' ').map(p=>{
-      const[x,y]=p.split(',').map(Number);
-      return `${cx+x},${cy+y}`;
-    }).join(' ');
-    const label = feat==='EN_A'?'ATK':feat==='EN_D'?'DEF':feat==='.'?'':feat;
-    const labelColor = fd.tc||'#777';
-    return `<polygon points="${ptStr}" fill="${fd.col}" stroke="#c8b898" stroke-width="1.5"/>
-      <text x="${cx}" y="${cy+4}" text-anchor="middle" font-size="8" fill="${labelColor}" font-family="system-ui,sans-serif" font-weight="700">${label}</text>`;
-  }).join('');
-
-  svg.innerHTML = s;
-
-  // Legend
-  const leg = document.getElementById('feat-legend');
-  leg.innerHTML = `<div class="feat-legend-title">Terrain Features</div>`;
-  [...usedFeats].forEach(f=>{
-    const fd = FEATS[f];
-    if(!fd)return;
-    leg.innerHTML += `<div class="fl-item">
-      <div class="fl-swatch" style="background:${fd.col}"></div>
-      <div class="fl-text"><div class="fl-name">${fd.name}</div><div class="fl-eff">${fd.eff}</div></div>
-    </div>`;
-  });
+function clashEval(aInst, dInst){
+  const a = effPower(aInst), d = effPower(dInst);
+  let winner;
+  if(a.pow > d.pow) winner='atk';
+  else if(d.pow > a.pow) winner='def';
+  else if((aInst.card.ada||0) !== (dInst.card.ada||0)) winner = (aInst.card.ada>dInst.card.ada)?'atk':'def';
+  else if((aInst.card.def||0) !== (dInst.card.def||0)) winner = (aInst.card.def>dInst.card.def)?'atk':'def';
+  else winner = 'tie';
+  return {winner, a, d};
 }
 
 // ─────────────────────────────────────────
-// SIDES RENDER
+// PLAY / RESOLVE
 // ─────────────────────────────────────────
-function renderSides(){
-  renderPane('atk', G.atk);
-  renderPane('def', G.def);
-  checkBattleOver();
+function playCard(side, idx){
+  if(G.winner) return;
+  const inst = G.stack[side][idx];
+  if(!inst || inst.exhausted) return;
+  if(side==='atk' && (G.step==='atk')){ G.played.atk = idx; G.step='def'; }
+  else if(side==='def' && (G.step==='def')){ G.played.def = idx; G.step='ready'; }
+  else if(side==='atk' && G.step==='def'){ G.played.atk = idx; }   // re-pick before defender commits is blocked; allow only atk step
+  else return;
+  renderClash();
 }
 
-function renderPane(side, combatants){
-  const pane = document.getElementById(side+'-pane');
-  // Keep header, rebuild cards
-  const hdr = pane.querySelector('.side-pane-hdr');
-  pane.innerHTML = '';
-  pane.appendChild(hdr);
-
-  const alive = combatants.filter(c=>c.alive).length;
-  document.getElementById(side+'-alive-count').textContent = alive + ' / ' + combatants.length + ' alive';
-
-  combatants.forEach((cm,i)=>{
-    const {card,hp,maxHp,alive,bs} = cm;
-    const isWeirdo = !!cm.isWeirdo;
-    const pct = hp/maxHp*100;
-    const fillClass = pct > 50 ? '' : pct > 25 ? 'low' : 'crit';
-    const deadX = alive ? '' : '<div class="cc-dead-x">✕ ELIMINATED</div>';
-    const nativeTag = bs.native ? `<div class="cc-native">⭐ Native (+1 Skill in ${BOARDS[G.terrain].name})</div>` : '';
-    const rsTag = bs.rs ? `<span class="st st-rs">RANGESTRIKE</span>` : '';
-    const fsTag = bs.fs ? `<span class="st st-fs">FIRST STRIKE</span>` : '';
-    const specTag = isWeirdo ? `<div class="cc-special">🧬 ${card.spec}</div>` : '';
-    const wrdoCls = isWeirdo ? ' weirdo' : '';
-    const deckClass = G.battleType === 'eat' ? 'eat-w' : 'fk-w';
-
-    const html = `<div class="cc${alive?'':' dead'}${wrdoCls}" id="cc-${side}-${i}">
-      <div class="cc-top">
-        <div class="cc-art">${card.art}</div>
-        <div class="cc-info">
-          <div class="cc-name">${card.n}</div>
-          ${nativeTag}${deadX}
-        </div>
-      </div>
-      <div class="cc-stats">
-        <span class="st st-pow">PWR ${bs.pow}</span>
-        <span class="st st-skl">SKL ${bs.skill} (hit ${bs.threshold}+)</span>
-        <span class="st st-hp">HP ${hp}/${maxHp}</span>
-        <span class="st st-mov">MOV ${bs.mov}</span>
-        ${rsTag}${fsTag}
-      </div>
-      <div class="hp-bar"><div class="hp-fill ${fillClass}" style="width:${pct}%"></div></div>
-      ${alive ? `<div class="cc-actions">
-        <button class="ca-btn hit" onclick="applyHit('${side}',${i},1)">Hit −1 HP</button>
-        <button class="ca-btn kill" onclick="killCard('${side}',${i})">Eliminate</button>
-        <button class="ca-btn heal" onclick="applyHit('${side}',${i},-1)">Heal +1</button>
-      </div>` : ''}
-      ${specTag}
-    </div>`;
-
-    const wrapper = document.createElement('div');
-    wrapper.innerHTML = html;
-    pane.appendChild(wrapper.firstElementChild);
-  });
-}
-
-function applyHit(side, idx, dmg){
-  const list = side==='atk' ? G.atk : G.def;
-  const cm = list[idx];
-  if(!cm.alive) return;
-  cm.hp = Math.max(0, Math.min(cm.maxHp, cm.hp - dmg));
-  if(cm.hp === 0){ cm.alive = false; addLog(`💀 ${cm.card.n} eliminated!`); }
-  else { addLog(dmg > 0 ? `🩸 ${cm.card.n} takes ${dmg} hit (${cm.hp}/${cm.maxHp} HP).` : `💚 ${cm.card.n} heals to ${cm.hp}/${cm.maxHp} HP.`); }
-  renderSides();
-}
-
-function killCard(side, idx){
-  const list = side==='atk' ? G.atk : G.def;
-  list[idx].alive = false;
-  list[idx].hp = 0;
-  addLog(`💀 ${list[idx].card.n} eliminated!`);
-  renderSides();
-}
-
-// ─────────────────────────────────────────
-// TURN / PHASE
-// ─────────────────────────────────────────
-const PHASES = ['move','strike','strikeback'];
-function nextPhase(){
-  const idx = PHASES.indexOf(G.step);
-  if(idx < PHASES.length-1){
-    G.step = PHASES[idx+1];
-    addLog(`→ Phase: ${G.step.toUpperCase()}`);
+function resolveClash(){
+  if(G.step!=='ready' || G.played.atk==null || G.played.def==null) return;
+  const aInst = G.stack.atk[G.played.atk];
+  const dInst = G.stack.def[G.played.def];
+  const ev = clashEval(aInst, dInst);
+  let msg;
+  if(ev.winner==='atk'){
+    G.life.def--; aInst.adapt++;
+    msg = `⚔️ ${aInst.card.n} (${ev.a.pow}) beats ${dInst.card.n} (${ev.d.pow}). Defender −1 life. ${aInst.card.n} adapts (+1 Power).`;
+  } else if(ev.winner==='def'){
+    G.life.atk--; dInst.adapt++;
+    msg = `🛡️ ${dInst.card.n} (${ev.d.pow}) beats ${aInst.card.n} (${ev.a.pow}). Attacker −1 life. ${dInst.card.n} adapts (+1 Power).`;
   } else {
-    // end this player's turn, switch
-    if(G.activePlayer === 'attacker'){
-      G.activePlayer = 'defender';
-      G.step = 'move';
-      addLog('🛡️ Defender\'s turn — Move phase.');
-    } else {
-      nextRound();
-      return;
-    }
+    G.life.atk--; G.life.def--;
+    msg = `💥 Stalemate — ${aInst.card.n} (${ev.a.pow}) vs ${dInst.card.n} (${ev.d.pow}). Both sides −1 life.`;
   }
-  renderTurns();
-}
+  addLog(msg);
+  G.outcome = msg;
+  // exhaust just-played cards for the next round; refresh the rest
+  G.stack.atk.forEach(i=>i.exhausted=false); G.stack.def.forEach(i=>i.exhausted=false);
+  aInst.exhausted = true; dInst.exhausted = true;
 
-function nextRound(){
+  if(G.life.atk<=0 && G.life.def<=0){ endBattle('draw'); return; }
+  if(G.life.atk<=0){ endBattle('def'); return; }
+  if(G.life.def<=0){ endBattle('atk'); return; }
+
   G.round++;
-  G.activePlayer = 'attacker';
-  G.step = 'move';
-  if(G.round > 7){ endBattle('timeloss'); return; }
-  addLog(`📅 Round ${G.round} begins.`);
-  if(G.round === 4 && !G.weirdoSummoned){
-    G.weirdoAlerted = true;
-    addLog(`🧬 Round 4! Defender may summon a Weirdo before moving.`);
-  }
-  renderTurns();
-  renderSides();
-}
-
-function renderTurns(){
-  // Pips
-  const pips = document.getElementById('turn-pips');
-  pips.innerHTML = '';
-  for(let i=1;i<=7;i++){
-    const cls = i < G.round ? 'done' : i === G.round ? (i===4?'w4':'cur') : 'future';
-    const label = i===4 ? '4★' : String(i);
-    pips.innerHTML += `<div class="t-pip ${cls}" title="${i===4?'Weirdo summon round':''}">${label}</div>`;
-  }
-
-  // Badges
-  const rb = document.getElementById('round-badge');
-  if(G.activePlayer === 'attacker'){
-    rb.className='round-badge rb-atk'; rb.textContent='Round '+G.round+' — Attacker';
-  } else {
-    rb.className='round-badge rb-def'; rb.textContent='Round '+G.round+' — Defender';
-  }
-  document.getElementById('phase-badge').textContent = G.step.charAt(0).toUpperCase()+G.step.slice(1);
-
-  // Weirdo alert
-  const wa = document.getElementById('weirdo-alert');
-  wa.style.display = (G.round===4 && !G.weirdoSummoned && G.activePlayer==='defender') ? 'flex' : 'none';
-
-  // Threshold helper
-  updateThresholdDisplay();
-}
-
-function updateThresholdDisplay(){
-  const thr = parseInt(document.getElementById('thr-in').value)||4;
-  document.getElementById('thr-display').textContent = `hit on ${thr}+`;
+  G.played = {atk:null, def:null};
+  G.step = 'atk';
+  renderClash();
 }
 
 // ─────────────────────────────────────────
-// DICE
+// RENDER CLASH UI
 // ─────────────────────────────────────────
-function rollStrike(){
-  const pow = parseInt(document.getElementById('pow-in').value)||5;
-  const thr = parseInt(document.getElementById('thr-in').value)||4;
-  const results = [];
-  let hits = 0;
-  for(let i=0;i<pow;i++){
-    const r = Math.floor(Math.random()*6)+1;
-    const h = r >= thr;
-    if(h) hits++;
-    results.push({r,h});
+function hearts(side){
+  const n = Math.max(0, G.life[side]);
+  return '❤️'.repeat(n) + '🤍'.repeat(Math.max(0, START_LIFE - n)) + (G.life[side] > START_LIFE ? ' +' : '');
+}
+function arenaSlot(side){
+  const el = document.getElementById('arena-'+side);
+  const idx = G.played[side];
+  el.className = 'arena-slot ' + (side==='atk'?'atk-side':'def-side');
+  if(idx==null){
+    el.innerHTML = `<div style="color:var(--muted);font-size:11px;">${side==='atk'?'⚔️ Attacker':'🛡️ Defender'}<br>—</div>`;
+    return;
   }
-  const out = document.getElementById('dice-out');
-  out.innerHTML = results.map(d=>`<div class="die ${d.h?'hit':'miss'}">${d.r}</div>`).join('');
-  const sumEl = document.getElementById('dice-sum');
-  sumEl.style.display='block';
-  sumEl.innerHTML = `<span style="color:var(--green)">${hits} hit${hits!==1?'s':''}</span> / <span style="color:var(--muted)">${pow-hits} miss${pow-hits!==1?'es':''}</span>`;
-  const carry = document.getElementById('carry-note');
-  if(hits > 1){
-    carry.style.display='block';
-    carry.textContent = `Carry rule: if your target has fewer HP than ${hits} hits, excess carry to an adjacent enemy.`;
-  } else { carry.style.display='none'; }
-  addLog(`🎲 Rolled ${pow} dice (hit ${thr}+): ${hits} hit${hits!==1?'s':''}.`);
+  const inst = G.stack[side][idx];
+  const ep = effPower(inst);
+  el.classList.add('filled');
+  el.innerHTML = `<div class="as-art">${inst.card.art}</div>
+    <div class="as-name">${inst.card.n}${inst.isWeirdo?' 🧬':''}</div>
+    <div class="as-pow">${ep.pow}</div>
+    <div class="as-break">${ep.parts.join(' · ')}</div>
+    <div class="as-tags">ADA ${inst.card.ada} · DEF ${inst.card.def}${inst.card.fs?' · FIRST-STRIKE':''}${inst.card.rs?' · RANGE':''}</div>`;
+}
+function stackList(side){
+  const cont = document.getElementById('stack-'+side);
+  const activeSide = (G.step==='atk'&&side==='atk') || (G.step==='def'&&side==='def');
+  cont.className = 'stk-list' + (activeSide?' active':'');
+  cont.innerHTML = '';
+  G.stack[side].forEach((inst,i)=>{
+    const ep = effPower(inst);
+    const isPlayed = G.played[side]===i;
+    const div = document.createElement('div');
+    div.className = 'stk-card' + (inst.exhausted?' exhausted':'') + (isPlayed?' played':'');
+    div.innerHTML = `<span class="sc-art">${inst.card.art}</span>
+      <span class="sc-name">${inst.card.n}${inst.isWeirdo?' 🧬':''}${inst.adapt?` <span style="color:#1a8030">+${inst.adapt}</span>`:''}</span>
+      <span class="sc-pow">${ep.pow}${ep.native?'⭐':''}</span>`;
+    if(!inst.exhausted && activeSide) div.onclick = ()=>playCard(side,i);
+    cont.appendChild(div);
+  });
+}
+function renderClash(){
+  const b = BOARDS[G.terrain];
+  document.getElementById('clash-terrain').innerHTML = b.icon+' '+b.name;
+  document.getElementById('clash-terrain-desc').textContent = b.desc;
+  document.getElementById('clash-round').textContent = 'Round '+G.round;
+  document.getElementById('clash-type').innerHTML = G.battleType==='eat'
+    ? '<span class="eat-w">🦷 EAT IT — Power = OFF</span>' : '<span class="fk-w">🧬 F*CK IT — Power = REP</span>';
+  document.getElementById('life-atk').textContent = hearts('atk');
+  document.getElementById('life-def').textContent = hearts('def');
+
+  arenaSlot('atk'); arenaSlot('def');
+  stackList('atk'); stackList('def');
+
+  document.getElementById('resolve-btn').disabled = (G.step!=='ready');
+  document.getElementById('clash-outcome').innerHTML = G.outcome||'';
+
+  let prompt = '';
+  if(G.step==='atk') prompt = '⚔️ Attacker: choose a strategy to play.';
+  else if(G.step==='def') prompt = '🛡️ Defender: you\'ve seen the attack — choose your response.';
+  else if(G.step==='ready') prompt = '⚡ Both cards committed — press Resolve.';
+  document.getElementById('turn-prompt').textContent = prompt;
+
+  // mid-battle options
+  const wBtn = document.getElementById('opt-weirdo');
+  wBtn.style.display = (G.round>2 && !G.weirdoUsed && !G.winner) ? 'inline-block' : 'none';
+  const mBtn = document.getElementById('opt-muster');
+  mBtn.style.display = (G.round>4 && !G.musterUsed && G.life.def>0 && !G.winner) ? 'inline-block' : 'none';
 }
 
-document.getElementById('thr-in').addEventListener('input', updateThresholdDisplay);
-
 // ─────────────────────────────────────────
-// SPECIAL ACTIONS
+// MID-BATTLE OPTIONS
 // ─────────────────────────────────────────
-function declareFlee(){
-  if(!confirm('Defender flees before battle? Defender retreats 1 hex — no cards lost, but attacker gets 1 free muster from the terrain.')) return;
-  addLog('🏃 Defender FLED! No cards lost. Attacker earns 1 free muster.');
-  endBattle('flee');
-}
-
 function declareConcede(){
-  const who = confirm('Attacker concedes? Click OK for attacker, Cancel for defender.') ? 'attacker' : 'defender';
-  addLog(`🏳️ ${who.charAt(0).toUpperCase()+who.slice(1)} CONCEDED. No cards lost. ${who==='attacker'?'Attacker':'Defender'} retreats.`);
-  endBattle('concede');
+  const who = confirm('Attacker concedes? OK = attacker, Cancel = defender.') ? 'atk' : 'def';
+  endBattle(who==='atk'?'def':'atk');
 }
 
-// ─────────────────────────────────────────
-// WEIRDO SUMMON
-// ─────────────────────────────────────────
 function openWeirdoModal(){
   const grid = document.getElementById('wgrid');
   grid.innerHTML = WEIRDOS.map(w=>{
-    const bs = battleStats({off:w.off,def:w.def,rep:w.rep,ada:w.ada,mov:w.mov,ter:[]},G.battleType,G.terrain);
+    const pow = G.battleType==='eat'? w.off : w.rep;
     return `<button class="w-btn" onclick="summonWeirdo(${w.roll-1})">
       <div class="wb-head">${w.art}</div>
       <div class="wb-name">${w.n}</div>
-      <div class="wb-roll">Roll ${w.roll} from the Weirdo Vault</div>
-      <div class="wb-stats">PWR ${bs.pow} · SKL ${bs.skill} (${bs.threshold}+) · HP ${bs.hp} · MOV ${bs.mov}</div>
+      <div class="wb-roll">Roll ${w.roll} · Weirdo Vault</div>
+      <div class="wb-stats">PWR ${pow} · ADA ${w.ada} · DEF ${w.def}</div>
       <div class="wb-spec">${w.spec}</div>
     </button>`;
   }).join('');
   document.getElementById('weirdo-overlay').className = 'overlay open';
 }
-
-function closeWeirdoModal(){
-  document.getElementById('weirdo-overlay').className = 'overlay';
-}
-
+function closeWeirdoModal(){ document.getElementById('weirdo-overlay').className = 'overlay'; }
 function summonWeirdo(idx){
   closeWeirdoModal();
-  G.weirdoSummoned = true;
-  G.weirdoAlerted = false;
+  G.weirdoUsed = true;
   const w = WEIRDOS[idx];
-  const bs = battleStats({off:w.off,def:w.def,rep:w.rep,ada:w.ada,mov:w.mov,ter:[]},G.battleType,G.terrain);
-  const wCard = {art:w.art, n:w.n, spec:w.spec, off:w.off, def:w.def, rep:w.rep, ada:w.ada, mov:w.mov, ter:[]};
-  G.def.push({card:wCard, hp:bs.hp, maxHp:bs.hp, alive:true, bs, isWeirdo:true});
-  addLog(`🧬 Weirdo summoned: ${w.art} ${w.n} enters for the defender!`);
-  renderTurns();
-  renderSides();
+  const wCard = {id:'weirdo_'+w.roll, n:w.n, art:w.art, off:w.off, def:w.def, rep:w.rep, ada:w.ada, mov:w.mov, ter:[], rs:0, fs:0, spec:w.spec};
+  G.stack.atk.push(mkInst(wCard, true));
+  addLog(`🧬 Attacker summons ${w.art} ${w.n} into their stack!`);
+  renderClash();
 }
 
-// ─────────────────────────────────────────
-// CHECK BATTLE OVER
-// ─────────────────────────────────────────
-function checkBattleOver(){
-  const atkAlive = G.atk.filter(c=>c.alive).length;
-  const defAlive = G.def.filter(c=>c.alive).length;
-  if(atkAlive===0 && defAlive===0){ endBattle('draw'); }
-  else if(atkAlive===0){ endBattle('defender'); }
-  else if(defAlive===0){ endBattle('attacker'); }
+function openMusterModal(){
+  const deck = G.battleType==='eat' ? EAT : FK;
+  const have = new Set(G.stack.def.map(i=>i.card.id));
+  const options = deck.filter(c=>(c.ter||[]).includes(G.terrain) && !have.has(c.id));
+  const grid = document.getElementById('muster-grid');
+  if(!options.length){ grid.innerHTML = '<div style="font-size:11px;color:var(--muted)">No new terrain-native strategies available to muster.</div>'; }
+  else grid.innerHTML = options.map(c=>{
+    const pow = G.battleType==='eat'? c.off : c.rep;
+    return `<button class="w-btn" onclick="musterStrategy('${c.id}')">
+      <div class="wb-head">${c.art}</div>
+      <div class="wb-name">${c.n}</div>
+      <div class="wb-roll">Tier ${c.t} · native to ${BOARDS[G.terrain].name}</div>
+      <div class="wb-stats">PWR ${pow} · ADA ${c.ada} · DEF ${c.def}</div>
+    </button>`;
+  }).join('');
+  document.getElementById('muster-overlay').className = 'overlay open';
+}
+function closeMusterModal(){ document.getElementById('muster-overlay').className = 'overlay'; }
+function musterStrategy(id){
+  closeMusterModal();
+  const deck = G.battleType==='eat' ? EAT : FK;
+  const c = deck.find(x=>x.id===id);
+  if(!c) return;
+  G.musterUsed = true;
+  G.stack.def.push(mkInst(c));
+  addLog(`🌿 Defender musters ${c.art} ${c.n} into their stack!`);
+  renderClash();
 }
 
 function endBattle(result){
@@ -939,71 +852,23 @@ function endBattle(result){
 // RESULT
 // ─────────────────────────────────────────
 function renderResult(result){
-  const deck = G.battleType === 'eat' ? EAT : FK;
-  const deckLabel = G.battleType === 'eat' ? 'EAT IT' : 'F*CK IT';
-  let banner='', sub='', winnerSide=null;
-
-  if(result==='attacker'){ banner='⚔️ Attacker Wins!'; sub='Defender\'s agent is eliminated from this battle. Winner adapts.'; winnerSide='atk'; }
-  else if(result==='defender'){ banner='🛡️ Defender Wins!'; sub='Attacker\'s agent is eliminated from this battle. Winner adapts.'; winnerSide='def'; }
-  else if(result==='timeloss'){ banner='⏱️ Time Loss — Defender Wins!'; sub='Attacker failed to win by round 7. Defender holds the hex.'; winnerSide='def'; }
-  else if(result==='flee'){ banner='🏃 Defender Fled'; sub='No casualties. Attacker earns 1 free muster from '+BOARDS[G.terrain].name+'.'; winnerSide=null; }
-  else if(result==='concede'){ banner='🏳️ Battle Conceded'; sub='No casualties. Both agents retreat.'; winnerSide=null; }
-  else { banner='💀 Mutual Annihilation'; sub='Both sides eliminated. The hex is unclaimed.'; winnerSide=null; }
+  let banner='', sub='', loserSide=null;
+  if(result==='atk'){ banner='⚔️ Attacker Wins the Hex!'; sub=`Defender's life hit 0. Final life — Attacker ${Math.max(0,G.life.atk)} / Defender ${Math.max(0,G.life.def)}.`; loserSide='def'; }
+  else if(result==='def'){ banner='🛡️ Defender Holds the Hex!'; sub=`Attacker's life hit 0. Final life — Attacker ${Math.max(0,G.life.atk)} / Defender ${Math.max(0,G.life.def)}.`; loserSide='atk'; }
+  else { banner='💀 Mutual Collapse'; sub='Both sides hit 0 life simultaneously — the hex is unclaimed and both agents die.'; loserSide='both'; }
 
   document.getElementById('result-banner').textContent = banner;
   document.getElementById('result-sub').textContent = sub;
 
-  // Draw 2 adaptation cards
-  const picks = [];
-  while(picks.length < 2){
-    const r = deck[Math.floor(Math.random()*deck.length)];
-    if(!picks.find(p=>p.id===r.id)) picks.push(r);
-  }
-
-  const adaptEl = document.getElementById('adapt-picks');
-  const lossEl = document.getElementById('loss-picks');
-
+  // Loser's agent dies → spawn check (always, since losing the duel eliminates the agent)
   const spawnPanel = document.getElementById('spawn-check');
-  spawnPanel.style.display = 'none';
-
-  if(winnerSide){
-    adaptEl.innerHTML = picks.map((c,i)=>`<div class="adapt-pick" onclick="chooseAdapt(this)" data-idx="${i}">
-      <span>${c.art}</span><span><strong>${c.n}</strong><br><span style="font-size:9px;color:var(--muted)">Tier ${c.t} ${deckLabel}</span></span>
-    </div>`).join('');
-
-    const loserSide = winnerSide==='atk'?'def':'atk';
-    const loserList = loserSide==='atk'?G.atk:G.def;
-    const loserAlive = loserList.filter(c=>c.alive&&!c.isWeirdo);
-    const agentFullyDead = loserAlive.length === 0;
-
-    if(loserAlive.length > 0){
-      lossEl.innerHTML = loserAlive.map((cm,i)=>`<div class="loss-pick" onclick="chooseLoss(this)" data-idx="${i}">
-        <span>${cm.card.art}</span><span><strong>${cm.card.n}</strong><br><span style="font-size:9px;color:var(--muted)">Winner takes this card</span></span>
-      </div>`).join('');
-    } else {
-      lossEl.innerHTML = '<div style="font-size:11px;color:var(--eat);font-weight:700;">⚠️ All cards eliminated — agent is dead.</div><div style="font-size:10px;color:var(--muted);margin-top:4px;">See Spawn Check below.</div>';
-    }
-
-    // Show spawn panel only when the loser's agent is fully eliminated
-    if(agentFullyDead){
-      spawnPanel.style.display = 'block';
-      document.getElementById('spawn-rep-in').value = 0;
-      updateSpawnResult();
-    }
+  if(loserSide){
+    spawnPanel.style.display = 'block';
+    document.getElementById('spawn-rep-in').value = 0;
+    updateSpawnResult();
   } else {
-    adaptEl.innerHTML = '<div style="font-size:11px;color:var(--muted);font-style:italic;">No adaptation — battle ended without a winner.</div>';
-    lossEl.innerHTML = '<div style="font-size:11px;color:var(--muted);font-style:italic;">No losses claimed.</div>';
+    spawnPanel.style.display = 'none';
   }
-}
-
-function chooseAdapt(el){
-  document.querySelectorAll('.adapt-pick').forEach(e=>e.classList.remove('chosen'));
-  el.classList.add('chosen');
-}
-
-function chooseLoss(el){
-  document.querySelectorAll('.loss-pick').forEach(e=>e.classList.remove('chosen'));
-  el.classList.add('chosen');
 }
 
 const SPAWN_TIERS = [
@@ -1059,7 +924,7 @@ function quickSkirmish(autoStart){
 function rematchRandom(){ resetGame(); quickSkirmish(true); }
 
 function resetGame(){
-  G = {battleType:null,terrain:null,round:1,activePlayer:'attacker',step:'move',weirdoSummoned:false,weirdoAlerted:false,atk:[],def:[],winner:null,log:[]};
+  G = {battleType:null,terrain:null,round:1,step:'atk',life:{atk:START_LIFE,def:START_LIFE},stack:{atk:[],def:[]},played:{atk:null,def:null},weirdoUsed:false,musterUsed:false,winner:null,outcome:'',log:[]};
   atkSelected.clear(); defSelected.clear();
   document.getElementById('phase-result').style.display='none';
   document.getElementById('phase-setup').style.display='block';
@@ -1069,9 +934,6 @@ function resetGame(){
   document.getElementById('no-type-msg').style.display='block';
   document.getElementById('card-pickers').style.display='none';
   document.getElementById('start-btn').disabled=true;
-  document.getElementById('dice-out').innerHTML='';
-  document.getElementById('dice-sum').style.display='none';
-  document.getElementById('carry-note').style.display='none';
 }
 
 // ─────────────────────────────────────────
