@@ -300,6 +300,15 @@ html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-s
       <div id="clash-type" style="font-size:11px;font-weight:800;"></div>
     </div>
 
+    <!-- Scenario bar (roll + story) -->
+    <div id="scenario-bar" style="background:#10243a;border:2px solid #2a6aa0;border-radius:12px;padding:10px 16px;margin-bottom:10px;color:#dff;">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span id="scenario-title" style="font-size:14px;font-weight:900;">🎲 Scenario</span>
+        <button id="roll-scenario-btn" onclick="rollScenario()" style="padding:6px 14px;border:2px solid #000;background:#ffd21a;color:#1a140c;font-family:inherit;font-size:12px;font-weight:900;border-radius:8px;cursor:pointer;">🎲 Roll Scenario</button>
+      </div>
+      <div id="story-text" style="font-size:12px;line-height:1.5;margin-top:6px;color:#cfe8ff;font-style:italic;"></div>
+    </div>
+
     <!-- Catastrophe banner -->
     <div id="cata-banner" style="display:none;align-items:center;gap:10px;background:#2a0e0e;border:2px solid #e02418;border-radius:12px;padding:10px 16px;margin-bottom:12px;color:#ffd2c0;"></div>
 
@@ -322,12 +331,14 @@ html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-s
       <div id="arena-atk" class="arena-slot"></div>
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
         <div style="font-size:20px;font-weight:900;color:var(--muted);">VS</div>
-        <div id="dice-display" style="min-height:40px;display:flex;gap:5px;align-items:center;justify-content:center;font-size:11px;font-weight:800;"></div>
         <button id="resolve-btn" onclick="resolveClash()" disabled
           style="padding:8px 6px;border:2px solid #000;background:#c4561e;color:#fff;font-family:inherit;font-size:11px;font-weight:800;border-radius:8px;cursor:pointer;width:100%;">🎲 Resolve</button>
       </div>
       <div id="arena-def" class="arena-slot"></div>
     </div>
+
+    <!-- Dice pools (full width) -->
+    <div id="dice-pools" style="margin-bottom:8px;"></div>
 
     <div id="clash-outcome" style="text-align:center;font-size:13px;font-weight:800;min-height:22px;margin-bottom:8px;"></div>
     <div id="turn-prompt" style="text-align:center;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px;"></div>
@@ -397,6 +408,11 @@ html,body{min-height:100vh;background:#fdf9f3;color:#2a1a0a;font-family:-apple-s
       <button class="t-btn" onclick="closeWeirdoModal()">Cancel</button>
     </div>
   </div>
+</div>
+
+<!-- ═══════════════════ CARD DETAIL ═══════════════════ -->
+<div class="overlay" id="card-overlay">
+  <div class="wmodal" id="card-modal" style="max-width:440px;"></div>
 </div>
 
 <script>
@@ -602,6 +618,43 @@ const CATASTROPHES = [
 ];
 
 // ─────────────────────────────────────────
+// SCENARIOS — rolled each round (1d6); a transient condition that tilts the
+// dice. fx(card) → {dice, thr} deltas. Story is terrain-flavored.
+// ─────────────────────────────────────────
+function stat(c){ return G.battleType==='eat' ? c.off : c.rep; }
+const SCENARIOS = [
+  {id:'abundance', icon:'☀️', name:'Abundance', tag:'breeders gorge',
+   story:t=>`Plenty floods the ${t}. Breeders and swarmers gorge; lone specialists find little advantage.`,
+   fx:c=> (hasKW(c,'swarm')||stat(c)>=7) ? {dice:2,thr:0} : (c.t>=5 ? {dice:-1,thr:0} : {dice:0,thr:0}) },
+  {id:'scarcity', icon:'🥀', name:'Scarcity', tag:'lean times',
+   story:t=>`The ${t} runs dry and lean. The dormant and the frugal endure; big metabolisms starve.`,
+   fx:c=> (hasKW(c,'tough')||stat(c)<=2) ? {dice:2,thr:0} : (stat(c)>=6 ? {dice:-1,thr:0} : {dice:0,thr:0}) },
+  {id:'darkness', icon:'🌙', name:'Total Darkness', tag:'the blind hunt',
+   story:t=>`Light fails in the ${t}. Echolocators and electro-hunters thrive; sight-based pursuers stumble.`,
+   fx:c=> hasKW(c,'range') ? {dice:2,thr:0} : ((c.mov||1)>=4 && !hasKW(c,'range') ? {dice:0,thr:1} : {dice:0,thr:0}) },
+  {id:'influx', icon:'🐾', name:'Predator Influx', tag:'danger everywhere',
+   story:t=>`Predators pour into the ${t}. The armored shrug it off; the fragile are picked apart.`,
+   fx:c=> (c.def>=5) ? {dice:2,thr:0} : (c.def<=1 ? {dice:-1,thr:0} : {dice:0,thr:0}) },
+  {id:'crowding', icon:'👥', name:'Crowding', tag:'safety in numbers',
+   story:t=>`The ${t} teems and crowds. Cooperative and social strategies dominate; loners are jostled out.`,
+   fx:c=> hasKW(c,'pack') ? {dice:2,thr:0} : {dice:0,thr:0} },
+  {id:'upheaval', icon:'🌪️', name:'Upheaval', tag:'chaos rewards generalists',
+   story:t=>`Sudden upheaval scrambles the ${t}. Flexible generalists cope; everything is a little off-balance.`,
+   fx:c=> (c.ada>=6) ? {dice:1,thr:0} : {dice:0,thr:1} },
+];
+function rollScenarioIdx(){ return Math.floor(Math.random()*SCENARIOS.length); }
+
+// Keyword glossary for the card detail panel (educational)
+const KW_GLOSSARY = {
+  ambush:'🐊 Ambush — lies in wait. Big bonus vs slow prey; useless in open terrain or against fast movers.',
+  venom:'🐍 Venom — a wound is a death sentence. On a win (or tie) it drains an extra life.',
+  range:'🎯 Range — strikes from a distance and goes first; blocked by dense cover (forest, cave).',
+  pack:'🐺 Pack — cooperative hunting. Gains dice for each ally in the stack; rerolls misses.',
+  swarm:'🐟 Swarm — r-selected flood. Never tires (replays every round) but weak alone.',
+  tough:'🪨 Tough — built to last. Shrugs off its first defeat with no life lost.',
+};
+
+// ─────────────────────────────────────────
 // WEIRDO SIGNATURE STACKS — each weirdo brings its own strategies
 // (mini-cards: off/def/rep/ada/mov/ter + kw). Power uses battle type's stat.
 // ─────────────────────────────────────────
@@ -637,16 +690,22 @@ const WEIRDO_STACKS = {
 // ─────────────────────────────────────────
 function freshG(){ return {
   battleType: null, terrain: null, round: 1,
-  step: 'atk',              // 'atk' play, 'def' play, 'ready' resolve
+  step: 'scenario',         // 'scenario' (roll) → 'p1' (first picker) → 'p2' → 'ready'
   life: {atk: START_LIFE, def: START_LIFE},
   energy: {atk: CFG.energyPerRound, def: CFG.energyPerRound},
   alloc: {atk: {meta:CFG.energyPerRound, repro:0}, def: {meta:CFG.energyPerRound, repro:0}},
   stack: {atk: [], def: []},
   played: {atk: null, def: null},
+  scenario: null,           // active scenario this round
   cata: null,               // active catastrophe this round
   weirdoUsed: false, musterUsed: false,
   winner: null, outcome: '', log: [],
 }; }
+// roller & first-picker alternate by round (Titan-style initiative)
+function roller(){ return (G.round % 2 === 1) ? 'atk' : 'def'; }
+function firstPicker(){ return (G.round % 2 === 1) ? 'atk' : 'def'; }
+function secondPicker(){ return firstPicker()==='atk' ? 'def' : 'atk'; }
+function sideName(s){ return s==='atk'?'Attacker':'Defender'; }
 let G = freshG();
 
 let atkSelected = new Set();
@@ -724,6 +783,7 @@ function beginRound(){
   G.energy.atk = CFG.energyPerRound; G.energy.def = CFG.energyPerRound;
   G.alloc.atk = {meta:CFG.energyPerRound, repro:0};
   G.alloc.def = {meta:CFG.energyPerRound, repro:0};
+  G.scenario = null; G.story = '';
   G.cata = null;
   const forced = (G.round===3 || G.round===6);
   if(forced || Math.floor(Math.random()*6)===0){
@@ -736,97 +796,99 @@ function startBattle(){
   const deck = G.battleType === 'eat' ? EAT : FK;
   G.stack.atk = deck.filter(c=>atkSelected.has(c.id)).map(c=>mkInst(c));
   G.stack.def = deck.filter(c=>defSelected.has(c.id)).map(c=>mkInst(c));
-  G.round = 1; G.step = 'atk';
+  G.round = 1; G.step = 'scenario';
   G.life = {atk: START_LIFE, def: START_LIFE};
   G.played = {atk:null, def:null};
   G.weirdoUsed = false; G.musterUsed = false;
   G.winner = null; G.outcome = '';
-  G.log = ['⚔️ Terrain Clash in ' + BOARDS[G.terrain].name + '! Life ' + START_LIFE + ' each · ' + CFG.energyPerRound + ' energy/round.'];
+  G.log = ['⚔️ Terrain Clash in ' + BOARDS[G.terrain].name + '! Life ' + START_LIFE + ' each.'];
   beginRound();
   document.getElementById('phase-setup').style.display = 'none';
   document.getElementById('phase-battle').style.display = 'block';
-  document.getElementById('dice-display').innerHTML = '';
+  document.getElementById('dice-pools').innerHTML = '';
+  renderClash();
+}
+
+function rollScenario(){
+  if(G.step!=='scenario' || G.winner) return;
+  const die = rollDie();
+  G.scenario = SCENARIOS[(die-1) % SCENARIOS.length];
+  G.story = G.scenario.story(BOARDS[G.terrain].name);
+  addLog(`🎲 ${sideName(roller())} rolls ${die} → ${G.scenario.icon} ${G.scenario.name}: ${G.scenario.tag}.`);
+  G.step = 'p1';
+  document.getElementById('dice-pools').innerHTML = '';
   renderClash();
 }
 
 // ─────────────────────────────────────────
-// CLASH MATH — Power = base + terrain + energy + lineage + keywords + catastrophe
+// DICE PROFILE — # dice from Power(+energy), hit-on from ADA, all bent by
+// terrain + scenario + catastrophe + keywords
 // ─────────────────────────────────────────
-function effPower(inst, side, oppCard){
-  const c = inst.card;
-  const base = G.battleType === 'eat' ? c.off : c.rep;
-  let p = base + (inst.adapt||0);
-  const parts = [`${base} base`];
-  if(inst.adapt) parts.push(`+${inst.adapt} adapt`);
-  const tf = TERRAIN_FX[G.terrain] || {native:CFG.nativeBonus};
+function basePower(inst){ return (G.battleType==='eat'?inst.card.off:inst.card.rep) + (inst.adapt||0); }
+function diceProfile(inst, side, oppCard){
+  const c = inst.card, pw = basePower(inst);
+  let dice = Math.max(1, Math.ceil(pw/2)+1);
+  let hitOn = Math.max(2, Math.min(6, 6 - Math.floor((c.ada||0)/3)));
+  const parts = [`${dice} dice (power ${pw})`, `hits ${hitOn}+ (ADA ${c.ada})`];
+  let reroll=false, first=false;
+  const tf = TERRAIN_FX[G.terrain] || {};
   const native = (c.ter||[]).includes(G.terrain);
-  if(native){ p += tf.native; parts.push(`+${tf.native} native`); }
-  else if(tf.nonNative){ p += tf.nonNative; parts.push(`${tf.nonNative} non-native`); }
-  // metabolize energy
+  if(native){ dice+=1; parts.push('+1 die native'); }
+  else if(tf.nonNative){ dice-=1; parts.push('−1 die non-native'); }
   const meta = side ? (G.alloc[side].meta||0) : 0;
-  if(meta){ p += meta; parts.push(`+${meta} metabolize`); }
-  // lineage coherence
+  if(meta){ dice+=meta; parts.push(`+${meta} dice metabolize`); }
   if(side){
-    let lin = 0;
-    G.stack[side].forEach(o=>{ if(o!==inst && o.card.t < c.t && (o.card.ter||[]).some(t=>(c.ter||[]).includes(t))) lin++; });
-    lin = Math.min(CFG.lineageMax, lin);
-    if(lin){ p += lin; parts.push(`+${lin} lineage`); }
+    let lin=0; G.stack[side].forEach(o=>{ if(o!==inst && o.card.t<c.t && (o.card.ter||[]).some(t=>(c.ter||[]).includes(t))) lin++; });
+    lin=Math.min(CFG.lineageMax,lin);
+    if(lin){ const d=Math.min(2,Math.ceil(lin/2)); dice+=d; parts.push(`+${d} die lineage`); }
   }
-  // pack
   if(hasKW(c,'pack') && side){
-    let pk = G.stack[side].filter(o=>o!==inst).length;
-    pk = Math.min(CFG.packMax, pk) + (tf.packBonus||0);
-    if(pk){ p += pk; parts.push(`+${pk} pack`); }
+    let pk=Math.min(CFG.packMax, G.stack[side].filter(o=>o!==inst).length) + (tf.packBonus?1:0);
+    if(pk){ dice+=Math.min(4,pk); parts.push(`+${Math.min(4,pk)} dice pack`); }
+    reroll=true; parts.push('rerolls misses (pack)');
   }
-  // ambush
   if(hasKW(c,'ambush')){
     if(tf.ambushOff) parts.push('ambush negated (open)');
-    else if(oppCard && (oppCard.mov||1) >= 4) parts.push('ambush negated (fast prey)');
-    else { const ab = 3 + (tf.ambushBonus||0); p += ab; parts.push(`+${ab} ambush`); }
+    else if(oppCard && (oppCard.mov||1)>=4) parts.push('ambush negated (fast prey)');
+    else { const ab=2+(tf.ambushBonus?1:0); dice+=ab; parts.push(`+${ab} dice ambush`); }
   }
-  if(hasKW(c,'venom') && tf.venomBonus){ p += tf.venomBonus; parts.push(`+${tf.venomBonus} venom`); }
-  // range
   if(hasKW(c,'range')){
     if(tf.blockRange) parts.push('range blocked (cover)');
-    else { p += 1; parts.push('+1 range'); }
+    else { dice+=1; first=true; parts.push('+1 die range · strikes first'); }
   }
-  if(tf.aquaticBonus && isAquatic(c)){ p += tf.aquaticBonus; parts.push(`+${tf.aquaticBonus} aquatic`); }
-  if(tf.fastBonus && (c.mov||1) >= 4){ p += tf.fastBonus; parts.push(`+${tf.fastBonus} fast`); }
-  if(tf.swarmPenalty && hasKW(c,'swarm')){ p += tf.swarmPenalty; parts.push(`${tf.swarmPenalty} swarm`); }
-  if(tf.toughBonus && hasKW(c,'tough')){ p += tf.toughBonus; parts.push(`+${tf.toughBonus} tough`); }
-  // catastrophe
-  if(G.cata){ const cm = G.cata.fx(c); if(cm){ p += cm; parts.push(`${cm>0?'+':''}${cm} ${G.cata.name}`); } }
-  return {pow: Math.max(0,p), parts, native};
+  if(hasKW(c,'venom') && tf.venomBonus){ dice+=1; parts.push('+1 die venom'); }
+  if(tf.aquaticBonus && isAquatic(c)){ dice+=1; parts.push('+1 die aquatic'); }
+  if(tf.fastBonus && (c.mov||1)>=4){ dice+=1; parts.push('+1 die fast'); }
+  if(tf.swarmPenalty && hasKW(c,'swarm')){ dice-=1; parts.push('−1 die swarm'); }
+  if(tf.toughBonus && hasKW(c,'tough')){ dice+=1; parts.push('+1 die tough'); }
+  if(G.scenario){ const s=G.scenario.fx(c); if(s.dice){ dice+=s.dice; parts.push(`${s.dice>0?'+':''}${s.dice} dice ${G.scenario.name}`);} if(s.thr){ hitOn+=s.thr; parts.push(`${s.thr>0?'+':''}${s.thr} to hit ${G.scenario.name}`);} }
+  if(G.cata){ const cm=G.cata.fx(c); if(cm){ const dd = cm>0?Math.ceil(cm/2):-Math.ceil(-cm/2); if(dd){ dice+=dd; parts.push(`${dd>0?'+':''}${dd} dice ${G.cata.name}`);} } }
+  dice = Math.max(1, dice); hitOn = Math.max(2, Math.min(6, hitOn));
+  return {dice, hitOn, power:pw, parts, native, reroll, first};
 }
+function expHits(p){ return p.dice*(7-p.hitOn)/6; }
+function verdict(p){ const e=expHits(p); return e>=3 ? ['🔥 Dominant','#1a8030'] : e>=2 ? ['💪 Strong','#3a8030'] : e>=1.2 ? ['⚖️ Even','#7a6010'] : ['⚠️ Weak','#c02018']; }
 
-function clashEval(aInst, dInst){
-  const a = effPower(aInst,'atk',dInst.card);
-  const d = effPower(dInst,'def',aInst.card);
-  const aDie = rollDie(), dDie = rollDie();
-  let aB=0,dB=0,aN='',dN='';
-  if(aDie===CFG.critRoll){aB=CFG.critBonus;aN='lucky mutation';} else if(aDie===CFG.fumbleRoll){aB=-CFG.fumblePenalty;aN='bad mutation';}
-  if(dDie===CFG.critRoll){dB=CFG.critBonus;dN='lucky mutation';} else if(dDie===CFG.fumbleRoll){dB=-CFG.fumblePenalty;dN='bad mutation';}
-  const aTot=a.pow+aDie+aB, dTot=d.pow+dDie+dB;
-  let winner;
-  if(aTot>dTot)winner='atk'; else if(dTot>aTot)winner='def';
-  else if((aInst.card.ada||0)!==(dInst.card.ada||0))winner=aInst.card.ada>dInst.card.ada?'atk':'def';
-  else if((aInst.card.def||0)!==(dInst.card.def||0))winner=aInst.card.def>dInst.card.def?'atk':'def';
-  else winner='tie';
-  return {winner,a,d,aDie,dDie,aB,dB,aTot,dTot,aN,dN};
+function rollPool(p){
+  let rolls=[], hits=0;
+  for(let i=0;i<p.dice;i++){ const r=rollDie(); const h=r>=p.hitOn; if(h)hits++; rolls.push({r,h}); }
+  if(p.reroll){ rolls.forEach(d=>{ if(!d.h){ const r=rollDie(); d.r2=r; if(r>=p.hitOn){ d.h=true; hits++; } } }); }
+  return {rolls, hits};
 }
 
 const FLAVORS = {
-  atk:['Natural selection in action.','The fit feed.','Adapt or perish — they adapted.'],
+  atk:['Natural selection in action.','The fit feed.','It out-competed and out-lived.'],
   def:['The defender holds the niche.','Home-field biology wins.','Resilience pays off.'],
-  tie:['Mutually assured digestion.','Nobody wins the Red Queen\'s race.','Co-extinction, how romantic.'],
+  tie:['Mutually assured digestion.','Nobody wins the Red Queen\'s race.','Co-extinction — how romantic.'],
 };
-function flavor(ev){ const k=ev.winner; const arr=FLAVORS[k]||[]; return arr[Math.floor(Math.random()*arr.length)]||''; }
+function flavor(k){ const arr=FLAVORS[k]||[]; return arr[Math.floor(Math.random()*arr.length)]||''; }
 
 // ─────────────────────────────────────────
 // PLAY / RESOLVE
 // ─────────────────────────────────────────
+function deployTurn(side){ return (G.step==='p1'&&side===firstPicker()) || (G.step==='p2'&&side===secondPicker()); }
 function setAlloc(side, meta){
-  if(G.winner) return;
+  if(G.winner || !deployTurn(side)) return;
   meta = Math.max(0, Math.min(G.energy[side], meta));
   G.alloc[side] = {meta, repro: G.energy[side]-meta};
   renderClash();
@@ -834,18 +896,18 @@ function setAlloc(side, meta){
 function playCard(side, idx){
   if(G.winner) return;
   const inst = G.stack[side][idx];
-  if(!inst || inst.exhausted) return;
-  if(side==='atk' && G.step==='atk'){ G.played.atk = idx; G.step='def'; }
-  else if(side==='def' && G.step==='def'){ G.played.def = idx; G.step='ready'; }
+  if(!inst || (inst.exhausted && !hasKW(inst.card,'swarm'))) return;
+  if(G.step==='p1' && side===firstPicker()){ G.played[side]=idx; G.step='p2'; }
+  else if(G.step==='p2' && side===secondPicker()){ G.played[side]=idx; G.step='ready'; }
   else return;
-  document.getElementById('dice-display').innerHTML = '';
+  closeCardDetail();
   renderClash();
 }
 
 function applyRepro(side, inst){
   let r = G.alloc[side].repro || 0;
   if(G.cata && G.cata.reproDouble) r *= 2;
-  const who = side==='atk'?'Attacker':'Defender';
+  const who = sideName(side);
   if(r>=2){ G.life[side]++; addLog(`🧬 ${who} reproduces — +1 life.`); }
   if(r>=3){
     const deck = G.battleType==='eat'?EAT:FK;
@@ -856,20 +918,29 @@ function applyRepro(side, inst){
 
 function resolveClash(){
   if(G.step!=='ready' || G.played.atk==null || G.played.def==null) return;
-  const aInst = G.stack.atk[G.played.atk], dInst = G.stack.def[G.played.def];
-  const ev = clashEval(aInst, dInst);
-  showDice(ev);
+  const aInst=G.stack.atk[G.played.atk], dInst=G.stack.def[G.played.def];
   const aC=aInst.card, dC=dInst.card;
-  let la=0, ld=0, msg='';
-  if(ev.winner==='atk'){ ld=1; aInst.adapt++; msg=`⚔️ ${aC.n} wins ${ev.aTot}–${ev.dTot}.`; if(hasKW(aC,'venom')){ld++; msg+=' ☠️ Venom — extra life!';} }
-  else if(ev.winner==='def'){ la=1; dInst.adapt++; msg=`🛡️ ${dC.n} wins ${ev.dTot}–${ev.aTot}.`; if(hasKW(dC,'venom')){la++; msg+=' ☠️ Venom — extra life!';} }
-  else { la=1; ld=1; msg=`💥 Dead heat ${ev.aTot}–${ev.dTot}.`; if(hasKW(aC,'venom'))ld++; if(hasKW(dC,'venom'))la++; }
+  const aP=diceProfile(aInst,'atk',dC), dP=diceProfile(dInst,'def',aC);
+  const aR=rollPool(aP), dR=rollPool(dP);
+  let aHits=aR.hits, dHits=dR.hits;
+  // range strikes first — snipe one of the slower side's hits
+  if(aP.first && !dP.first && aHits>0) dHits=Math.max(0,dHits-1);
+  if(dP.first && !aP.first && dHits>0) aHits=Math.max(0,aHits-1);
+  showDicePools(aR,dR,aP,dP,aHits,dHits);
+
+  let la=0, ld=0, msg='', win='tie';
+  if(aHits>dHits){ win='atk'; ld=1; aInst.adapt++; msg=`⚔️ ${aC.n} lands ${aHits} hits to ${dHits}.`; if(hasKW(aC,'venom')){ld++; msg+=' ☠️ Venom!';} }
+  else if(dHits>aHits){ win='def'; la=1; dInst.adapt++; msg=`🛡️ ${dC.n} lands ${dHits} hits to ${aHits}.`; if(hasKW(dC,'venom')){la++; msg+=' ☠️ Venom!';} }
+  else if(aP.power!==dP.power){ // hit tie → stronger strategy edges it
+    if(aP.power>dP.power){ win='atk'; ld=1; aInst.adapt++; msg=`⚔️ ${aHits}–${dHits} tie — ${aC.n} is the stronger strategy.`; }
+    else { win='def'; la=1; dInst.adapt++; msg=`🛡️ ${dHits}–${aHits} tie — ${dC.n} is the stronger strategy.`; }
+  } else { la=1; ld=1; msg=`💥 Dead heat ${aHits}–${dHits}. Both bleed.`; }
   if(la>0 && hasKW(aC,'tough') && !aInst.toughUsed){ aInst.toughUsed=true; la=0; msg+=' 🪨 Attacker shrugs it off (Tough).'; }
   if(ld>0 && hasKW(dC,'tough') && !dInst.toughUsed){ dInst.toughUsed=true; ld=0; msg+=' 🪨 Defender shrugs it off (Tough).'; }
   G.life.atk-=la; G.life.def-=ld;
   applyRepro('atk',aInst); applyRepro('def',dInst);
   addLog(msg);
-  G.outcome = msg + ' — ' + flavor(ev);
+  G.outcome = msg + ' — ' + flavor(win);
   G.stack.atk.forEach(i=>i.exhausted=false); G.stack.def.forEach(i=>i.exhausted=false);
   if(!hasKW(aC,'swarm')) aInst.exhausted=true;
   if(!hasKW(dC,'swarm')) dInst.exhausted=true;
@@ -878,7 +949,7 @@ function resolveClash(){
   if(G.life.atk<=0){ endBattle('def'); return; }
   if(G.life.def<=0){ endBattle('atk'); return; }
 
-  G.round++; G.played={atk:null,def:null}; G.step='atk';
+  G.round++; G.played={atk:null,def:null}; G.step='scenario';
   beginRound();
   renderClash();
 }
@@ -902,34 +973,35 @@ function arenaSlot(side){
   const inst = G.stack[side][idx];
   const oppIdx = G.played[side==='atk'?'def':'atk'];
   const oppCard = oppIdx!=null ? G.stack[side==='atk'?'def':'atk'][oppIdx].card : null;
-  const ep = effPower(inst, side, oppCard);
+  const p = diceProfile(inst, side, oppCard);
   el.classList.add('filled');
   el.innerHTML = `<div class="as-art">${inst.card.art}</div>
     <div class="as-name">${inst.card.n}${inst.isWeirdo?' 🧬':''}</div>
-    <div class="as-pow">${ep.pow}</div>
-    <div class="as-break">${ep.parts.join(' · ')}</div>
-    <div class="as-tags">${kwTags(inst.card)} ADA ${inst.card.ada} · DEF ${inst.card.def} · MOV ${inst.card.mov}</div>`;
+    <div class="as-pow">🎲${p.dice}</div>
+    <div style="font-size:10px;font-weight:800;color:var(--muted)">hits on ${p.hitOn}+ · ~${expHits(p).toFixed(1)} hits</div>
+    <div class="as-break">${p.parts.join(' · ')}</div>
+    <div class="as-tags">${kwTags(inst.card)}</div>`;
 }
 function stackList(side){
   const cont = document.getElementById('stack-'+side);
-  const activeSide = (G.step==='atk'&&side==='atk') || (G.step==='def'&&side==='def');
+  const activeSide = deployTurn(side);
   cont.className = 'stk-list' + (activeSide?' active':'');
   cont.innerHTML = '';
   G.stack[side].forEach((inst,i)=>{
-    const ep = effPower(inst, side, null);
+    const p = diceProfile(inst, side, null);
     const isPlayed = G.played[side]===i;
     const div = document.createElement('div');
     div.className = 'stk-card' + (inst.exhausted&&!hasKW(inst.card,'swarm')?' exhausted':'') + (isPlayed?' played':'');
     div.innerHTML = `<span class="sc-art">${inst.card.art}</span>
       <span class="sc-name">${inst.card.n}${inst.isWeirdo?' 🧬':''}${inst.adapt?` <span style="color:#1a8030">+${inst.adapt}</span>`:''}<br>${kwTags(inst.card)}</span>
-      <span class="sc-pow">${ep.pow}${ep.native?'⭐':''}</span>`;
-    if((!inst.exhausted||hasKW(inst.card,'swarm')) && activeSide) div.onclick = ()=>playCard(side,i);
+      <span class="sc-pow">🎲${p.dice}<br><span style="font-size:8px;color:var(--muted)">${p.hitOn}+</span></span>`;
+    div.onclick = ()=>openCardDetail(side,i);
     cont.appendChild(div);
   });
 }
 function allocControl(side){
   const el = document.getElementById('alloc-'+side);
-  const editable = (G.step==='atk'&&side==='atk') || (G.step==='def'&&side==='def');
+  const editable = deployTurn(side);
   const a = G.alloc[side]; const E = G.energy[side];
   let btns = '';
   for(let m=0;m<=E;m++){
@@ -938,15 +1010,56 @@ function allocControl(side){
   }
   el.innerHTML = `<div style="font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">⚡Energy ${E} → 🦷Fight / 🧬Breed</div>
     <div style="display:flex;gap:3px;justify-content:center;margin-top:3px;">${btns}</div>
-    <div style="font-size:9px;color:var(--muted);margin-top:2px;">🦷+${a.meta} power · 🧬${a.repro} breed${a.repro>=2?' (+1 life)':''}${a.repro>=3?' +spawn':''}</div>`;
+    <div style="font-size:9px;color:var(--muted);margin-top:2px;">🦷+${a.meta} dice · 🧬${a.repro} breed${a.repro>=2?' (+1 life)':''}${a.repro>=3?' +spawn':''}</div>`;
 }
-function showDice(ev){
-  const el = document.getElementById('dice-display');
+function showDicePools(aR,dR,aP,dP,aHits,dHits){
+  const el = document.getElementById('dice-pools');
   const face = n => '⚀⚁⚂⚃⚄⚅'[n-1];
-  const tag = (die,n)=> n? `<span style="font-size:8px;color:${die===6?'#1a8030':'#c02018'}">${n}</span>`:'';
-  el.innerHTML = `<div style="text-align:center"><div style="font-size:18px">${face(ev.aDie)}</div>${tag(ev.aDie,ev.aN)}</div>
-    <div style="text-align:center"><div style="font-size:18px">${face(ev.dDie)}</div>${tag(ev.dDie,ev.dN)}</div>`;
+  const pool = R => R.rolls.map(d=>`<span style="font-size:16px;color:${d.h?'#1a8030':'#c9bca8'}">${face(d.r2&&d.r2>d.r?d.r2:d.r)}</span>`).join(' ');
+  el.innerHTML = `<div style="border:2px solid var(--border,#e8ddd0);border-radius:10px;padding:8px;background:#fff;">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><span class="atk-l" style="font-weight:800;font-size:11px;">⚔️ ${aP.dice}🎲 hits ${aP.hitOn}+</span> ${pool(aR)} <b style="margin-left:auto;font-size:14px">${aHits} hits</b></div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px;"><span class="def-l" style="font-weight:800;font-size:11px;">🛡️ ${dP.dice}🎲 hits ${dP.hitOn}+</span> ${pool(dR)} <b style="margin-left:auto;font-size:14px">${dHits} hits</b></div>
+  </div>`;
 }
+
+// ─────────────────────────────────────────
+// CARD DETAIL — how it works + this-round prediction
+// ─────────────────────────────────────────
+function openCardDetail(side, idx){
+  const inst = G.stack[side][idx]; if(!inst) return;
+  const c = inst.card;
+  const oppIdx = G.played[side==='atk'?'def':'atk'];
+  const oppCard = oppIdx!=null ? G.stack[side==='atk'?'def':'atk'][oppIdx].card : null;
+  const p = diceProfile(inst, side, oppCard);
+  const [vLabel,vColor] = verdict(p);
+  const terNames = (c.ter||[]).map(t=>(BOARDS[t]||{name:t}).name).join(', ') || '—';
+  const kws = kwOf(c).map(k=>KW_GLOSSARY[k]).filter(Boolean);
+  const powStat = G.battleType==='eat' ? `OFF ${c.off}` : `REP ${c.rep}`;
+  const canDeploy = deployTurn(side) && (!inst.exhausted || hasKW(c,'swarm'));
+  const sc = G.scenario ? `${G.scenario.icon} ${G.scenario.name}` : 'no scenario yet';
+  document.getElementById('card-modal').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+      <span style="font-size:38px">${c.art}</span>
+      <div><div style="font-size:17px;font-weight:900;">${c.n}${inst.isWeirdo?' 🧬':''}</div>
+      <div style="font-size:10px;color:var(--muted)">${powStat} (Power) · ADA ${c.ada} · DEF ${c.def} · MOV ${c.mov}${inst.adapt?` · adapted +${inst.adapt}`:''}</div></div>
+    </div>
+    <div style="margin:4px 0;">${kwTags(c)}</div>
+    <div style="font-size:11px;line-height:1.6;color:#4a3820;background:#fffaee;border:1.5px solid var(--border,#e8ddd0);border-radius:8px;padding:8px;">
+      <b>How it works</b><br>Native to: <b>${terNames}</b>.<br>${kws.length?kws.join('<br>'):'A generalist strategy with no special keyword tricks — it lives or dies on raw stats and the right terrain.'}
+    </div>
+    <div style="font-size:12px;line-height:1.6;margin-top:8px;border:2px solid ${vColor};border-radius:8px;padding:8px;background:#fff;">
+      <b style="color:${vColor}">This round vs ${BOARDS[G.terrain].name} · ${sc}: ${vLabel}</b><br>
+      Rolls <b>${p.dice} dice</b>, hits on <b>${p.hitOn}+</b> → expected <b>${expHits(p).toFixed(1)} hits</b>.<br>
+      <span style="color:var(--muted);font-size:10px">${p.parts.join(' · ')}</span>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end;">
+      ${canDeploy?`<button class="t-btn" style="background:#c4561e;color:#fff;" onclick="playCard('${side}',${idx})">Deploy this strategy →</button>`:''}
+      <button class="t-btn" onclick="closeCardDetail()">Close</button>
+    </div>`;
+  document.getElementById('card-overlay').className = 'overlay open';
+}
+function closeCardDetail(){ document.getElementById('card-overlay').className = 'overlay'; }
+
 function renderClash(){
   const b = BOARDS[G.terrain];
   document.getElementById('clash-terrain').innerHTML = b.icon+' '+b.name;
@@ -956,6 +1069,20 @@ function renderClash(){
     ? '<span class="eat-w">🦷 EAT IT — Power = OFF</span>' : '<span class="fk-w">🧬 F*CK IT — Power = REP</span>';
   document.getElementById('life-atk').textContent = hearts('atk');
   document.getElementById('life-def').textContent = hearts('def');
+
+  // scenario bar
+  const sTitle = document.getElementById('scenario-title');
+  const rollBtn = document.getElementById('roll-scenario-btn');
+  const story = document.getElementById('story-text');
+  if(G.step==='scenario'){
+    sTitle.textContent = `🎲 ${sideName(roller())} rolls to set the scenario`;
+    rollBtn.style.display='inline-block';
+    story.textContent = 'Each terrain throws a different challenge. Roll to reveal what this round demands…';
+  } else if(G.scenario){
+    sTitle.innerHTML = `${G.scenario.icon} ${G.scenario.name} <span style="font-size:11px;font-weight:600;color:#9cf">— ${G.scenario.tag}</span>`;
+    rollBtn.style.display='none';
+    story.textContent = G.story;
+  }
 
   // catastrophe banner
   const cb = document.getElementById('cata-banner');
@@ -970,9 +1097,10 @@ function renderClash(){
   document.getElementById('clash-outcome').innerHTML = G.outcome||'';
 
   let prompt = '';
-  if(G.step==='atk') prompt = '⚔️ Attacker: set energy, then play a strategy.';
-  else if(G.step==='def') prompt = '🛡️ Defender: you saw the attack — set energy and respond.';
-  else if(G.step==='ready') prompt = '⚡ Both committed — Resolve (each rolls the Selection Die).';
+  if(G.step==='scenario') prompt = `🎲 ${sideName(roller())} rolls the scenario first.`;
+  else if(G.step==='p1') prompt = `${sideName(firstPicker())} deploys first — tap a strategy to inspect & deploy.`;
+  else if(G.step==='p2') prompt = `${sideName(secondPicker())} responds — tap a strategy to inspect & deploy.`;
+  else if(G.step==='ready') prompt = '⚡ Both committed — Resolve: each strategy rolls its dice.';
   document.getElementById('turn-prompt').textContent = prompt;
 
   const wBtn = document.getElementById('opt-weirdo');
@@ -1123,7 +1251,7 @@ function quickSkirmish(autoStart){
   fillRandomStack(defSelected, deck, sizeFor());
   renderCardPickers();
   checkStartReady();
-  if(autoStart) startBattle();
+  if(autoStart){ startBattle(); rollScenario(); }
 }
 function rematchRandom(){ resetGame(); quickSkirmish(true); }
 
